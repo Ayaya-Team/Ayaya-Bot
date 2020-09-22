@@ -7,8 +7,8 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -17,15 +17,19 @@ import java.util.regex.Matcher;
  */
 public class Kick extends Command {
 
+    private Member member;
+    private int amountKicked;
+    private boolean apiError;
+    private boolean lackingPerms;
+    private boolean notFound;
+
     public Kick() {
 
         this.name = "kick";
         this.help = "Is someone doing bad things in your server without permission? Then why not kicking them?";
         this.arguments = "{prefix}kick <mention, name/nickname or id>" +
                 "\n\nYou can mention more than one person or put more than one name/nickname/id in your command." +
-                " Altough, separate all names/nicknames/ids and separate them from the mentions with a comma." +
-                " The mentions don't need to be separated between themselves."
-                + "\nIn servers with over 250 accounts connected this command is more reliable with user mentions.";
+                " Altough, separate all names/nicknames/ids/mentions with a comma.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.KICK_MEMBERS};
@@ -36,82 +40,52 @@ public class Kick extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        if (!event.getSelfMember().hasPermission(Permission.KICK_MEMBERS)) {
-            event.replyError("I don't have permission to kick people. Try to ask an Admin to give me the Kick Members permission.");
-            return;
-        }
-        if (!event.getMember().hasPermission(Permission.KICK_MEMBERS)) {
-            event.replyError("You don't have the Kick Members permission, therefore I won't kick someone with your order.");
-            return;
-        }
+        amountKicked = 0;
+        apiError = false;
+        lackingPerms = false;
+        notFound = false;
         String message = event.getArgs();
-        List<Member> members = new LinkedList<>();
         Guild guild = event.getGuild();
         Member author = event.getMember();
-        members.addAll(event.getMessage().getMentionedMembers(guild));
-        boolean notFound = false;
         if (!message.isEmpty()) {
-            String[] names = message.split(",");
-            List<Member> list;
+            String[] input = message.split(",");
             Matcher mentionFinder, idFinder;
-            Member idMember = null;
-            for (String s: names) {
+            for (String s: input) {
+                member = null;
                 s = s.trim();
                 mentionFinder = USER_MENTION.matcher(s);
                 idFinder = ID.matcher(s);
-                if (mentionFinder.find()) {
-                    continue;
+                if (mentionFinder.find() && idFinder.find()) {
+                    guild.retrieveMemberById(idFinder.group(), true)
+                            .queue(m -> member = m, e -> apiError = true);
+                } else {
+                    final Matcher finalIdFinder = idFinder;
+                    final String arg = s.trim();
+                    guild.retrieveMembersByPrefix(s.trim(), 1).onSuccess(l -> {
+                        if (l.isEmpty() && finalIdFinder.find())
+                            guild.retrieveMemberById(arg, true)
+                                    .queue(m -> member = m, e -> apiError = true);
+                        else
+                            member = l.get(0);
+                    }).onError(e -> apiError = true);
                 }
-                list = event.getGuild().getMembersByEffectiveName(s.trim(), false);
-                if (list.isEmpty()) event.getGuild().getMembersByName(s.trim(), false);
-                if (!list.isEmpty()) members.add(list.get(0));
-                else if (idFinder.find()) {
-                    try {
-                        idMember = event.getGuild().getMemberById(s);
-                    } catch (NumberFormatException e) {
-                        notFound = true;
-                    }
-                }
-                if (idMember != null) members.add(idMember);
-            }
-            if (members.isEmpty()) {
-                event.replyError("I'm sorry, but I can't find anyone with that name, mention or id.");
-                return;
+                if (member != null)
+                    kick(author, event.getSelfMember(), member, guild);
+                else
+                    notFound = true;
             }
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to kick? You didn't tell me yet.");
             return;
         }
-		int authorHighestPosition = -1;
-        if (!author.getRoles().isEmpty())
-            authorHighestPosition = author.getRoles().get(0).getPosition();
-        int highestPosition = -1;
-        if (!event.getSelfMember().getRoles().isEmpty())
-            highestPosition = event.getSelfMember().getRoles().get(0).getPosition();
-        boolean lackingPerms = false;
-        List<Role> roles;
-        int amountKicked = 0;
-        int memberHighestPosition;
-        for (Member member : members) {
-            memberHighestPosition = -1;
-            roles = member.getRoles();
-            if (!roles.isEmpty())
-                memberHighestPosition = roles.get(0).getPosition();
-            if (
-                    !member.getId().equals(guild.getOwnerId())
-                            && (author.getId().equals(guild.getOwnerId())
-                            || memberHighestPosition < authorHighestPosition)
-                            && memberHighestPosition < highestPosition
-                            && !member.equals(author)
-                            && !member.equals(event.getSelfMember())
-            ) {
-                guild.kick(member, "Kick requested by " + author.getEffectiveName() + ".").queue();
-                amountKicked++;
-            } else lackingPerms = true;
-        }
         switch (amountKicked) {
             case 0:
-                if (lackingPerms)
+                if (apiError)
+                    event.replyError(
+                            "There was an issue with the Discord API or my Internet connection" +
+                                    " so I could not finish your request."
+                    );
+                else if (lackingPerms)
                     event.replyError(
                             "Due to lack of permissions I couldn't kick any of the people you mentioned." +
                                     " If you wanted to kick yourself, you can't do that," +
@@ -125,7 +99,10 @@ public class Kick extends Command {
             case 1:
                 String answer = "<:KawaiiThumbup:361601400079253515> 1 member was kicked." +
                         " No more actions are needed now.";
-                if (lackingPerms)
+                if (apiError)
+                    answer += " Couldn't kick all the people mentioned due to" +
+                            " an issue with the Discord API or my Internet connection";
+                else if (lackingPerms)
                     answer += " Couldn't kick all the people mentioned due to lack of permissions.";
                 else if (notFound)
                     answer +=
@@ -136,7 +113,10 @@ public class Kick extends Command {
             default:
                 answer = "<:KawaiiThumbup:361601400079253515> "
                         + amountKicked + " members were kicked. No more actions are needed now.";
-                if (lackingPerms)
+                if (apiError)
+                    answer += " Couldn't ban all the people mentioned due to" +
+                            " an issue with the Discord API or my Internet connection";
+                else if (lackingPerms)
                     answer += " Couldn't kick all the people mentioned due to lack of permissions.";
                 else if (notFound)
                     answer +=
@@ -145,6 +125,36 @@ public class Kick extends Command {
                 event.reply(answer);
         }
 
+    }
+
+    private void kick(Member author, Member self, Member member, Guild guild) {
+        int authorHighestPosition = -1;
+        if (!author.getRoles().isEmpty())
+            authorHighestPosition = author.getRoles().get(0).getPosition();
+        int highestPosition = -1;
+        if (!self.getRoles().isEmpty())
+            highestPosition = self.getRoles().get(0).getPosition();
+        List<Role> roles;
+        int memberHighestPosition = -1;
+        roles = member.getRoles();
+        if (!roles.isEmpty())
+            memberHighestPosition = roles.get(0).getPosition();
+        if (
+                !member.getId().equals(guild.getOwnerId())
+                        && (author.getId().equals(guild.getOwnerId())
+                        || memberHighestPosition < authorHighestPosition)
+                        && memberHighestPosition < highestPosition
+                        && !member.equals(author)
+                        && !member.equals(self)
+        ) {
+            try {
+                guild.kick(member,"Ban requested by " + author.getEffectiveName() + ".")
+                        .queue(s -> {}, e -> apiError = true);
+                amountKicked++;
+            } catch (ErrorResponseException e) {
+                notFound = true;
+            }
+        } else lackingPerms = true;
     }
 
 }

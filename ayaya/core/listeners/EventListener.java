@@ -61,6 +61,7 @@ public class EventListener extends ListenerAdapter {
         JDA jda = event.getJDA();
         AudioManager audioManager;
         for (Guild g: jda.getGuilds()) {
+            g.retrieveOwner(true);
             audioManager = g.getAudioManager();
             if (audioManager.isConnected())
                 audioManager.closeAudioConnection();
@@ -108,6 +109,7 @@ public class EventListener extends ListenerAdapter {
 
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
         Guild guild = event.getGuild();
+        guild.retrieveOwner(true);
         User owner = Objects.requireNonNull(guild.getOwner()).getUser();
         Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
                 "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"

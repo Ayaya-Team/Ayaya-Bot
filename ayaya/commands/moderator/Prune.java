@@ -40,7 +40,7 @@ public class Prune extends Command {
         String input = event.getArgs();
         String args[] = input.split("--");
         String amountString = "";
-        List<User> users = new LinkedList<>();
+        List<String> users = new LinkedList<>();
         boolean pruneBots = false;
 
         Matcher matcher, mentionFinder, idFinder;
@@ -54,7 +54,8 @@ public class Prune extends Command {
                         pruneBots = true;
                         break;
                     case "users":
-                        users.addAll(event.getMessage().getMentionedUsersBag());
+                        for (User user: event.getMessage().getMentionedUsers())
+                            users.add(user.getId());
                         for (String s: arg.trim().split(",")) {
                             mentionFinder = USER_MENTION.matcher(s);
                             idFinder = ID.matcher(s);
@@ -62,13 +63,13 @@ public class Prune extends Command {
                                 continue;
                             }
                             list = event.getJDA().getUsersByName(s.trim(), false);
-                            if (!list.isEmpty()) users.add(list.get(0));
+                            if (!list.isEmpty()) users.add(list.get(0).getId());
                             else if (idFinder.find()) {
                                 try {
-                                    idUser = event.getJDA().getUserById(s);
+                                    idUser = event.getJDA().getUserById(s.trim());
                                 } catch (NumberFormatException e) {}
                             }
-                            if (idUser != null) users.add(idUser);
+                            if (idUser != null) users.add(s.trim());
                         }
                         break;
                     default:
@@ -103,9 +104,9 @@ public class Prune extends Command {
         channel.getHistoryBefore(event.getMessage(), amount).queue(h -> {
             int amountDeleted = 0;
             for (Message message : h.getRetrievedHistory()) {
-                User member = message.getAuthor();
+                User author = message.getAuthor();
                 if ((bots && message.getAuthor().isBot())
-                        || (users.contains(member))
+                        || (users.contains(author))
                         || (!bots && users.isEmpty())) {
                     messages.add(message);
                     amountDeleted++;

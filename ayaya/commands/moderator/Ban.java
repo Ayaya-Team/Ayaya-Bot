@@ -7,8 +7,8 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -17,15 +17,20 @@ import java.util.regex.Matcher;
  */
 public class Ban extends Command {
 
+    private Member member;
+    private String id;
+    private int amountBanned;
+    private boolean apiError;
+    private boolean lackingPerms;
+    private boolean notFound;
+
     public Ban() {
 
         this.name = "ban";
         this.help = "Someone being specially annoying in your server? Then let's ban that person!";
         this.arguments = "{prefix}ban <mention, name/nickname or id>" +
                 "\n\nYou can mention more than one person or put more than one name/nickname/id in your command." +
-                " Altough, separate all names/nicknames/ids and separate them from the mentions with a comma." +
-                " The mentions don't need to be separated between themselves."
-                + "\nIn servers with over 250 accounts connected this command is more reliable with user mentions.";
+                " Altough, separate all names/nicknames/ids/mentions with a comma.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.BAN_MEMBERS};
@@ -36,82 +41,62 @@ public class Ban extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
+        amountBanned = 0;
+        apiError = false;
+        lackingPerms = false;
+        notFound = false;
         String message = event.getArgs();
-        List<Member> members = new LinkedList<>();
-        List<String> ids = new LinkedList<>();
         Guild guild = event.getGuild();
         Member author = event.getMember();
-        members.addAll(event.getMessage().getMentionedMembers(guild));
         if (!message.isEmpty()) {
             String[] input = message.split(",");
-            List<Member> list;
             Matcher mentionFinder, idFinder;
-            Member idMember = null;
             for (String s: input) {
+                member = null;
+                id = "";
                 s = s.trim();
                 mentionFinder = USER_MENTION.matcher(s);
                 idFinder = ID.matcher(s);
-                if (mentionFinder.find()) {
-                    continue;
+                if (mentionFinder.find() && idFinder.find()) {
+                    id = idFinder.group();
+                    guild.retrieveMemberById(id, true).queue(m -> {
+                        if (m != null) {
+                            member = m;
+                            id = "";
+                        }
+                    });
+                } else {
+                    final Matcher finalIdFinder = idFinder;
+                    final String arg = s.trim();
+                    guild.retrieveMembersByPrefix(s.trim(), 1).onSuccess(l -> {
+                        if (l.isEmpty() && finalIdFinder.find())
+                            guild.retrieveMemberById(arg, true).queue(m -> {
+                                if (m != null) {
+                                    member = m;
+                                } else
+                                    id = arg;
+                            }, t -> apiError = true);
+                        else
+                            member = l.get(0);
+                    });
                 }
-                list = event.getGuild().getMembersByEffectiveName(s.trim(), false);
-                if (list.isEmpty()) event.getGuild().getMembersByName(s.trim(), false);
-                if (!list.isEmpty()) members.add(list.get(0));
-                else if (idFinder.find()) {
-                    try {
-                        idMember = event.getGuild().getMemberById(s);
-                    } catch (NumberFormatException e) {}
-                }
-                if (idMember != null) members.add(idMember);
-                else ids.add(s);
-            }
-            if (members.isEmpty() && ids.isEmpty()) {
-                event.replyError("I'm sorry, but I can't find anyone with that name, mention or id.");
-                return;
+                if (member != null)
+                    ban(author, event.getSelfMember(), member, guild);
+                else if (!id.isEmpty())
+                    ban(author, id, guild);
             }
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to ban? You didn't tell me yet.");
             return;
         }
-		int authorHighestPosition = -1;
-        if (!author.getRoles().isEmpty())
-            authorHighestPosition = author.getRoles().get(0).getPosition();
-        int highestPosition = -1;
-        if (!event.getSelfMember().getRoles().isEmpty())
-            highestPosition = event.getSelfMember().getRoles().get(0).getPosition();
-        boolean lackingPerms = false;
-        boolean notFound = false;
-        List<Role> roles;
-        int amountBanned = 0;
-        int memberHighestPosition;
-        for (Member member : members) {
-            memberHighestPosition = -1;
-            roles = member.getRoles();
-            if (!roles.isEmpty())
-                memberHighestPosition = roles.get(0).getPosition();
-            if (
-                    !member.getId().equals(guild.getOwnerId())
-                            && (author.getId().equals(guild.getOwnerId())
-                            || memberHighestPosition < authorHighestPosition)
-                            && memberHighestPosition < highestPosition
-                            && !member.equals(author)
-                            && !member.equals(event.getSelfMember())
-            ) {
-                guild.ban(member, 0, "Ban requested by " + author.getEffectiveName() + ".").queue();
-                amountBanned++;
-            } else lackingPerms = true;
-        }
-        for (String id: ids) {
-            try {
-                guild.ban(id, 0, "Ban requested by " + author.getEffectiveName() + ".").queue();
-                amountBanned++;
-            } catch (NumberFormatException e) {
-                notFound = true;
-            }
-        }
         switch (amountBanned) {
             case 0:
-                if (lackingPerms)
+                if (apiError)
+                    event.replyError(
+                            "There was an issue with the Discord API or my Internet connection" +
+                                    " so I could not finish your request."
+                    );
+                else if (lackingPerms)
                     event.reply(
                             "Due to lack of permissions I couldn't ban any of the people you mentioned."
                                     + " If you wanted to ban yourself, you can't really do that."
@@ -124,7 +109,10 @@ public class Ban extends Command {
             case 1:
                 String answer = "1 member was banned." +
                         " Now you don't have to worry with that person anymore.";
-                if (lackingPerms)
+                if (apiError)
+                    answer += " Couldn't ban all the people mentioned due to" +
+                            " an issue with the Discord API or my Internet connection";
+                else if (lackingPerms)
                     answer += " Couldn't ban all the people mentioned due to lack of permissions.";
                 else if (notFound)
                     answer +=
@@ -135,7 +123,10 @@ public class Ban extends Command {
             default:
                 answer = amountBanned + " members were banned." +
                         " Now you don't have to worry with them anymore.";
-                if (lackingPerms)
+                if (apiError)
+                    answer += " Couldn't ban all the people mentioned due to" +
+                            " an issue with the Discord API or my Internet connection";
+                else if (lackingPerms)
                     answer += " Couldn't ban all the people mentioned due to lack of permissions.";
                 else if (notFound)
                     answer += " Couldn't ban all the people mentioned" +
@@ -143,6 +134,46 @@ public class Ban extends Command {
                 event.replySuccess(answer);
         }
 
+    }
+
+    private void ban(Member author, Member self, Member member, Guild guild) {
+        int authorHighestPosition = -1;
+        if (!author.getRoles().isEmpty())
+            authorHighestPosition = author.getRoles().get(0).getPosition();
+        int highestPosition = -1;
+        if (!self.getRoles().isEmpty())
+            highestPosition = self.getRoles().get(0).getPosition();
+        List<Role> roles;
+        int memberHighestPosition = -1;
+        roles = member.getRoles();
+        if (!roles.isEmpty())
+            memberHighestPosition = roles.get(0).getPosition();
+        if (
+                !member.getId().equals(guild.getOwnerId())
+                        && (author.getId().equals(guild.getOwnerId())
+                        || memberHighestPosition < authorHighestPosition)
+                        && memberHighestPosition < highestPosition
+                        && !member.equals(author)
+                        && !member.equals(self)
+        ) {
+            try {
+                guild.ban(member, 0, "Ban requested by " + author.getEffectiveName() + ".")
+                        .queue(s -> {}, e -> apiError = true);
+                amountBanned++;
+            } catch (ErrorResponseException e) {
+                notFound = true;
+            }
+        } else lackingPerms = true;
+    }
+
+    private void ban(Member author, String id, Guild guild) {
+        try {
+            guild.ban(id, 0, "Ban requested by " + author.getEffectiveName() + ".")
+                    .queue(s -> {}, e -> apiError = true);
+            amountBanned++;
+        } catch (NumberFormatException e) {
+            notFound = true;
+        }
     }
 
 }
