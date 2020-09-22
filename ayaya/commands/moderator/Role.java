@@ -477,19 +477,10 @@ public class Role extends Command {
             return;
         }
 
+        //for (String s: users.split(",")) {}
+
         for (Member member: members) {
-            for (net.dv8tion.jda.api.entities.Role roleToAdd: rolesToAdd) {
-                guild.addRoleToMember(member, roleToAdd)
-                        .reason("Role assignment to user requested by "
-                                + event.getMember().getEffectiveName() + ".")
-                        .queue();
-            }
-            for (net.dv8tion.jda.api.entities.Role roleToRemove: rolesToRemove) {
-                guild.removeRoleFromMember(member, roleToRemove)
-                        .reason("Role unassignment from user requested by "
-                                + event.getMember().getEffectiveName() + ".")
-                        .queue();
-            }
+            manageRolesForUser(member, event.getMember(), guild, rolesToAdd, rolesToRemove);
         }
 
         StringBuilder answer = new StringBuilder();
@@ -502,6 +493,26 @@ public class Role extends Command {
             answer.append(" Couldn't add/remove all the roles due to me or you having a lack of permissions.");
         event.replySuccess(answer.toString());
 
+    }
+
+    private void manageRolesForUser(
+            Member member, Member author, Guild guild,
+            List<net.dv8tion.jda.api.entities.Role> rolesToAdd,
+            List<net.dv8tion.jda.api.entities.Role> rolesToRemove
+    )
+    {
+        for (net.dv8tion.jda.api.entities.Role roleToAdd: rolesToAdd) {
+            guild.addRoleToMember(member, roleToAdd)
+                    .reason("Role assignment to user requested by "
+                            + author.getEffectiveName() + ".")
+                    .queue();
+        }
+        for (net.dv8tion.jda.api.entities.Role roleToRemove: rolesToRemove) {
+            guild.removeRoleFromMember(member, roleToRemove)
+                    .reason("Role unassignment from user requested by "
+                            + author.getEffectiveName() + ".")
+                    .queue();
+        }
     }
 
     /**

@@ -44,7 +44,6 @@ public class Prune extends Command {
         boolean pruneBots = false;
 
         Matcher matcher, mentionFinder, idFinder;
-        User idUser = null;
         List<User> list;
         for (String arg: args) {
             matcher = ARG.matcher(arg);
@@ -57,19 +56,15 @@ public class Prune extends Command {
                         for (User user: event.getMessage().getMentionedUsers())
                             users.add(user.getId());
                         for (String s: arg.trim().split(",")) {
+                            s = s.trim();
                             mentionFinder = USER_MENTION.matcher(s);
                             idFinder = ID.matcher(s);
-                            if (mentionFinder.find()) {
-                                continue;
+                            if (!mentionFinder.find()) {
+                                if (idFinder.find())
+                                    users.add(s);
+                                else event.getGuild().retrieveMembersByPrefix(s, 1)
+                                        .onSuccess(l -> users.add(l.get(0).getId()));
                             }
-                            list = event.getJDA().getUsersByName(s.trim(), false);
-                            if (!list.isEmpty()) users.add(list.get(0).getId());
-                            else if (idFinder.find()) {
-                                try {
-                                    idUser = event.getJDA().getUserById(s.trim());
-                                } catch (NumberFormatException e) {}
-                            }
-                            if (idUser != null) users.add(s.trim());
                         }
                         break;
                     default:
@@ -106,7 +101,7 @@ public class Prune extends Command {
             for (Message message : h.getRetrievedHistory()) {
                 User author = message.getAuthor();
                 if ((bots && message.getAuthor().isBot())
-                        || (users.contains(author))
+                        || (users.contains(author.getId()))
                         || (!bots && users.isEmpty())) {
                     messages.add(message);
                     amountDeleted++;

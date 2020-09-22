@@ -67,8 +67,8 @@ public class Ban extends Command {
                     });
                 } else {
                     final Matcher finalIdFinder = idFinder;
-                    final String arg = s.trim();
-                    guild.retrieveMembersByPrefix(s.trim(), 1).onSuccess(l -> {
+                    final String arg = s;
+                    guild.retrieveMembersByPrefix(s, 1).onSuccess(l -> {
                         if (l.isEmpty() && finalIdFinder.find())
                             guild.retrieveMemberById(arg, true).queue(m -> {
                                 if (m != null) {
