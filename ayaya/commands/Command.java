@@ -30,6 +30,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     protected static final Pattern ARG = Pattern.compile("(?:([^\\p{Blank}])+([\\p{Blank}])?)");
     protected static final Pattern WORD = Pattern.compile("(?:([^\\p{Blank}\\p{Digit}])+([\\p{Blank}])?)");
     protected static final Pattern ID = Pattern.compile("([\\p{Digit}])++");
+    protected static final Pattern ANY_ID = Pattern.compile("([\\p{Digit}])+");
     protected static final Pattern USER_MENTION = Pattern.compile("(<@!?([\\p{Digit}])+>){1}+");
     protected static final Pattern CHANNEL_MENTION = Pattern.compile("(<@#([\\p{Digit}])+>){1}+");
     protected static final Pattern ROLE_MENTION = Pattern.compile("(<@&([\\p{Digit}])+>){1}+");

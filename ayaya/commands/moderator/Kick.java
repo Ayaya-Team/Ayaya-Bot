@@ -4,10 +4,8 @@ import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.entities.*;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -16,12 +14,6 @@ import java.util.regex.Matcher;
  * Class of the kick command.
  */
 public class Kick extends Command {
-
-    private Member member;
-    private int amountKicked;
-    private boolean apiError;
-    private boolean lackingPerms;
-    private boolean notFound;
 
     public Kick() {
 
@@ -40,91 +32,41 @@ public class Kick extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        amountKicked = 0;
-        apiError = false;
-        lackingPerms = false;
-        notFound = false;
         String message = event.getArgs();
         Guild guild = event.getGuild();
         Member author = event.getMember();
         if (!message.isEmpty()) {
+            Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(message);
+            Matcher idFinder;
+            while (mentionFinder.find()) {
+                idFinder = ANY_ID.matcher(mentionFinder.group());
+                idFinder.find();
+                guild.retrieveMemberById(idFinder.group()).queue(m -> {
+                    if (m != null)
+                        kick(author, event.getSelfMember(), m, guild);
+                }, t -> {});
+            }
             String[] input = message.split(",");
-            Matcher mentionFinder, idFinder;
-            for (String s: input) {
-                member = null;
+            for (String s : input) {
                 s = s.trim();
                 mentionFinder = USER_MENTION.matcher(s);
-                idFinder = ID.matcher(s);
-                if (mentionFinder.find() && idFinder.find()) {
-                    guild.retrieveMemberById(idFinder.group(), true)
-                            .queue(m -> member = m, e -> apiError = true);
-                } else {
-                    final Matcher finalIdFinder = idFinder;
+                if (!mentionFinder.find()) {
                     final String arg = s;
                     guild.retrieveMembersByPrefix(s, 1).onSuccess(l -> {
-                        if (l.isEmpty() && finalIdFinder.find())
-                            guild.retrieveMemberById(arg, true)
-                                    .queue(m -> member = m, e -> apiError = true);
-                        else
-                            member = l.get(0);
-                    }).onError(e -> apiError = true);
+                        if (l.isEmpty()) {
+                            guild.retrieveMemberById(arg, true).queue(m -> {
+                                if (m != null)
+                                    kick(author, event.getSelfMember(), m, guild);
+                            }, t -> {});
+                        } else
+                            kick(author, event.getSelfMember(), l.get(0), guild);
+                    }).onError(t -> {});
                 }
-                if (member != null)
-                    kick(author, event.getSelfMember(), member, guild);
-                else
-                    notFound = true;
             }
+            event.replySuccess("I attempted to kick all the members mentioned.");
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to kick? You didn't tell me yet.");
-            return;
         }
-        switch (amountKicked) {
-            case 0:
-                if (apiError)
-                    event.replyError(
-                            "There was an issue with the Discord API or my Internet connection" +
-                                    " so I could not finish your request."
-                    );
-                else if (lackingPerms)
-                    event.replyError(
-                            "Due to lack of permissions I couldn't kick any of the people you mentioned." +
-                                    " If you wanted to kick yourself, you can't do that," +
-                                    " but you can leave the server."
-                    );
-                else
-                    event.replyError(
-                            "I'm sorry, but I can't find anyone with that name, mention or id."
-                    );
-                break;
-            case 1:
-                String answer = "<:KawaiiThumbup:361601400079253515> 1 member was kicked." +
-                        " No more actions are needed now.";
-                if (apiError)
-                    answer += " Couldn't kick all the people mentioned due to" +
-                            " an issue with the Discord API or my Internet connection";
-                else if (lackingPerms)
-                    answer += " Couldn't kick all the people mentioned due to lack of permissions.";
-                else if (notFound)
-                    answer +=
-                            " Couldn't kick all the people mentioned" +
-                                    " because I did not find any of them.";
-                event.reply(answer);
-                break;
-            default:
-                answer = "<:KawaiiThumbup:361601400079253515> "
-                        + amountKicked + " members were kicked. No more actions are needed now.";
-                if (apiError)
-                    answer += " Couldn't ban all the people mentioned due to" +
-                            " an issue with the Discord API or my Internet connection";
-                else if (lackingPerms)
-                    answer += " Couldn't kick all the people mentioned due to lack of permissions.";
-                else if (notFound)
-                    answer +=
-                            " Couldn't kick all the people mentioned" +
-                                    " because I did not find any of them.";
-                event.reply(answer);
-        }
-
     }
 
     private void kick(Member author, Member self, Member member, Guild guild) {
@@ -147,14 +89,9 @@ public class Kick extends Command {
                         && !member.equals(author)
                         && !member.equals(self)
         ) {
-            try {
-                guild.kick(member,"Ban requested by " + author.getEffectiveName() + ".")
-                        .queue(s -> {}, e -> apiError = true);
-                amountKicked++;
-            } catch (ErrorResponseException e) {
-                notFound = true;
-            }
-        } else lackingPerms = true;
+            guild.kick(member,"Kick requested by " + author.getEffectiveName() + ".")
+                    .queue(s -> {}, t -> {});
+        }
     }
 
 }

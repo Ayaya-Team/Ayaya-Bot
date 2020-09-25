@@ -46,6 +46,7 @@ public class Prune extends Command {
         Matcher matcher, mentionFinder, idFinder;
         List<User> list;
         for (String arg: args) {
+            arg = arg.trim();
             matcher = ARG.matcher(arg);
             if (matcher.find())
                 switch (matcher.group().trim().toLowerCase()) {
@@ -53,8 +54,12 @@ public class Prune extends Command {
                         pruneBots = true;
                         break;
                     case "users":
-                        for (User user: event.getMessage().getMentionedUsers())
-                            users.add(user.getId());
+                        mentionFinder = Message.MentionType.USER.getPattern().matcher(arg);
+                        while (mentionFinder.find()) {
+                            idFinder = ANY_ID.matcher(mentionFinder.group());
+                            idFinder.find();
+                            users.add(idFinder.group());
+                        }
                         for (String s: arg.trim().split(",")) {
                             s = s.trim();
                             mentionFinder = USER_MENTION.matcher(s);
@@ -110,7 +115,8 @@ public class Prune extends Command {
 
             try {
                 ((TextChannel) channel).deleteMessages(messages).queue();
-                event.reply("<:KawaiiThumbup:361601400079253515> " + amountDeleted + " messages pruned with success.",
+                event.reply("<:KawaiiThumbup:361601400079253515> "
+                                + amountDeleted + " messages pruned with success.",
                         msg -> {
                             try {
                                 TimeUnit.SECONDS.sleep(5);
@@ -122,10 +128,14 @@ public class Prune extends Command {
                         });
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
-                event.replyError("Sadly I could not delete some or all of the messages because they are way too old.");
+                event.replyError(
+                        "Sadly I could not delete some or all of the messages because they are way too old."
+                );
             } catch (ErrorResponseException e) {
                 e.printStackTrace();
-                event.replyError("Sadly I could not delete some or all of the messages because they don't exist anymore.");
+                event.replyError(
+                        "Sadly I could not delete some or all of the messages because they don't exist anymore."
+                );
             }
         });
 

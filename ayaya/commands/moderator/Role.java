@@ -7,6 +7,7 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.managers.RoleManager;
 import net.dv8tion.jda.api.requests.restaction.RoleAction;
@@ -406,37 +407,11 @@ public class Role extends Command {
         }
 
         Guild guild = event.getGuild();
-        List<Member> memberList;
-        List<Member> members = new ArrayList<>(20);
-        members.addAll(event.getMessage().getMentionedMembers(guild));
+        Member author = event.getMember();
         List<net.dv8tion.jda.api.entities.Role> roles;
         List<net.dv8tion.jda.api.entities.Role> rolesToAdd = new ArrayList<>(20);
         List<net.dv8tion.jda.api.entities.Role> rolesToRemove = new ArrayList<>(20);
         Matcher mentionFinder, idFinder;
-
-        Member memberToAdd = null;
-        for (String s: users.split(",")) {
-            s = s.trim();
-            mentionFinder = USER_MENTION.matcher(s);
-            idFinder = ID.matcher(s);
-            if (mentionFinder.find()) {
-                continue;
-            }
-            memberList = guild.getMembersByEffectiveName(s, false);
-            if (memberList.isEmpty()) guild.getMembersByName(s, false);
-            if (!memberList.isEmpty()) members.add(memberList.get(0));
-            else if (idFinder.find()) {
-                try {
-                    memberToAdd = guild.getMemberById(s);
-                } catch (NumberFormatException e) {}
-            }
-            if (memberToAdd != null) members.add(memberToAdd);
-        }
-
-        if (members.isEmpty()) {
-            event.replyError("I couldn't find any of the members you mentioned in the server.");
-            return;
-        }
 
         String rolesToAddInput[] = toAdd.split(",");
         String rolesToRemoveInput[] = toRemove.split(",");
@@ -451,7 +426,7 @@ public class Role extends Command {
             } else {
                 role = guild.getRoleById(s);
             }
-            if (role != null && ableToManageRole(role, event.getMember(), event.getSelfMember()) == 0) {
+            if (role != null && ableToManageRole(role, author, event.getSelfMember()) == 0) {
                 rolesToAdd.add(role);
             }
         }
@@ -464,7 +439,7 @@ public class Role extends Command {
             } else {
                 role = guild.getRoleById(s);
             }
-            if (role != null && ableToManageRole(role, event.getMember(), event.getSelfMember()) == 0) {
+            if (role != null && ableToManageRole(role, author, event.getSelfMember()) == 0) {
                 rolesToRemove.add(role);
             }
         }
@@ -477,42 +452,49 @@ public class Role extends Command {
             return;
         }
 
-        //for (String s: users.split(",")) {}
-
-        for (Member member: members) {
-            manageRolesForUser(member, event.getMember(), guild, rolesToAdd, rolesToRemove);
+        Member member;
+        mentionFinder = Message.MentionType.USER.getPattern().matcher(users);
+        while (mentionFinder.find()) {
+            idFinder = ANY_ID.matcher(mentionFinder.group());
+            idFinder.find();
+            final String id = idFinder.group();
+            guild.retrieveMemberById(id).queue(m -> {
+                if (m != null)
+                    manageRolesForUser(m, author, guild, rolesToAdd, rolesToRemove);
+            });
+        }
+        for (String s: users.split(",")) {
+            s = s.trim();
+            mentionFinder = USER_MENTION.matcher(s);
+            if (!mentionFinder.find()) {
+                final String arg = s;
+                guild.retrieveMembersByPrefix(s, 1).onSuccess(l -> {
+                    if (l.isEmpty()) {
+                        guild.retrieveMemberById(arg, true).queue(m -> {
+                            if (m != null)
+                                manageRolesForUser(m, author, guild, rolesToAdd, rolesToRemove);
+                        }, t -> {});
+                    } else
+                        manageRolesForUser(l.get(0), author, guild, rolesToAdd, rolesToRemove);
+                }).onError(t -> {});
+            }
         }
 
-        StringBuilder answer = new StringBuilder();
+        StringBuilder answer = new StringBuilder().append("I ");
         if (!rolesToAdd.isEmpty())
-            answer.append(rolesToAdd.size()).append(" roles added ");
-        if (!rolesToRemove.isEmpty())
-            answer.append(rolesToRemove.size()).append(" roles removed ");
-        answer.append("to ").append(members.size()).append(" members.");
+            answer.append("added ").append(rolesToAdd.size()).append(" roles");
+        if (!rolesToRemove.isEmpty()) {
+            if (!rolesToAdd.isEmpty())
+                answer.append(" and ");
+            answer.append("removed ").append(rolesToRemove.size()).append(" roles from ");
+        } else
+            answer.append(" to ");
+        answer.append("all the members mentioned I could find.");
         if (rolesToAdd.size() < rolesToAddInput.length && rolesToRemove.size() < rolesToRemoveInput.length)
-            answer.append(" Couldn't add/remove all the roles due to me or you having a lack of permissions.");
+            answer.append(" Couldn't add/remove all the roles due to me or you having a lack of permissions" +
+                    " or the roles not existing.");
         event.replySuccess(answer.toString());
 
-    }
-
-    private void manageRolesForUser(
-            Member member, Member author, Guild guild,
-            List<net.dv8tion.jda.api.entities.Role> rolesToAdd,
-            List<net.dv8tion.jda.api.entities.Role> rolesToRemove
-    )
-    {
-        for (net.dv8tion.jda.api.entities.Role roleToAdd: rolesToAdd) {
-            guild.addRoleToMember(member, roleToAdd)
-                    .reason("Role assignment to user requested by "
-                            + author.getEffectiveName() + ".")
-                    .queue();
-        }
-        for (net.dv8tion.jda.api.entities.Role roleToRemove: rolesToRemove) {
-            guild.removeRoleFromMember(member, roleToRemove)
-                    .reason("Role unassignment from user requested by "
-                            + author.getEffectiveName() + ".")
-                    .queue();
-        }
     }
 
     /**
@@ -539,6 +521,26 @@ public class Role extends Command {
             return -1;
         }
         return 1;
+    }
+
+    private void manageRolesForUser(
+            Member member, Member author, Guild guild,
+            List<net.dv8tion.jda.api.entities.Role> rolesToAdd,
+            List<net.dv8tion.jda.api.entities.Role> rolesToRemove
+    )
+    {
+        for (net.dv8tion.jda.api.entities.Role roleToAdd: rolesToAdd) {
+            guild.addRoleToMember(member, roleToAdd)
+                    .reason("Role assignment to user requested by "
+                            + author.getEffectiveName() + ".")
+                    .queue();
+        }
+        for (net.dv8tion.jda.api.entities.Role roleToRemove: rolesToRemove) {
+            guild.removeRoleFromMember(member, roleToRemove)
+                    .reason("Role unassignment from user requested by "
+                            + author.getEffectiveName() + ".")
+                    .queue();
+        }
     }
 
     /**
