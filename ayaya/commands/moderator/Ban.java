@@ -47,7 +47,7 @@ public class Ban extends Command {
                         ban(author, id, guild);
                     else
                         ban(author, event.getSelfMember(), m, guild);
-                }, t -> {});
+                }, t -> ban(author, id, guild));
             }
             String[] input = message.split(",");
             for (String s: input) {
@@ -62,7 +62,7 @@ public class Ban extends Command {
                                    ban(author, arg, guild);
                                else
                                    ban(author, event.getSelfMember(), m, guild);
-                           }, t -> {});
+                           }, t -> ban(author, arg, guild));
                        } else
                            ban(author, event.getSelfMember(), l.get(0), guild);
                     }).onError(t -> {});
