@@ -21,9 +21,8 @@ public class Unmute extends Command {
         this.help = "This is the command you can use to unmute someone who is currently muted.";
         this.arguments = "{prefix}unmute <@user or name>" +
                 "\n\nYou can mention more than one person or put more than one name/nickname/id in your command." +
-                " Altough, separate all names/nicknames/ids/mentions with a comma.";
-                //" Altough, separate all names/nicknames/ids with a comma" +
-                //" and separate them from the mentions also with a comma.";
+                " Altough, separate all names/nicknames/ids and separate them from the mentions with a comma." +
+                " The mentions don't need to be separated between themselves.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.MANAGE_ROLES};

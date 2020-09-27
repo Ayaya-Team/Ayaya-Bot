@@ -23,7 +23,8 @@ public class Mute extends Command {
                 " Make sure you have set a mute role with the name `muted` before using this command.";
         this.arguments = "{prefix}mute <@user, name/nickname or id>" +
                 "\n\nYou can mention more than one person or put more than one name/nickname/id in your command." +
-                " Altough, separate all names/nicknames/ids/mentions with a comma.";
+                " Altough, separate all names/nicknames/ids and separate them from the mentions with a comma." +
+                " The mentions don't need to be separated between themselves.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.MANAGE_ROLES};

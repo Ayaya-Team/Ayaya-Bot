@@ -21,7 +21,8 @@ public class Kick extends Command {
         this.help = "Is someone doing bad things in your server without permission? Then why not kicking them?";
         this.arguments = "{prefix}kick <mention, name/nickname or id>" +
                 "\n\nYou can mention more than one person or put more than one name/nickname/id in your command." +
-                " Altough, separate all names/nicknames/ids/mentions with a comma.";
+                " Altough, separate all names/nicknames/ids and separate them from the mentions with a comma." +
+                " The mentions don't need to be separated between themselves.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.KICK_MEMBERS};

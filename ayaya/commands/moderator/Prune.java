@@ -44,7 +44,8 @@ public class Prune extends Command {
         boolean pruneBots = false;
 
         Matcher matcher, mentionFinder, idFinder;
-        List<User> list;
+        List<User> userList;
+        List<Member> memberList;
         for (String arg: args) {
             arg = arg.trim();
             matcher = ARG.matcher(arg);
@@ -67,8 +68,13 @@ public class Prune extends Command {
                             if (!mentionFinder.find()) {
                                 if (idFinder.find())
                                     users.add(s);
-                                else event.getGuild().retrieveMembersByPrefix(s, 1)
-                                        .onSuccess(l -> users.add(l.get(0).getId()));
+                                else {
+                                    userList = event.getJDA().getUsersByName(s, false);
+                                    if (userList.isEmpty()) {
+                                        memberList = guild.getMembersByEffectiveName(s, false);
+                                        if (!memberList.isEmpty()) users.add(memberList.get(0).getId());
+                                    } else users.add(userList.get(0).getId());
+                                }
                             }
                         }
                         break;

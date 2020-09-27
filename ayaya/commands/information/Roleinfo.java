@@ -56,31 +56,30 @@ public class Roleinfo extends Command {
                 perms_list.append(", `").append(permission.getName()).append("`");
             }
             String permissions = perms_list.toString().replaceFirst(", ", "");
-            roleinfo_embed.setTitle(role.getName());
-            roleinfo_embed.addField("ID", role.getId(), true);
+            roleinfo_embed.setTitle(role.getName())
+                    .addField("ID", role.getId(), true);
             if (role.getColor() == null) {
                 roleinfo_embed.addField("Color", "None", true);
             } else {
                 roleinfo_embed.addField(
                         "Color", "#" + Integer.toHexString(role.getColor().getRGB() & 0xffffff),
                         true
-                );
-                roleinfo_embed.setColor(role.getColor());
+                )
+                        .setColor(role.getColor());
             }
-            roleinfo_embed.addField("Members", String.valueOf(event.getGuild().getMembersWithRoles(role).size()), true);
-            roleinfo_embed.addField("Displayed Separately", hoist, true);
-            roleinfo_embed.addField("Is Bot Role", managed, true);
-            roleinfo_embed.addField("Mentionable", mentionable, true);
-            roleinfo_embed.addField(
-                    "Created on",
-                    String.format("%s, %02d/%02d/%02d at %02d:%02d:%02d",
-                            creation_week_day, creationTime.getDayOfMonth(), creationTime.getMonthValue(),
-                            creationTime.getYear(), creationTime.getHour(), creationTime.getMinute(),
-                            creationTime.getSecond()),
-                    false
-            );
-            roleinfo_embed.addField("Permissions", permissions, false);
-            roleinfo_embed.setFooter("Requested by " + event.getAuthor().getName(), null);
+            roleinfo_embed.addField("Is Bot Role", managed, true)
+                    .addField("Displayed Separately", hoist, true)
+                    .addField("Mentionable", mentionable, true)
+                    .addField(
+                            "Created on",
+                            String.format("%s, %02d/%02d/%02d at %02d:%02d:%02d",
+                                    creation_week_day, creationTime.getDayOfMonth(), creationTime.getMonthValue(),
+                                    creationTime.getYear(), creationTime.getHour(), creationTime.getMinute(),
+                                    creationTime.getSecond()),
+                            false
+                    )
+                    .addField("Permissions", permissions, false)
+                    .setFooter("Requested by " + event.getAuthor().getName(), null);
             event.reply(roleinfo_embed.build());
         } else {
             event.reply(":x: Tell me the role you want the info from!");

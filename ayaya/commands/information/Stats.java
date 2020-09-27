@@ -2,23 +2,20 @@ package ayaya.commands.information;
 
 import ayaya.commands.Command;
 import ayaya.core.enums.Commands;
-import ayaya.core.utils.SQLController;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
+import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.commons.JDAUtilitiesInfo;
 import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 
 import java.awt.*;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 /**
  * Class of the stats command.
@@ -54,24 +51,6 @@ public class Stats extends Command {
         com.jagrosh.jdautilities.command.CommandListener listener = event.getClient().getListener();
         if (listener instanceof CommandListener)
             cListener = (CommandListener) listener;
-        List<Guild> guilds = event.getJDA().getGuilds();
-        List<Member> members;
-        int user_count = 0;
-        int serversWith10 = 0;
-        int serversWith50 = 0;
-        int serversWith100 = 0;
-        int serversWith200 = 0;
-        for (Guild g: guilds) {
-            members = g.getMembers();
-            for (Member m: members) {
-                if (!m.getUser().isBot()) user_count++;
-            }
-            if (user_count >= 10) serversWith10++;
-            if (user_count >= 50) serversWith50++;
-            if (user_count >= 100) serversWith100++;
-            if (user_count >= 200) serversWith200++;
-            user_count = 0;
-        }
         EmbedBuilder stats_embed = new EmbedBuilder()
                 .setAuthor("Statistics for this session:", null, event.getSelfUser().getAvatarUrl())
                 .addField(
@@ -85,12 +64,9 @@ public class Stats extends Command {
                 .addField(
                         "General Information",
                         String.format(
-                                "Total Servers: **%d**\nServers with 10+ members: **%d**\n" +
-                                        "Servers with 50+ members: **%d**\n" +
-                                        "Servers with 100+ members: **%d**\nServers with 200+ members: **%d**\n" +
-                                        "Total Text Channels: **%d**\nTotal Voice Channels: **%d**\n" +
+                                "Total Servers: **%d**\nTotal Text Channels: **%d**\nTotal Voice Channels: **%d**\n" +
                                         "Uptime: %s",
-                                guilds.size(), serversWith10, serversWith50, serversWith100, serversWith200,
+                                event.getJDA().getGuilds().size(),
                                 event.getJDA().getTextChannels().size(), event.getJDA().getVoiceChannels().size(),
                                 "**" + String.valueOf(uptime.getDayOfYear() - 1) + "** days, **" + uptime.getHour() +
                                         "** hours, **" + uptime.getMinute() + "** minutes and **" + uptime.getSecond()

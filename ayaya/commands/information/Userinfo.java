@@ -5,7 +5,6 @@ import ayaya.core.utils.TimeUtils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -14,7 +13,6 @@ import java.time.OffsetDateTime;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import static ayaya.core.enums.CommandCategories.INFORMATION;
 
@@ -61,54 +59,10 @@ public class Userinfo extends Command {
             mentioned_user = user;
             member = event.getMember();
         }
-        String status = member.getOnlineStatus().name();
-        status = status.substring(0, 1) + status.substring(1).toLowerCase().replace('_', ' ');
         OffsetDateTime joinTime = member.getTimeJoined();
         String join_week_day = joinTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         OffsetDateTime creationTime = mentioned_user.getTimeCreated();
         String create_week_day = creationTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        StringBuilder activity = new StringBuilder();
-        List<Activity> activities = member.getActivities();
-        for (Activity a : activities) {
-            switch (a.getType()) {
-                case CUSTOM_STATUS:
-                    activity.append("**Custom Status:** ");
-                    Activity.Emoji emoji = a.getEmoji();
-                    if (emoji != null && !emoji.isEmote())
-                        activity.append(emoji.getAsMention()).append(' ');
-                    activity.append(a.getName());
-                    break;
-                case WATCHING:
-                    activity.append("**Watching:** ");
-                    if (a.isRich())
-                        activity.append(Objects.requireNonNull(a.asRichPresence()).getState());
-                    else
-                        activity.append(a.getName());
-                    break;
-                case LISTENING:
-                    activity.append("**Listening:** ");
-                    if (a.isRich())
-                        activity.append(Objects.requireNonNull(a.asRichPresence()).getDetails())
-                                .append(" by ").append(Objects.requireNonNull(a.asRichPresence()).getState());
-                    else
-                        activity.append(a.getName());
-                    break;
-                case STREAMING:
-                    activity.append("**Streaming: **");
-                    if (a.isRich())
-                        activity.append(Objects.requireNonNull(a.asRichPresence()).getDetails());
-                    else
-                        activity.append(a.getName());
-                    break;
-                case DEFAULT:
-                    activity.append("**Playing: **").append(a.getName());
-                    break;
-                default:
-                    activity.append("**Other: **").append(a.getName());
-            }
-            activity.append('\n');
-
-        }
         String roles;
         StringBuilder role_list = new StringBuilder();
         for (int i = 0; i < member.getRoles().size(); i++) {
@@ -125,12 +79,6 @@ public class Userinfo extends Command {
         );
         if (member.getNickname() != null) userinfo_embed.addField("Nickname", member.getNickname(), true);
         else userinfo_embed.addField("Nickname", "None", true);
-        userinfo_embed.addField("Status", status, true);
-        if (activities.isEmpty()) {
-            userinfo_embed.addField("Activity", "None", false);
-        } else {
-            userinfo_embed.addField("Activity", activity.toString(), false);
-        }
         userinfo_embed.addField("Joined on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         join_week_day, joinTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),

@@ -72,9 +72,6 @@ public class Channelinfo extends Command {
             TextChannel textChannel = (TextChannel) channel;
             String nsfw = "No";
             if (textChannel.isNSFW()) nsfw = "Yes";
-            int members_who_can_read = 0;
-            for (Member member : channel.getGuild().getMembers())
-                if (member.hasPermission(channel, Permission.MESSAGE_READ)) members_who_can_read++;
             String topic = textChannel.getTopic();
             if (topic == null) topic = "None";
             channelinfo_embed.setDescription("**Topic**: " + topic);
@@ -82,21 +79,15 @@ public class Channelinfo extends Command {
             channelinfo_embed.addField("Channel ID", channel.getId(), true);
             channelinfo_embed.addField("Type", type, true);
             channelinfo_embed.addField("Category", categoryName, true);
-            channelinfo_embed.addField("Viewable", "by " + members_who_can_read + " members", true);
             channelinfo_embed.addField("NSFW", nsfw, true);
         } else {
             VoiceChannel voiceChannel = (VoiceChannel) channel;
             int bitrate = voiceChannel.getBitrate() / 1000;
-            int connected_users = 0;
-            for (Member member : event.getGuild().getMembers())
-                if (member.getVoiceState() != null && member.getVoiceState().getChannel() == voiceChannel)
-                    connected_users++;
             channelinfo_embed.addField("Channel ID", channel.getId(), true);
             channelinfo_embed.addField("Type", type, true);
             channelinfo_embed.addField("Category", categoryName, true);
             channelinfo_embed.addField("Bitrate", bitrate + " kbps", true);
             channelinfo_embed.addField("User Limit", String.valueOf(voiceChannel.getUserLimit()), true);
-            channelinfo_embed.addField("Being used", "by " + connected_users + " users", true);
         }
         channelinfo_embed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",

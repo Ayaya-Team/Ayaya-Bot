@@ -70,10 +70,10 @@ public class EventListener extends ListenerAdapter {
         Objects.requireNonNull(jda.getTextChannelById(console))
                 .sendMessage(
                         String.format(
-                                "I awoke on `%02d/%02d/%d` at `%02d:%02d:%02d` and I'm now working in %d guilds with a total of %d users.",
+                                "I awoke on `%02d/%02d/%d` at `%02d:%02d:%02d` and I'm now working in %d guilds.",
                                 start_time.getDayOfMonth(), start_time.getMonth().getValue(), start_time.getYear(),
                                 start_time.getHour(), start_time.getMinute(), start_time.getSecond(),
-                                jda.getGuilds().size(), jda.getUsers().size())
+                                jda.getGuilds().size())
                 ).queue();
 
     }
