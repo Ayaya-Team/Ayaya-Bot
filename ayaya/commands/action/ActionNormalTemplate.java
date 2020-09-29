@@ -96,7 +96,9 @@ public class ActionNormalTemplate extends ActionBasicTemplate {
             idFinder = ANY_ID.matcher(mentionFinder.group());
             idFinder.find();
             event.getJDA().retrieveUserById(idFinder.group(), true).queue(mentioned -> {
-                if (mentioned == event.getSelfUser()) {
+                if (mentioned == null)
+                    event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                else if (mentioned == event.getSelfUser()) {
                     if (ayayaDescription != null && !ayayaDescription.isEmpty())
                         event.reply(ayayaDescription);
                     return;
@@ -113,7 +115,7 @@ public class ActionNormalTemplate extends ActionBasicTemplate {
                         embed.setFooter(String.format(footer, author.getName()), null);
                 }
                 prepareEmbedAndSend(embed, event.getPrivateChannel());
-            });
+            }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
         } else {
             if (selfDescription != null && !selfDescription.isEmpty())
                 embed.setDescription(String.format(selfDescription, author.getName()));
