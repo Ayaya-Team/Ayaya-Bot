@@ -5,7 +5,6 @@ import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
@@ -41,24 +40,25 @@ public class ActionBasicTemplate extends GuildDMSCommand {
     @Override
     protected void executeInGuild(CommandEvent event) {
 
-        Member author = event.getMember();
-        EmbedBuilder embed = new EmbedBuilder();
-        if (description != null && !description.isEmpty())
-            embed.setDescription(String.format(description, author.getEffectiveName()));
-        if (footer != null && !footer.isEmpty())
-            embed.setFooter(String.format(footer, author.getEffectiveName()), null);
-        try {
-            embed.setColor(event.getGuild().getSelfMember().getColor());
-        } catch (IllegalStateException | NullPointerException e) {
-            embed.setColor(Color.decode("#155FA0"));
-        }
-        String url = getRandomGif();
-        if (url.equals(NULL)) {
-            event.reply("There was a problem while connecting with the database. If this persists then try again later.");
-            return;
-        }
-        embed.setImage(url);
-        event.reply(embed.build());
+        event.getGuild().retrieveMember(event.getAuthor()).queue(author -> {
+            EmbedBuilder embed = new EmbedBuilder();
+            if (description != null && !description.isEmpty())
+                embed.setDescription(String.format(description, author.getEffectiveName()));
+            if (footer != null && !footer.isEmpty())
+                embed.setFooter(String.format(footer, author.getEffectiveName()), null);
+            try {
+                embed.setColor(event.getGuild().getSelfMember().getColor());
+            } catch (IllegalStateException | NullPointerException e) {
+                embed.setColor(Color.decode("#155FA0"));
+            }
+            String url = getRandomGif();
+            if (url.equals(NULL)) {
+                event.reply("There was a problem while connecting with the database. If this persists then try again later.");
+                return;
+            }
+            embed.setImage(url);
+            event.reply(embed.build());
+        });
 
     }
 

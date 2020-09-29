@@ -5,23 +5,23 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 
 import java.awt.*;
-import java.util.List;
+import java.util.regex.Matcher;
 
 /**
  * Template based on the ActionCompleteTemplate but with less customization options.
  */
 public class ActionNormalTemplate extends ActionBasicTemplate {
 
-    protected String self_description, self_footer, ayaya_description;
+    protected String selfDescription, selfFooter, ayayaDescription;
 
     public ActionNormalTemplate(String name, String help, String arguments, String[] aliases, String description,
                                   String footer, String self_description, String self_footer, String ayaya_description)
     {
 
         super(name, help, arguments, aliases, description, footer);
-        this.self_description = self_description;
-        this.self_footer = self_footer;
-        this.ayaya_description = ayaya_description;
+        this.selfDescription = self_description;
+        this.selfFooter = self_footer;
+        this.ayayaDescription = ayaya_description;
 
     }
 
@@ -29,92 +29,112 @@ public class ActionNormalTemplate extends ActionBasicTemplate {
     protected void executeInGuild(CommandEvent event) {
 
         Guild guild = event.getGuild();
-        Member author = event.getMember();
-        Member mentioned;
-        List<IMentionable> mentions = event.getMessage().getMentions(Message.MentionType.USER);
-        EmbedBuilder embed = new EmbedBuilder();
-        if (!mentions.isEmpty()) {
-            mentioned = guild.retrieveMemberById(mentions.get(0).getId()).complete();
-            if (mentioned == null)
-                event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
-            else if (mentioned == event.getSelfMember()) {
-                if (ayaya_description != null && !ayaya_description.isEmpty())
-                    event.reply(ayaya_description);
-                return;
-            } else if (mentioned == author) {
-                if (self_description != null && !self_description.isEmpty())
-                    embed.setDescription(String.format(self_description, author.getEffectiveName()));
-                if (self_footer != null && !self_footer.isEmpty())
-                    embed.setFooter(String.format(self_footer, author.getEffectiveName()), null);
+        guild.retrieveMember(event.getAuthor()).queue(author -> {
+            Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+            Matcher idFinder;
+            EmbedBuilder embed = new EmbedBuilder();
+            if (mentionFinder.find()) {
+                idFinder = ANY_ID.matcher(mentionFinder.group());
+                idFinder.find();
+                guild.retrieveMemberById(idFinder.group()).queue(mentioned -> {
+                    if (mentioned == null)
+                        event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                    else if (mentioned == event.getSelfMember()) {
+                        if (ayayaDescription != null && !ayayaDescription.isEmpty())
+                            event.reply(ayayaDescription);
+                        return;
+                    } else if (mentioned == author) {
+                        if (selfDescription != null && !selfDescription.isEmpty())
+                            embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
+                        if (selfFooter != null && !selfFooter.isEmpty())
+                            embed.setFooter(String.format(selfFooter, author.getEffectiveName()), null);
+                    } else {
+                        if (description != null && !description.isEmpty())
+                            embed.setDescription(String.format(description, author.getEffectiveName(),
+                                    mentioned.getEffectiveName()));
+                        if (footer != null && !footer.isEmpty())
+                            embed.setFooter(String.format(footer, mentioned.getEffectiveName()), null);
+                    }
+                    prepareEmbedAndSend(embed, event.getTextChannel());
+                }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
             } else {
-                if (description != null && !description.isEmpty())
-                    embed.setDescription(String.format(description, author.getEffectiveName(),
-                            mentioned.getEffectiveName()));
-                if (footer != null && !footer.isEmpty())
-                    embed.setFooter(String.format(footer, mentioned.getEffectiveName()), null);
+                if (selfDescription != null && !selfDescription.isEmpty())
+                    embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
+                if (selfFooter != null && !selfFooter.isEmpty())
+                    embed.setFooter(String.format(selfFooter, author.getEffectiveName()), null);
+                prepareEmbedAndSend(embed, event.getTextChannel());
             }
-        } else {
-            if (self_description != null && !self_description.isEmpty())
-                embed.setDescription(String.format(self_description, author.getEffectiveName()));
-            if (self_footer != null && !self_footer.isEmpty())
-                embed.setFooter(String.format(self_footer, author.getEffectiveName()), null);
-        }
+        }, t -> {});
+
+    }
+
+    private void prepareEmbedAndSend(EmbedBuilder embed, TextChannel channel) {
         try {
-            embed.setColor(guild.getSelfMember().getColor());
+            embed.setColor(channel.getGuild().getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
             embed.setColor(Color.decode("#155FA0"));
         }
         String url = getRandomGif();
         if (url.equals(NULL)) {
-            event.reply("There was a problem while connecting with the database. If this persists then try again later.");
+            channel.sendMessage(
+                    "There was a problem while connecting with the database. If this persists then try again later."
+            ).queue();
             return;
         }
         embed.setImage(url);
-        event.reply(embed.build());
-
+        channel.sendMessage(embed.build()).queue();
     }
-
 
     @Override
     protected void executeInDMS(CommandEvent event) {
 
         User author = event.getAuthor();
-        User mentioned;
-        List<User> users_list = event.getMessage().getMentionedUsers();
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+        Matcher idFinder;
         EmbedBuilder embed = new EmbedBuilder();
-        if (users_list.size() > 0) {
-            mentioned = users_list.get(0);
-            if (mentioned == event.getSelfUser()) {
-                if (ayaya_description != null && !ayaya_description.isEmpty())
-                    event.reply(ayaya_description);
-                return;
-            } else if (mentioned == author) {
-                if (self_description != null && !self_description.isEmpty())
-                    embed.setDescription(String.format(self_description, author.getName()));
-                if (self_footer != null && !self_footer.isEmpty())
-                    embed.setFooter(String.format(self_footer, author.getName()), null);
-            } else {
-                if (description != null && !description.isEmpty())
-                    embed.setDescription(String.format(description, author.getName(),
-                            mentioned.getName()));
-                if (footer != null && !footer.isEmpty())
-                    embed.setFooter(String.format(footer, author.getName()), null);
-            }
+        if (mentionFinder.find()) {
+            idFinder = ANY_ID.matcher(mentionFinder.group());
+            idFinder.find();
+            event.getJDA().retrieveUserById(idFinder.group(), true).queue(mentioned -> {
+                if (mentioned == event.getSelfUser()) {
+                    if (ayayaDescription != null && !ayayaDescription.isEmpty())
+                        event.reply(ayayaDescription);
+                    return;
+                } else if (mentioned == author) {
+                    if (selfDescription != null && !selfDescription.isEmpty())
+                        embed.setDescription(String.format(selfDescription, author.getName()));
+                    if (selfFooter != null && !selfFooter.isEmpty())
+                        embed.setFooter(String.format(selfFooter, author.getName()), null);
+                } else {
+                    if (description != null && !description.isEmpty())
+                        embed.setDescription(String.format(description, author.getName(),
+                                mentioned.getName()));
+                    if (footer != null && !footer.isEmpty())
+                        embed.setFooter(String.format(footer, author.getName()), null);
+                }
+                prepareEmbedAndSend(embed, event.getPrivateChannel());
+            });
         } else {
-            if (self_description != null && !self_description.isEmpty())
-                embed.setDescription(String.format(self_description, author.getName()));
-            if (self_footer != null && !self_footer.isEmpty())
-                embed.setFooter(String.format(self_footer, author.getName()), null);
+            if (selfDescription != null && !selfDescription.isEmpty())
+                embed.setDescription(String.format(selfDescription, author.getName()));
+            if (selfFooter != null && !selfFooter.isEmpty())
+                embed.setFooter(String.format(selfFooter, author.getName()), null);
+            prepareEmbedAndSend(embed, event.getPrivateChannel());
         }
+
+    }
+
+    private void prepareEmbedAndSend(EmbedBuilder embed, PrivateChannel channel) {
         embed.setColor(Color.decode("#155FA0"));
         String url = getRandomGif();
         if (url.equals(NULL)) {
-            event.reply("There was a problem while connecting with the database. If this persists then try again later.");
+            channel.sendMessage(
+                    "There was a problem while connecting with the database. If this persists then try again later."
+            ).queue();
             return;
         }
         embed.setImage(url);
-        event.reply(embed.build());
-
+        channel.sendMessage(embed.build()).queue();
     }
 
 }

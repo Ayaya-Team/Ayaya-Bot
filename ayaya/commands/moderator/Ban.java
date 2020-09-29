@@ -66,7 +66,7 @@ public class Ban extends Command {
                            }, t -> ban(author, arg, guild));
                        } else
                            ban(author, event.getSelfMember(), l.get(0), guild);
-                    }).onError(t -> {});
+                    }).onError(Throwable::printStackTrace);
                 }
             }
             event.replySuccess("I attempted to ban all the members mentioned.");

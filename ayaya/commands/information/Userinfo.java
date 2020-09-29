@@ -7,12 +7,13 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 
 import java.time.OffsetDateTime;
 import java.time.format.TextStyle;
-import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 
 import static ayaya.core.enums.CommandCategories.INFORMATION;
 
@@ -38,30 +39,43 @@ public class Userinfo extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String content = event.getArgs();
-        EmbedBuilder userinfo_embed = new EmbedBuilder();
         User user = event.getAuthor();
         User mentioned_user;
         Member member;
         Guild guild = event.getGuild();
-        if (event.getMessage().getMentionedMembers().size() > 0) {
-            mentioned_user = event.getMessage().getMentionedMembers().get(0).getUser();
-            member = event.getMessage().getMentionedMembers().get(0);
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(content);
+        Matcher idFinder;
+        if (mentionFinder.find()) {
+            idFinder = ANY_ID.matcher(mentionFinder.group());
+            idFinder.find();
+            guild.retrieveMemberById(idFinder.group(), true).queue(m -> showUserInfo(event, m));
         } else if (!content.isEmpty()) {
-            List<Member> members = guild.getMembersByEffectiveName(content, false);
-            if (members.isEmpty()) members = guild.getMembersByName(content, false);
-            if (members.isEmpty()) {
-                event.replyError("I'm sorry, but I can't find anyone with that name or mention.");
-                return;
-            }
-            member = members.get(0);
-            mentioned_user = member.getUser();
+            guild.retrieveMembersByPrefix(content, 1).onSuccess(l -> {
+                if (l.isEmpty())
+                    guild.retrieveMemberById(content, true).queue(m -> {
+                        if (m != null) showUserInfo(event, m);
+                    }, t -> {});
+                else
+                    showUserInfo(event, l.get(0));
+            });
         } else {
-            mentioned_user = user;
-            member = event.getMember();
+            guild.retrieveMember(user).queue(m -> {
+                showUserInfo(event, m, user);
+            }, t -> {});
         }
+
+    }
+
+    private void showUserInfo(CommandEvent event, Member member) {
+        showUserInfo(event, member, member.getUser());
+    }
+
+    private void showUserInfo(CommandEvent event, Member member, User user) {
+
+        EmbedBuilder userinfo_embed = new EmbedBuilder();
         OffsetDateTime joinTime = member.getTimeJoined();
         String join_week_day = joinTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        OffsetDateTime creationTime = mentioned_user.getTimeCreated();
+        OffsetDateTime creationTime = user.getTimeCreated();
         String create_week_day = creationTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         String roles;
         StringBuilder role_list = new StringBuilder();
@@ -72,13 +86,13 @@ public class Userinfo extends Command {
         if (role_list.length() > FIELD_LIMIT)
             roles = "It wasn't possible to list the roles of this user due to their amount being huge.";
         else roles = role_list.toString();
-        userinfo_embed.setAuthor(mentioned_user.getName() + "#" + mentioned_user.getDiscriminator(),
+        userinfo_embed.setAuthor(user.getName() + "#" + user.getDiscriminator(),
                 null);
         userinfo_embed.setDescription(
-                "**Mention**: " + mentioned_user.getAsMention() + "\n**User ID**: " + mentioned_user.getId()
+                "**Mention**: " + user.getAsMention() + "\n**User ID**: " + user.getId()
         );
-        if (member.getNickname() != null) userinfo_embed.addField("Nickname", member.getNickname(), true);
-        else userinfo_embed.addField("Nickname", "None", true);
+        if (member.getNickname() != null) userinfo_embed.addField("Nickname", member.getNickname(), false);
+        else userinfo_embed.addField("Nickname", "None", false);
         userinfo_embed.addField("Joined on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         join_week_day, joinTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
@@ -93,7 +107,7 @@ public class Userinfo extends Command {
                 false);
         if (!roles.isEmpty())
             userinfo_embed.addField("Roles", roles, false);
-        userinfo_embed.setThumbnail(mentioned_user.getAvatarUrl());
+        userinfo_embed.setThumbnail(user.getAvatarUrl());
         userinfo_embed.setColor(member.getColor());
         userinfo_embed.setFooter("Requested by " + event.getAuthor().getName(), null);
         event.reply(userinfo_embed.build());
