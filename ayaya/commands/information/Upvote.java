@@ -37,7 +37,7 @@ public class Upvote extends Command {
         EmbedBuilder upvoteEmbed = new EmbedBuilder()
                 .setDescription(
                         "You can upvote me in one of these websites:\n"
-                        + "[Top GG](" + dblLink + ")\n"
+                        + "[Top gg](" + dblLink + ")\n"
                         + "[Discord Boats](" + dboatsLink + ")\n"
                         + "[Discord Bot List](" + dbotLink + ")"
                 );

@@ -76,6 +76,14 @@ public class Ban extends Command {
 
     }
 
+    /**
+     * Performs a ban action.
+     *
+     * @param author the author of the triggered command
+     * @param self   the member representing this bot
+     * @param member the member to be banned
+     * @param guild  the guild where the command was executed
+     */
     private void ban(Member author, Member self, Member member, Guild guild) {
         int authorHighestPosition = -1;
         if (!author.getRoles().isEmpty())
@@ -101,6 +109,13 @@ public class Ban extends Command {
         }
     }
 
+    /**
+     * Performs a ban action.
+     *
+     * @param author the author of the triggered command
+     * @param id     the id of the user to be banned
+     * @param guild  the guild where the command was triggered
+     */
     private void ban(Member author, String id, Guild guild) {
         try {
             guild.ban(id, 0, "Ban requested by " + author.getEffectiveName() + ".")

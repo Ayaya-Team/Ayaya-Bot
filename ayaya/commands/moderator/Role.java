@@ -460,7 +460,7 @@ public class Role extends Command {
             final String id = idFinder.group();
             guild.retrieveMemberById(id).queue(m -> {
                 if (m != null)
-                    manageRolesForUser(m, author, guild, rolesToAdd, rolesToRemove);
+                    manageRolesForMember(m, author, guild, rolesToAdd, rolesToRemove);
             });
         }
         for (String s: users.split(",")) {
@@ -472,10 +472,10 @@ public class Role extends Command {
                     if (l.isEmpty()) {
                         guild.retrieveMemberById(arg, true).queue(m -> {
                             if (m != null)
-                                manageRolesForUser(m, author, guild, rolesToAdd, rolesToRemove);
+                                manageRolesForMember(m, author, guild, rolesToAdd, rolesToRemove);
                         }, t -> {});
                     } else
-                        manageRolesForUser(l.get(0), author, guild, rolesToAdd, rolesToRemove);
+                        manageRolesForMember(l.get(0), author, guild, rolesToAdd, rolesToRemove);
                 }).onError(t -> {});
             }
         }
@@ -523,7 +523,16 @@ public class Role extends Command {
         return 1;
     }
 
-    private void manageRolesForUser(
+    /**
+     * Adds and removes roles from a guild member.
+     *
+     * @param member        the target member
+     * @param author        the author of the triggered command
+     * @param guild         the guild where the command was triggered
+     * @param rolesToAdd    the list of roles to add
+     * @param rolesToRemove the list of roles to remove
+     */
+    private void manageRolesForMember(
             Member member, Member author, Guild guild,
             List<net.dv8tion.jda.api.entities.Role> rolesToAdd,
             List<net.dv8tion.jda.api.entities.Role> rolesToRemove

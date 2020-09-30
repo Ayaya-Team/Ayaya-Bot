@@ -70,6 +70,14 @@ public class Kick extends Command {
         }
     }
 
+    /**
+     * Performs a kick action.
+     *
+     * @param author the author of the triggered command
+     * @param self   the member representing this bot
+     * @param member the member to be kicked
+     * @param guild  the guild where the command was triggered
+     */
     private void kick(Member author, Member self, Member member, Guild guild) {
         int authorHighestPosition = -1;
         if (!author.getRoles().isEmpty())

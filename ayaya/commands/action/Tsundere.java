@@ -91,6 +91,12 @@ public class Tsundere extends GuildDMSCommand {
 
     }
 
+    /**
+     * Finishes the embed and sends it.
+     *
+     * @param embed   the embed to finish
+     * @param channel the channel to send the embed to
+     */
     private void prepareEmbedAndSend(EmbedBuilder embed, TextChannel channel) {
         embed.setColor(Color.decode("#155FA0"));
         try {

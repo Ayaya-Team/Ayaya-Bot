@@ -63,10 +63,23 @@ public class Userinfo extends Command {
 
     }
 
+    /**
+     * Displays the information of a member.
+     *
+     * @param event  the event triggered for this command
+     * @param member the member to display information from
+     */
     private void showUserInfo(CommandEvent event, Member member) {
         showUserInfo(event, member, member.getUser());
     }
 
+    /**
+     * Displays the information of a member.
+     *
+     * @param event  the event triggered for this command
+     * @param member the member to display information from
+     * @param user   the user object associated with the member
+     */
     private void showUserInfo(CommandEvent event, Member member, User user) {
 
         EmbedBuilder userinfo_embed = new EmbedBuilder();

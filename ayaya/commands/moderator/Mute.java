@@ -109,6 +109,17 @@ public class Mute extends Command {
 
     }
 
+    /**
+     * Performs a mute action.
+     *
+     * @param author                the author of the triggered command
+     * @param authorHighestPosition the position of the top role of the command's author
+     * @param self                  the member representing this bot
+     * @param highestPosition       the top role position of this bot
+     * @param member                the member to be muted
+     * @param guild                 the guild where this command was triggered
+     * @param muteRole              the mute role to be used
+     */
     private void mute(Member author, int authorHighestPosition, Member self, int highestPosition,
             Member member, Guild guild, Role muteRole)
     {

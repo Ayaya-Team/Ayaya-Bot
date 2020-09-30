@@ -64,6 +64,12 @@ public class Tickle extends ActionBasicTemplate {
 
     }
 
+    /**
+     * Finishes the embed and sends it.
+     *
+     * @param embed   the embed to finish
+     * @param channel the channel to send the embed to
+     */
     private void prepareEmbedAndSend(EmbedBuilder embed, TextChannel channel) {
         try {
             embed.setColor(channel.getGuild().getSelfMember().getColor());

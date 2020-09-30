@@ -42,6 +42,7 @@ public class PrivacyPolicy extends Command {
         this.help = "This command will show you my privacy policy. This information might be important to read so I recommend you to take a look.";
         this.arguments = "{prefix}privacypolicy";
         this.category = INFORMATION.asCategory();
+        this.aliases = new String[]{"pp"};
     }
 
     @Override
