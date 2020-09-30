@@ -2,12 +2,9 @@ package ayaya.commands.action;
 
 import ayaya.commands.GuildDMSCommand;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.entities.IMentionable;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.User;
 
-import java.util.List;
+import java.util.regex.Matcher;
 
 import static ayaya.core.enums.CommandCategories.ACTION;
 
@@ -28,41 +25,52 @@ public class Cookie extends GuildDMSCommand {
     @Override
     protected void executeInGuild(CommandEvent event) {
 
-        List<IMentionable> mentions = event.getMessage().getMentions(Message.MentionType.USER);
-        if (mentions.isEmpty()) {
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+        Matcher idFinder;
+        if (!mentionFinder.find()) {
             event.reply("<:AngryAya:331115100771450880> Mention the person you want to give a cookie to, you baka!");
             return;
         }
-        Member member = event.getGuild().retrieveMemberById(mentions.get(0).getId()).complete();
-        if (member == null)
-            event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
-        else if (member == event.getMember()) {
-            event.reply("Come on, don't save all the cookies for yourself, don't be greedy!");
-        } else if (member == event.getSelfMember()) {
-            event.reply("Oh, a :cookie: for me! Arigatou. <:AyaSmile:331115374739324930>");
-        } else {
-            event.reply("**" + member.getEffectiveName() + "**, you got a :cookie: from **"
-                    + event.getAuthor().getName() + "**!");
-        }
+        idFinder = ANY_ID.matcher(mentionFinder.group());
+        idFinder.find();
+        event.getGuild().retrieveMemberById(idFinder.group(), true).queue(member -> {
+            if (member == null)
+                event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+            else if (member == event.getMember()) {
+                event.reply("Come on, don't save all the cookies for yourself, don't be greedy!");
+            } else if (member == event.getSelfMember()) {
+                event.reply("Oh, a :cookie: for me! Arigatou. <:AyaSmile:331115374739324930>");
+            } else {
+                event.reply("**" + member.getEffectiveName() + "**, you got a :cookie: from **"
+                        + event.getAuthor().getName() + "**!");
+            }
+        }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
 
     }
 
     @Override
     protected void executeInDMS(CommandEvent event) {
 
-        if (event.getMessage().getMentionedUsers().isEmpty()) {
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+        Matcher idFinder;
+        if (!mentionFinder.find()) {
             event.reply("<:AngryAya:331115100771450880> Mention the person you want to give a cookie to, you baka!");
             return;
         }
-        User user = event.getMessage().getMentionedUsers().get(0);
-        if (user == event.getAuthor()) {
-            event.reply("Come on, don't save all the cookies for yourself, don't be greedy!");
-        } else if (user == event.getSelfUser()) {
-            event.reply("Oh, a :cookie: for me! Arigatou. <:AyaSmile:331115374739324930>");
-        } else {
-            event.reply("**" + user.getName() + "**, you got a :cookie: from **"
-                    + event.getAuthor().getName() + "**!");
-        }
+        idFinder = ANY_ID.matcher(mentionFinder.group());
+        idFinder.find();
+        event.getJDA().retrieveUserById(idFinder.group(), true).queue(user -> {
+            if (user == null)
+                event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here.");
+            else if (user == event.getAuthor()) {
+                event.reply("Come on, don't save all the cookies for yourself, don't be greedy!");
+            } else if (user == event.getSelfUser()) {
+                event.reply("Oh, a :cookie: for me! Arigatou. <:AyaSmile:331115374739324930>");
+            } else {
+                event.reply("**" + user.getName() + "**, you got a :cookie: from **"
+                        + event.getAuthor().getName() + "**!");
+            }
+        }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here."));
 
     }
 

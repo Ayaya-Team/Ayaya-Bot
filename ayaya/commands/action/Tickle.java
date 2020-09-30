@@ -2,14 +2,15 @@ package ayaya.commands.action;
 
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
-import java.util.List;
+import java.util.regex.Matcher;
 
-import static ayaya.core.enums.ActionQuotes.NORMAL_TICKLE;
-import static ayaya.core.enums.ActionQuotes.SELF_TICKLE;
-import static ayaya.core.enums.ActionQuotes.AYAYA_TICKLE;
+import static ayaya.core.enums.ActionQuotes.*;
 
 /**
  * Class of the tickle command.
@@ -35,67 +36,83 @@ public class Tickle extends ActionBasicTemplate {
     protected void executeInGuild(CommandEvent event) {
 
         Guild guild = event.getGuild();
-        Member author = event.getMember();
-        Member mentioned;
-        List<IMentionable> mentions = event.getMessage().getMentions(Message.MentionType.USER);
-        EmbedBuilder embed = new EmbedBuilder();
-        if (!mentions.isEmpty()) {
-            mentioned = guild.retrieveMemberById(mentions.get(0).getId()).complete();
-            if (mentioned == null)
-                event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
-            else if (mentioned == event.getSelfMember()) {
-                event.reply(ayayaDescription);
-                return;
-            } else if (mentioned == author) {
-                embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
-                embed.setFooter(selfFooter, null);
+        guild.retrieveMember(event.getAuthor(), true).queue(author -> {
+            Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+            Matcher idFinder;
+            EmbedBuilder embed = new EmbedBuilder();
+            if (mentionFinder.find()) {
+                idFinder = ANY_ID.matcher(mentionFinder.group());
+                idFinder.find();
+                guild.retrieveMemberById(idFinder.group(), true).queue(mentioned -> {
+                    if (mentioned == null)
+                        event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                    else if (mentioned == event.getSelfMember()) {
+                        event.reply(ayayaDescription);
+                        return;
+                    } else if (mentioned == author) {
+                        embed.setDescription(String.format(selfDescription, author.getEffectiveName()))
+                                .setFooter(selfFooter, null);
+                    } else {
+                        embed.setDescription(String.format(description, author.getEffectiveName(),
+                                mentioned.getEffectiveName()))
+                                .setFooter(String.format(footer, mentioned.getEffectiveName()), null);
+                    }
+                    prepareEmbedAndSend(embed, event.getTextChannel());
+                });
             } else {
-                embed.setDescription(String.format(description, author.getEffectiveName(),
-                        mentioned.getEffectiveName()));
-                embed.setFooter(String.format(footer, mentioned.getEffectiveName()), null);
+                embed.setDescription(String.format(everyoneDescription, author.getEffectiveName()))
+                        .setFooter(everyoneFooter, null);
+                prepareEmbedAndSend(embed, event.getTextChannel());
             }
-        } else {
-            embed.setDescription(String.format(everyoneDescription, author.getEffectiveName()));
-            embed.setFooter(everyoneFooter, null);
-        }
+        });
+
+    }
+
+    private void prepareEmbedAndSend(EmbedBuilder embed, TextChannel channel) {
         try {
-            embed.setColor(guild.getSelfMember().getColor());
+            embed.setColor(channel.getGuild().getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
             embed.setColor(Color.decode("#155FA0"));
         }
         embed.setImage(getRandomGif());
-        event.reply(embed.build());
-
+        channel.sendMessage(embed.build()).queue();
     }
-
 
     @Override
     protected void executeInDMS(CommandEvent event) {
 
         User author = event.getAuthor();
-        User mentioned;
-        List<User> users_list = event.getMessage().getMentionedUsers();
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+        Matcher idFinder;
         EmbedBuilder embed = new EmbedBuilder();
-        if (users_list.size() > 0) {
-            mentioned = users_list.get(0);
-            if (mentioned == event.getSelfUser()) {
-                event.reply(ayayaDescription);
-                return;
-            } else if (mentioned == author) {
-                embed.setDescription(String.format(selfDescription, author.getName()));
-                embed.setFooter(selfFooter, null);
-            } else {
-                embed.setDescription(String.format(description, author.getName(),
-                        mentioned.getName()));
-                embed.setFooter(footer, null);
-            }
+        if (mentionFinder.find()) {
+            idFinder = ANY_ID.matcher(mentionFinder.group());
+            idFinder.find();
+            event.getJDA().retrieveUserById(idFinder.group(), true).queue(mentioned -> {
+                if (mentioned == null)
+                    event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here.");
+                else if (mentioned == event.getSelfUser()) {
+                    event.reply(ayayaDescription);
+                    return;
+                } else if (mentioned == author) {
+                    embed.setDescription(String.format(selfDescription, author.getName()))
+                            .setFooter(selfFooter, null);
+                } else {
+                    embed.setDescription(String.format(description, author.getName(),
+                            mentioned.getName()))
+                            .setFooter(footer, null);
+                }
+                embed.setColor(Color.decode("#155FA0"))
+                        .setImage(getRandomGif());
+                event.reply(embed.build());
+            }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here."));
         } else {
-            embed.setDescription(String.format(everyoneDescription, author.getName()));
-            embed.setFooter(everyoneFooter, null);
+            embed.setDescription(String.format(everyoneDescription, author.getName()))
+                    .setFooter(everyoneFooter, null);
+            embed.setColor(Color.decode("#155FA0"))
+                    .setImage(getRandomGif());
+            event.reply(embed.build());
         }
-        embed.setColor(Color.decode("#155FA0"));
-        embed.setImage(getRandomGif());
-        event.reply(embed.build());
 
     }
 

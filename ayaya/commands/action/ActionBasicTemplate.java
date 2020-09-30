@@ -40,7 +40,7 @@ public class ActionBasicTemplate extends GuildDMSCommand {
     @Override
     protected void executeInGuild(CommandEvent event) {
 
-        event.getGuild().retrieveMember(event.getAuthor()).queue(author -> {
+        event.getGuild().retrieveMember(event.getAuthor(), true).queue(author -> {
             EmbedBuilder embed = new EmbedBuilder();
             if (description != null && !description.isEmpty())
                 embed.setDescription(String.format(description, author.getEffectiveName()));

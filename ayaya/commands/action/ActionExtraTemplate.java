@@ -27,14 +27,14 @@ public class ActionExtraTemplate extends ActionNormalTemplate {
     protected void executeInGuild(CommandEvent event) {
 
         Guild guild = event.getGuild();
-        guild.retrieveMember(event.getAuthor()).queue(author -> {
+        guild.retrieveMember(event.getAuthor(), true).queue(author -> {
             Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
             Matcher idFinder;
             EmbedBuilder embed = new EmbedBuilder();
             if (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                guild.retrieveMemberById(idFinder.group()).queue(mentioned -> {
+                guild.retrieveMemberById(idFinder.group(), true).queue(mentioned -> {
                     if (mentioned == null)
                         event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
                     else if (mentioned == event.getSelfMember()) {
@@ -97,7 +97,7 @@ public class ActionExtraTemplate extends ActionNormalTemplate {
             idFinder.find();
             event.getJDA().retrieveUserById(idFinder.group(), true).queue(mentioned -> {
                 if (mentioned == null)
-                    event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                    event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here.");
                 else if (mentioned == event.getSelfUser()) {
                     if (ayayaDescription != null && !ayayaDescription.isEmpty())
                         event.reply(ayayaDescription);
@@ -118,7 +118,7 @@ public class ActionExtraTemplate extends ActionNormalTemplate {
                         embed.setFooter(String.format(footer, author.getName()), null);
                 }
                 prepareEmbedAndSend(embed, event.getPrivateChannel());
-            }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
+            }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here."));
         } else {
             if (selfDescription != null && !selfDescription.isEmpty())
                 embed.setDescription(String.format(selfDescription, author.getName()));
