@@ -2,10 +2,7 @@ package ayaya.commands.action;
 
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 
 import java.awt.*;
 import java.util.regex.Matcher;
@@ -36,35 +33,34 @@ public class Tickle extends ActionBasicTemplate {
     protected void executeInGuild(CommandEvent event) {
 
         Guild guild = event.getGuild();
-        guild.retrieveMember(event.getAuthor(), true).queue(author -> {
-            Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
-            Matcher idFinder;
-            EmbedBuilder embed = new EmbedBuilder();
-            if (mentionFinder.find()) {
-                idFinder = ANY_ID.matcher(mentionFinder.group());
-                idFinder.find();
-                guild.retrieveMemberById(idFinder.group(), true).queue(mentioned -> {
-                    if (mentioned == null)
-                        event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
-                    else if (mentioned == event.getSelfMember()) {
-                        event.reply(ayayaDescription);
-                        return;
-                    } else if (mentioned == author) {
-                        embed.setDescription(String.format(selfDescription, author.getEffectiveName()))
-                                .setFooter(selfFooter, null);
-                    } else {
-                        embed.setDescription(String.format(description, author.getEffectiveName(),
-                                mentioned.getEffectiveName()))
-                                .setFooter(String.format(footer, mentioned.getEffectiveName()), null);
-                    }
-                    prepareEmbedAndSend(embed, event.getTextChannel());
-                });
-            } else {
-                embed.setDescription(String.format(everyoneDescription, author.getEffectiveName()))
-                        .setFooter(everyoneFooter, null);
+        Member author = event.getMember();
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+        Matcher idFinder;
+        EmbedBuilder embed = new EmbedBuilder();
+        if (mentionFinder.find()) {
+            idFinder = ANY_ID.matcher(mentionFinder.group());
+            idFinder.find();
+            guild.retrieveMemberById(idFinder.group(), true).queue(mentioned -> {
+                if (mentioned == null)
+                    event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                else if (mentioned == event.getSelfMember()) {
+                    event.reply(ayayaDescription);
+                    return;
+                } else if (mentioned == author) {
+                    embed.setDescription(String.format(selfDescription, author.getEffectiveName()))
+                            .setFooter(selfFooter, null);
+                } else {
+                    embed.setDescription(String.format(description, author.getEffectiveName(),
+                            mentioned.getEffectiveName()))
+                            .setFooter(String.format(footer, mentioned.getEffectiveName()), null);
+                }
                 prepareEmbedAndSend(embed, event.getTextChannel());
-            }
-        });
+            });
+        } else {
+            embed.setDescription(String.format(everyoneDescription, author.getEffectiveName()))
+                    .setFooter(everyoneFooter, null);
+            prepareEmbedAndSend(embed, event.getTextChannel());
+        }
 
     }
 

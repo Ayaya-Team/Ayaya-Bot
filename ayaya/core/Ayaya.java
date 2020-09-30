@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
@@ -42,8 +43,8 @@ import java.util.concurrent.TimeUnit;
 public class Ayaya {
 
     private static final GatewayIntent INTENTS[] = {
-            GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS, GatewayIntent.GUILD_MEMBERS,
-            GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_VOICE_STATES
+            GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS,
+            GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES
     };
     private static final String SHUTDOWN_GAME = "Going to bed.";
     private static final int STATUS_AMOUNT = 7;
@@ -209,6 +210,7 @@ public class Ayaya {
         try {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
             ayaya = JDABuilder.create(token, intents)
+                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS)
                     .addEventListeners(client, new EventWaiter(), new EventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)

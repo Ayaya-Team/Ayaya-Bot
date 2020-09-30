@@ -155,9 +155,9 @@ public class Prune extends Command {
                 "To prune a specified amount of messages:\n" +
                 "   " + prefix + "prune [amount] [options]\n\n" +
                 "Options:\n" +
-                "   --users [mentions, usernames or ids separated by commas]" +
-                " - include this to prune messages from a specific user in a given amount of messages;\n\n" +
-                "   --bots - prune messages from bots in a given amount of messages.\n\n" +
+                "   --users [mentions or ids separated by commas]" +
+                " - include this to prune messages from specific users in a given amount of messages;\n\n" +
+                "   --bots - prune messages from all bots in a given amount of messages.\n\n" +
                 "You don't need to always set these options or to always change a role's name.\n\n" +
                 "Note: don't write the [] in your commands.\n" +
                 " In servers with over 250 accounts connected this command is more reliable with user mentions than with user names/nicknames.\n" +

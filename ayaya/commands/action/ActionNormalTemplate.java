@@ -29,42 +29,41 @@ public class ActionNormalTemplate extends ActionBasicTemplate {
     protected void executeInGuild(CommandEvent event) {
 
         Guild guild = event.getGuild();
-        guild.retrieveMember(event.getAuthor(), true).queue(author -> {
-            Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
-            Matcher idFinder;
-            EmbedBuilder embed = new EmbedBuilder();
-            if (mentionFinder.find()) {
-                idFinder = ANY_ID.matcher(mentionFinder.group());
-                idFinder.find();
-                guild.retrieveMemberById(idFinder.group(), true).queue(mentioned -> {
-                    if (mentioned == null)
-                        event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
-                    else if (mentioned == event.getSelfMember()) {
-                        if (ayayaDescription != null && !ayayaDescription.isEmpty())
-                            event.reply(ayayaDescription);
-                        return;
-                    } else if (mentioned == author) {
-                        if (selfDescription != null && !selfDescription.isEmpty())
-                            embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
-                        if (selfFooter != null && !selfFooter.isEmpty())
-                            embed.setFooter(String.format(selfFooter, author.getEffectiveName()), null);
-                    } else {
-                        if (description != null && !description.isEmpty())
-                            embed.setDescription(String.format(description, author.getEffectiveName(),
-                                    mentioned.getEffectiveName()));
-                        if (footer != null && !footer.isEmpty())
-                            embed.setFooter(String.format(footer, mentioned.getEffectiveName()), null);
-                    }
-                    prepareEmbedAndSend(embed, event.getTextChannel());
-                }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
-            } else {
-                if (selfDescription != null && !selfDescription.isEmpty())
-                    embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
-                if (selfFooter != null && !selfFooter.isEmpty())
-                    embed.setFooter(String.format(selfFooter, author.getEffectiveName()), null);
+        Member author = event.getMember();
+        Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
+        Matcher idFinder;
+        EmbedBuilder embed = new EmbedBuilder();
+        if (mentionFinder.find()) {
+            idFinder = ANY_ID.matcher(mentionFinder.group());
+            idFinder.find();
+            guild.retrieveMemberById(idFinder.group(), true).queue(mentioned -> {
+                if (mentioned == null)
+                    event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                else if (mentioned == event.getSelfMember()) {
+                    if (ayayaDescription != null && !ayayaDescription.isEmpty())
+                        event.reply(ayayaDescription);
+                    return;
+                } else if (mentioned == author) {
+                    if (selfDescription != null && !selfDescription.isEmpty())
+                        embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
+                    if (selfFooter != null && !selfFooter.isEmpty())
+                        embed.setFooter(String.format(selfFooter, author.getEffectiveName()), null);
+                } else {
+                    if (description != null && !description.isEmpty())
+                        embed.setDescription(String.format(description, author.getEffectiveName(),
+                                mentioned.getEffectiveName()));
+                    if (footer != null && !footer.isEmpty())
+                        embed.setFooter(String.format(footer, mentioned.getEffectiveName()), null);
+                }
                 prepareEmbedAndSend(embed, event.getTextChannel());
-            }
-        }, t -> {});
+            }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
+        } else {
+            if (selfDescription != null && !selfDescription.isEmpty())
+                embed.setDescription(String.format(selfDescription, author.getEffectiveName()));
+            if (selfFooter != null && !selfFooter.isEmpty())
+                embed.setFooter(String.format(selfFooter, author.getEffectiveName()), null);
+            prepareEmbedAndSend(embed, event.getTextChannel());
+        }
 
     }
 

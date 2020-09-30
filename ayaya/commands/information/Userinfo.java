@@ -39,7 +39,6 @@ public class Userinfo extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String content = event.getArgs();
-        User user = event.getAuthor();
         User mentioned_user;
         Member member;
         Guild guild = event.getGuild();
@@ -59,9 +58,7 @@ public class Userinfo extends Command {
                     showUserInfo(event, l.get(0));
             });
         } else {
-            guild.retrieveMember(user).queue(m -> {
-                showUserInfo(event, m, user);
-            }, t -> {});
+            showUserInfo(event, event.getMember(), event.getAuthor());
         }
 
     }
