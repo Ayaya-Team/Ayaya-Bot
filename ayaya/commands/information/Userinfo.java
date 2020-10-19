@@ -1,7 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
-import ayaya.core.utils.TimeUtils;
+import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -28,7 +28,7 @@ public class Userinfo extends Command {
 
         this.name = "userinfo";
         this.help = "When you want to know more about a user, trigger this command.";
-        this.arguments = "{prefix}userinfo <@user or name>";
+        this.arguments = "{prefix}userinfo <mention, name/nickname or id>";
         this.category = INFORMATION.asCategory();
         this.isGuildOnly = true;
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
@@ -47,13 +47,16 @@ public class Userinfo extends Command {
         if (mentionFinder.find()) {
             idFinder = ANY_ID.matcher(mentionFinder.group());
             idFinder.find();
-            guild.retrieveMemberById(idFinder.group(), true).queue(m -> showUserInfo(event, m));
+            guild.retrieveMemberById(idFinder.group(), true).queue(m -> showUserInfo(event, m),
+                    t -> event.replyError("I'm sorry, but I can't find anyone with that mention."));
         } else if (!content.isEmpty()) {
             guild.retrieveMembersByPrefix(content, 1).onSuccess(l -> {
                 if (l.isEmpty())
-                    guild.retrieveMemberById(content, true).queue(m -> {
-                        if (m != null) showUserInfo(event, m);
-                    }, t -> {});
+                    guild.retrieveMemberById(content, true).queue(
+                            m -> { if (m != null)
+                                showUserInfo(event, m);},
+                            t -> event.replyError("I'm sorry, but I can't find anyone with that name/nickname or id.")
+                    );
                 else
                     showUserInfo(event, l.get(0));
             });
@@ -106,13 +109,13 @@ public class Userinfo extends Command {
         userinfo_embed.addField("Joined on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         join_week_day, joinTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                        TimeUtils.getDayWithSuffix(joinTime.getDayOfMonth()), joinTime.getYear(), joinTime.getHour(),
+                        Utils.getDayWithSuffix(joinTime.getDayOfMonth()), joinTime.getYear(), joinTime.getHour(),
                         joinTime.getMinute(), joinTime.getSecond()),
                 false);
         userinfo_embed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         create_week_day, creationTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                        TimeUtils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
+                        Utils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
                         creationTime.getHour(), creationTime.getMinute(), creationTime.getSecond()),
                 false);
         if (!roles.isEmpty())

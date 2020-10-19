@@ -2,7 +2,7 @@ package ayaya.commands.utilities;
 
 import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
-import ayaya.core.utils.TimeUtils;
+import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 
 import java.time.DateTimeException;
@@ -33,12 +33,12 @@ public class Time extends Command {
             event.reply(
                     String.format("The current time of my host is %s %s of %d, **%02d:%02d:%02d**",
                             time.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                            TimeUtils.getDayWithSuffix(time.getDayOfMonth()), time.getYear(), time.getHour(),
+                            Utils.getDayWithSuffix(time.getDayOfMonth()), time.getYear(), time.getHour(),
                             time.getMinute(), time.getSecond())
             );
         } else if (timezone.equals(LIST_CALL)) {
             event.reply(
-                    "**Timezones:**\n\n" + TimeUtils.TIMEZONES +
+                    "**Timezones:**\n\n" + Utils.TIMEZONES +
                             "\nYou can also check the time in UTC and for any deviations of any timezone, like:\n" +
                             "`" + event.getClient().getPrefix() + "time <timezone>+<amount in hours>` or\n" +
                             "`" + event.getClient().getPrefix() + "time <timezone>-<amount in hours>`\n" +
@@ -51,7 +51,7 @@ public class Time extends Command {
             try {
                 if (timezone.contains("+")) {
                     args = timezone.split("\\+");
-                    time = ZonedDateTime.now(ZoneId.of(args[0], TimeUtils.ZONE_IDS));
+                    time = ZonedDateTime.now(ZoneId.of(args[0], Utils.ZONE_IDS));
                     try {
                         time = time.plusHours(Long.parseLong(args[1]));
                     } catch (NumberFormatException e) {
@@ -63,13 +63,13 @@ public class Time extends Command {
                     }
                 } else if (timezone.contains("-")) {
                     args = timezone.split("-");
-                    time = ZonedDateTime.now(ZoneId.of(args[0], TimeUtils.ZONE_IDS));
+                    time = ZonedDateTime.now(ZoneId.of(args[0], Utils.ZONE_IDS));
                     time = time.minusHours(Long.parseLong(args[1]));
-                } else time = ZonedDateTime.now(ZoneId.of(timezone, TimeUtils.ZONE_IDS));
+                } else time = ZonedDateTime.now(ZoneId.of(timezone, Utils.ZONE_IDS));
                 event.reply(
                         String.format("The current time for **%s** is %s %s of %d, **%02d:%02d:%02d**",
                                 timezone, time.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                                TimeUtils.getDayWithSuffix(time.getDayOfMonth()), time.getYear(), time.getHour(),
+                                Utils.getDayWithSuffix(time.getDayOfMonth()), time.getYear(), time.getHour(),
                                 time.getMinute(), time.getSecond())
                 );
             } catch (DateTimeException e) {

@@ -60,7 +60,7 @@ public class EventListener extends ListenerAdapter {
 
         JDA jda = event.getJDA();
         AudioManager audioManager;
-        for (Guild g: jda.getGuilds()) {
+        for (Guild g : jda.getGuilds()) {
             g.retrieveOwner(true);
             audioManager = g.getAudioManager();
             if (audioManager.isConnected())
@@ -81,20 +81,24 @@ public class EventListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
 
+        String content = event.getMessage().getContentRaw();
         messagesCounter++;
         User user = event.getAuthor();
         Member member = event.getMember();
-        Message message = event.getMessage();
         MessageChannel channel = event.getChannel();
-        String content = message.getContentRaw();
         boolean bot = user.isBot();
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
-        if (channel instanceof PrivateChannel && !user.isBot() && !content.toLowerCase().startsWith(prefix)) {
+        if (!content.isBlank() && channel instanceof PrivateChannel && !user.isBot() && !content.toLowerCase().startsWith(prefix)) {
             if (content.contains(LINK)) {
                 channel.sendMessage("If you want to invite me to a server you need to use one of my invite links!\n"
                         + "Write `" + prefix + "invite` to see a list of the available invite links.").queue();
                 return;
             }
+            System.out.printf(
+                    "Warning: %s sent me a direct message at %02d/%02d/%d at %02d:%02d:%02d.\n\nContent:\n%s\n",
+                    user.getName(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
+                    time.getHour(), time.getMinute(), time.getSecond(), content
+            );
             Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
                     String.format(":warning: %s sent me a direct message at `%02d/%02d/%d` at `%02d:%02d:%02d`.\n\n**Content:**\n```css\n%s```",
                             user.getName(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
@@ -109,13 +113,14 @@ public class EventListener extends ListenerAdapter {
 
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
         Guild guild = event.getGuild();
-        guild.retrieveOwner(true);
-        User owner = Objects.requireNonNull(guild.getOwner()).getUser();
-        Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
-                "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
-                        + owner.getName() + "#" + owner.getDiscriminator() + "` `" + owner.getId() + "` at `"
-                        + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-        ).queue();
+        guild.retrieveOwner(true).queue(owner -> {
+            Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
+                    "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
+                            + owner.getUser().getName() + "#"
+                            + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
+                            + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
+            ).queue();
+        });
 
     }
 
@@ -165,7 +170,7 @@ public class EventListener extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildVoiceLeave(@NotNull  GuildVoiceLeaveEvent event) {
+    public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
         VoiceChannel channel = event.getChannelLeft();
         if (Objects.requireNonNull(channel).getMembers().size() < 2
                 && !event.getMember().getUser().equals(event.getJDA().getSelfUser())) {
@@ -193,7 +198,7 @@ public class EventListener extends ListenerAdapter {
                     .getString("value");
             greetings_farewells =
                     jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'greetings/farewells';", 5)
-                    .getString("value");
+                            .getString("value");
         } catch (SQLException e) {
             System.out.println("A problem occurred while trying to get necessary information to analyze this message!" +
                     " Skipping the proccess...");
@@ -242,8 +247,7 @@ public class EventListener extends ListenerAdapter {
     }
 
     /**
-     * Once the timeout reaches the end, closes the audio connection with the voice channel of the
-     * specified server.
+     * Once the timeout reaches the end, closes the audio connection with the voice channel of the specified server.
      *
      * @param guild the server
      */

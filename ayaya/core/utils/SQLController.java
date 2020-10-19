@@ -7,6 +7,9 @@ import ayaya.core.exceptions.general.UnsupportedTypeException;
 import java.io.Serializable;
 import java.sql.*;
 
+/**
+ * Class to help communicate with the database.
+ */
 public class SQLController {
 
     private static final String CREATE_DB = "create database";

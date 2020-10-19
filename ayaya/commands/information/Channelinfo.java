@@ -1,7 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
-import ayaya.core.utils.TimeUtils;
+import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -92,7 +92,7 @@ public class Channelinfo extends Command {
         channelinfo_embed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         creation_week_day, creationTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                        TimeUtils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
+                        Utils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
                         creationTime.getHour(), creationTime.getMinute(), creationTime.getSecond()),
                 false);
         channelinfo_embed.setFooter("Requested by " + event.getAuthor().getName(), null);
