@@ -3,6 +3,7 @@ package ayaya.commands.music;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.music.GuildMusicManager;
 import ayaya.core.music.TrackScheduler;
+import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -40,21 +41,16 @@ public class NP extends MusicCommand {
             long current = track.getPosition() / 1000;
             if (trackName == null)
                 trackName = "Undefined";
-            StringBuilder bar = new StringBuilder();
-            long fullChars = Math.round((double)(current) / (double)(time) * BAR_LENGTH);
-            for (int i = 1; i <= BAR_LENGTH; i++) {
-                if (i <= fullChars) bar.append('▓');
-                else bar.append('░');
-            }
+            String bar = Utils.printBar(current, time, BAR_LENGTH);
             if (scheduler.musicStopped())
                 message = String.format(
                         "Current track to play is `%s`\n\n**%02d:%02d / %02d:%02d** ー %s",
-                        trackName, current/60, current%60, time/60, time%60, bar.toString()
+                        trackName, current/60, current%60, time/60, time%60, bar
                 );
             else
                 message = String.format(
                         "Currently playing `%s`\n\n**%02d:%02d / %02d:%02d** ー %s",
-                        trackName, current/60, current%60, time/60, time%60, bar.toString()
+                        trackName, current/60, current%60, time/60, time%60, bar
                 );
         }
         EmbedBuilder npEmbed = new EmbedBuilder()

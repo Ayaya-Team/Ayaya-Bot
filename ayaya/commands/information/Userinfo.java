@@ -24,6 +24,19 @@ public class Userinfo extends Command {
 
     private static final int FIELD_LIMIT = 1024;
 
+    private static final String STAFF = "<:staff_badge:770616558769930251>";
+    private static final String PARTNER = "<:partner_badge:770616558690369547>";
+    private static final String BUG_HUNTER_LEVEL_1 = "<:bug_hunter_badge:770616558942552080>";
+    private static final String BUG_HUNTER_LEVEL_2 = "<:golden_bug_hunter_badge:770661542756483134>";
+    private static final String HYPESQUAD = "<:hypesquad_badge:770653617127948300>";
+
+    private static final String HYPESQUAD_BRAVERY = "<:hs_bravery_badge:770616559017132062>";
+    private static final String HYPESQUAD_BRILLIANCE = "<:hs_brilliance_badge:770616559059599370>";
+    private static final String HYPESQUAD_BALANCE = "<:hs_balance_badge:770616559034957834>";
+
+    private static final String VERIFIED_BOT_DEVELOPER =
+            "<:verified_bot_developer_badge:770616558941896724>";
+
     public Userinfo() {
 
         this.name = "userinfo";
@@ -39,7 +52,7 @@ public class Userinfo extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String content = event.getArgs();
-        User mentioned_user;
+        User mentionedUser;
         Member member;
         Guild guild = event.getGuild();
         Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(content);
@@ -53,8 +66,10 @@ public class Userinfo extends Command {
             guild.retrieveMembersByPrefix(content, 1).onSuccess(l -> {
                 if (l.isEmpty())
                     guild.retrieveMemberById(content, true).queue(
-                            m -> { if (m != null)
-                                showUserInfo(event, m);},
+                            m -> {
+                                if (m != null)
+                                    showUserInfo(event, m);
+                            },
                             t -> event.replyError("I'm sorry, but I can't find anyone with that name/nickname or id.")
                     );
                 else
@@ -85,46 +100,97 @@ public class Userinfo extends Command {
      */
     private void showUserInfo(CommandEvent event, Member member, User user) {
 
-        EmbedBuilder userinfo_embed = new EmbedBuilder();
+        String description = "**Mention**: " + user.getAsMention()
+                + "\n**User ID**: " + user.getId();
+        if (!user.getFlags().isEmpty())
+            description += "\n**Badges**: " + printBadges(user);
         OffsetDateTime joinTime = member.getTimeJoined();
-        String join_week_day = joinTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+        String joinWeekDay = joinTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         OffsetDateTime creationTime = user.getTimeCreated();
-        String create_week_day = creationTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+        String createWeekDay = creationTime.getDayOfWeek()
+                .getDisplayName(TextStyle.FULL, Locale.getDefault());
         String roles;
-        StringBuilder role_list = new StringBuilder();
+        StringBuilder roleList = new StringBuilder();
         for (int i = 0; i < member.getRoles().size(); i++) {
-            if (i == 0) role_list.append("`").append(member.getRoles().get(i).getName()).append("`");
-            else role_list.append(", `").append(member.getRoles().get(i).getName()).append("`");
+            if (i == 0) roleList.append("`").append(member.getRoles().get(i).getName()).append("`");
+            else roleList.append(", `").append(member.getRoles().get(i).getName()).append("`");
         }
-        if (role_list.length() > FIELD_LIMIT)
+        if (roleList.length() > FIELD_LIMIT)
             roles = "It wasn't possible to list the roles of this user due to their amount being huge.";
-        else roles = role_list.toString();
-        userinfo_embed.setAuthor(user.getName() + "#" + user.getDiscriminator(),
-                null);
-        userinfo_embed.setDescription(
-                "**Mention**: " + user.getAsMention() + "\n**User ID**: " + user.getId()
-        );
-        if (member.getNickname() != null) userinfo_embed.addField("Nickname", member.getNickname(), false);
-        else userinfo_embed.addField("Nickname", "None", false);
-        userinfo_embed.addField("Joined on",
+        else roles = roleList.toString();
+        EmbedBuilder userinfoEmbed = new EmbedBuilder()
+                .setAuthor(user.getName() + "#" + user.getDiscriminator(), null)
+                .setDescription(description);
+        if (member.getNickname() != null) userinfoEmbed.addField("Nickname", member.getNickname(), false);
+        else userinfoEmbed.addField("Nickname", "None", false);
+        userinfoEmbed.addField("Joined on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
-                        join_week_day, joinTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                        Utils.getDayWithSuffix(joinTime.getDayOfMonth()), joinTime.getYear(), joinTime.getHour(),
-                        joinTime.getMinute(), joinTime.getSecond()),
+                        joinWeekDay, joinTime.getMonth()
+                                .getDisplayName(TextStyle.FULL, Locale.getDefault()),
+                        Utils.getDayWithSuffix(joinTime.getDayOfMonth()), joinTime.getYear(),
+                        joinTime.getHour(), joinTime.getMinute(), joinTime.getSecond()),
                 false);
-        userinfo_embed.addField("Created on",
+        userinfoEmbed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
-                        create_week_day, creationTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
+                        createWeekDay, creationTime.getMonth()
+                                .getDisplayName(TextStyle.FULL, Locale.getDefault()),
                         Utils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
                         creationTime.getHour(), creationTime.getMinute(), creationTime.getSecond()),
                 false);
         if (!roles.isEmpty())
-            userinfo_embed.addField("Roles", roles, false);
-        userinfo_embed.setThumbnail(user.getAvatarUrl());
-        userinfo_embed.setColor(member.getColor());
-        userinfo_embed.setFooter("Requested by " + event.getAuthor().getName(), null);
-        event.reply(userinfo_embed.build());
+            userinfoEmbed.addField("Roles", roles, false);
+        String avatar = user.getEffectiveAvatarUrl();
+        if (!avatar.contains("?size="))
+            avatar = avatar + "?size=2048";
+        userinfoEmbed.setThumbnail(avatar)
+                .setColor(member.getColor())
+                .setFooter("Requested by " + event.getAuthor().getName(), null);
+        event.reply(userinfoEmbed.build());
 
+    }
+
+    /**
+     * Prints a string with the badges of a user.
+     *
+     * @param user the user
+     * @return string of badges
+     */
+    private String printBadges(User user) {
+        StringBuilder s = new StringBuilder();
+        for (User.UserFlag flag: user.getFlags()) {
+            switch (flag) {
+                case STAFF:
+                    s.append(STAFF);
+                    break;
+                case PARTNER:
+                    s.append(PARTNER);
+                    break;
+                case BUG_HUNTER_LEVEL_1:
+                    s.append(BUG_HUNTER_LEVEL_1);
+                    break;
+                case BUG_HUNTER_LEVEL_2:
+                    s.append(BUG_HUNTER_LEVEL_2);
+                    break;
+                case HYPESQUAD:
+                    s.append(HYPESQUAD);
+                    break;
+                case HYPESQUAD_BRAVERY:
+                    s.append(HYPESQUAD_BRAVERY);
+                    break;
+                case HYPESQUAD_BRILLIANCE:
+                    s.append(HYPESQUAD_BRILLIANCE);
+                    break;
+                case HYPESQUAD_BALANCE:
+                    s.append(HYPESQUAD_BALANCE);
+                    break;
+                case VERIFIED_DEVELOPER:
+                    s.append(VERIFIED_BOT_DEVELOPER);
+                    break;
+                default:
+            }
+            s.append(' ');
+        }
+        return s.toString().trim();
     }
 
 }

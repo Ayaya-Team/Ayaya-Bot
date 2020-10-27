@@ -19,6 +19,9 @@ import static ayaya.core.enums.CommandCategories.UTILITIES;
  */
 public class Avatar extends Command {
 
+    private static final int MAX_SIZE = 2048;
+    private static final int MIN_SIZE = 512;
+
     public Avatar() {
 
         this.name = "avatar";
@@ -94,21 +97,28 @@ public class Avatar extends Command {
 
     }
 
-    private void displayAvatar(CommandEvent event, EmbedBuilder avatar_embed, User user) {
-        String url = user.getEffectiveAvatarUrl().replace(".webp", ".png")
-                .replace("?size=1024", "?size=512");
-        if (url.endsWith(".png")) url = url.replace(".png", ".png?size=512");
-        avatar_embed.setDescription(
+    /**
+     * Displays the avatar of a user in an embed.
+     *
+     * @param event       the event that triggered the command
+     * @param avatarEmbed the embed to use
+     * @param user        the user
+     */
+    private void displayAvatar(CommandEvent event, EmbedBuilder avatarEmbed, User user) {
+        String urls[] = Utils.getAvatarUrls(user, MIN_SIZE, MAX_SIZE);
+        String url = urls[0];
+        String displayUrl = urls[1];
+        avatarEmbed.setDescription(
                 "[PNG](" + url + ") | [JPG](" + url.replace(".png", ".jpg") + ")"
         );
-        avatar_embed.setImage(url);
+        avatarEmbed.setImage(displayUrl);
         try {
-            avatar_embed.setColor(event.getMember().getColor());
+            avatarEmbed.setColor(event.getMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
-            avatar_embed.setColor(Color.decode("#155FA0"));
+            avatarEmbed.setColor(Color.decode("#155FA0"));
         }
-        avatar_embed.setFooter("Requested by " + event.getAuthor().getName(), event.getAuthor().getEffectiveAvatarUrl());
-        event.reply(avatar_embed.build());
+        avatarEmbed.setFooter("Requested by " + event.getAuthor().getName(), event.getAuthor().getEffectiveAvatarUrl());
+        event.reply(avatarEmbed.build());
     }
 
 }

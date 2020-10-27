@@ -6,15 +6,15 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 
+import java.awt.*;
 import java.time.OffsetDateTime;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 
@@ -65,7 +65,7 @@ public class Quote extends Command {
         Guild guild = event.getGuild();
         TextChannel channel;
         Message quote;
-        Member member;
+        User quoteAuthor;
         OffsetDateTime creation_time;
 
         if (channelID.isBlank())
@@ -101,13 +101,13 @@ public class Quote extends Command {
             return;
         }
 
-        member = quote.getMember();
+        quoteAuthor = quote.getAuthor();
         creation_time = quote.getTimeCreated();
         EmbedBuilder quote_embed = new EmbedBuilder()
                 .setAuthor("Message sent by "
-                        + Objects.requireNonNull(member).getEffectiveName() + " on "
+                        + quoteAuthor.getName() + " on "
                         + channel.getName() + " at "
-                        + guild.getName() + ":", null, member.getUser().getAvatarUrl())
+                        + guild.getName() + ":", null, quoteAuthor.getAvatarUrl())
                 .setDescription(quote.getContentRaw())
                 .setFooter("Created on "
                         + creation_time.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " "
@@ -117,8 +117,7 @@ public class Quote extends Command {
                         + String.format("%02d:%02d:%02d",
                         creation_time.getHour(), creation_time.getMinute(), creation_time.getSecond()), null);
 
-        if (member.getColor() != null)
-            quote_embed.setColor(member.getColor());
+        quote_embed.setColor(Color.decode("#155FA0"));
         List<Message.Attachment> attachments = quote.getAttachments();
         if (!attachments.isEmpty()) quote_embed.setImage(attachments.get(0).getUrl());
         event.reply(quote_embed.build());
