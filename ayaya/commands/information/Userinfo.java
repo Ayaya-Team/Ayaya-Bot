@@ -28,6 +28,7 @@ public class Userinfo extends Command {
     private static final String PARTNER = "<:partner_badge:770616558690369547>";
     private static final String BUG_HUNTER_LEVEL_1 = "<:bug_hunter_badge:770616558942552080>";
     private static final String BUG_HUNTER_LEVEL_2 = "<:golden_bug_hunter_badge:770661542756483134>";
+    private static final String EARLY_SUPPORTER = "<:early_supporter_badge:770616558644232203>";
     private static final String HYPESQUAD = "<:hypesquad_badge:770653617127948300>";
 
     private static final String HYPESQUAD_BRAVERY = "<:hs_bravery_badge:770616559017132062>";
@@ -157,7 +158,7 @@ public class Userinfo extends Command {
      */
     private String printBadges(User user) {
         StringBuilder s = new StringBuilder();
-        for (User.UserFlag flag: user.getFlags()) {
+        for (User.UserFlag flag : user.getFlags()) {
             switch (flag) {
                 case STAFF:
                     s.append(STAFF);
@@ -170,6 +171,9 @@ public class Userinfo extends Command {
                     break;
                 case BUG_HUNTER_LEVEL_2:
                     s.append(BUG_HUNTER_LEVEL_2);
+                    break;
+                case EARLY_SUPPORTER:
+                    s.append(EARLY_SUPPORTER);
                     break;
                 case HYPESQUAD:
                     s.append(HYPESQUAD);
