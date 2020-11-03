@@ -61,7 +61,6 @@ public class EventListener extends ListenerAdapter {
         JDA jda = event.getJDA();
         AudioManager audioManager;
         for (Guild g : jda.getGuilds()) {
-            g.retrieveOwner(true);
             audioManager = g.getAudioManager();
             if (audioManager.isConnected())
                 audioManager.closeAudioConnection();
@@ -129,16 +128,18 @@ public class EventListener extends ListenerAdapter {
 
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
         Guild guild = event.getGuild();
-        User owner = Objects.requireNonNull(guild.getOwner()).getUser();
-        Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
-                "I just left the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
-                        + owner.getName() + "#" + owner.getDiscriminator() + "` `" + owner.getId() + "` at `"
-                        + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-        ).queue();
+        guild.retrieveOwner(true).queue(owner -> {
+            Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
+                    "I just left the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
+                            + owner.getUser().getName() + "#"
+                            + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
+                            + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
+            ).queue();
+        });
 
     }
 
-	// This code should be enabled when the Guild Member intent is enabled again
+    // This code should be enabled when the Guild Member intent is enabled again
     /*
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
