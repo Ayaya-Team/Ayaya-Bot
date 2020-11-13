@@ -22,6 +22,7 @@ public class NP extends MusicCommand {
         this.arguments = "{prefix}np";
         this.isGuildOnly = false;
         this.category = CommandCategories.MUSIC.asCategory();
+        this.aliases = new String[]{"nowplaying"};
         this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
 
     }

@@ -2,13 +2,14 @@ package ayaya.core.enums;
 
 import ayaya.commands.action.*;
 import ayaya.commands.funny.Bigtext;
+import ayaya.commands.funny.Flipcoin;
 import ayaya.commands.funny.Kawaii;
+import ayaya.commands.funny.Roll;
 import ayaya.commands.information.About;
 import ayaya.commands.information.Stats;
+import ayaya.commands.information.Upvote;
 import ayaya.commands.moderator.Prune;
 import com.jagrosh.jdautilities.command.Command;
-import ayaya.commands.funny.Flipcoin;
-import ayaya.commands.funny.Roll;
 
 /**
  * All of the aliases of the commands.
@@ -23,7 +24,8 @@ public enum CommandAliases {
     PURGE("purge", new Prune()), REGIONALTEXT("regionaltext", new Bigtext()),
     SHRUGS("shrugs", new Shrug()), STATISTICS("statistics", new Stats()),
     TABLEFLIP("tableflip", new Fliptable()), TSUN("tsun", new Tsundere()),
-    UNFLIP("unflip", new Unfliptable()), WAA("waa", new Cry()), WHAT("what", new Confused());
+    UNFLIP("unflip", new Unfliptable()), VOTE("vote", new Upvote()),
+    WAA("waa", new Cry()), WHAT("what", new Confused());
 
     private String name;
     private Command cmd;

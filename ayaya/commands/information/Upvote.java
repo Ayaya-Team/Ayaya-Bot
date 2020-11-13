@@ -27,6 +27,7 @@ public class Upvote extends Command {
         this.arguments = "{prefix}upvote";
         this.category = INFORMATION.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.aliases = new String[]{"vote"};
 
     }
 

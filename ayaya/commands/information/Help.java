@@ -36,20 +36,20 @@ public class Help extends ayaya.commands.Command {
 
     @Override
     protected void executeInstructions(CommandEvent event) {
-        String cmd_name = event.getArgs();
+        String cmdName = event.getArgs();
         String prefix = event.getClient().getPrefix();
-        EmbedBuilder help_embed = new EmbedBuilder();
-        if (!cmd_name.isEmpty()) {
+        EmbedBuilder helpEmbed = new EmbedBuilder();
+        if (!cmdName.isEmpty()) {
             Command cmd = null;
             for (Command command : event.getClient().getCommands()) {
-                if (command.getName().equals(cmd_name.toLowerCase()) && !command.isHidden()) {
+                if (command.getName().equals(cmdName.toLowerCase()) && !command.isHidden()) {
                     cmd = command;
-                    cmd_name = command.getName();
+                    cmdName = command.getName();
                 }
                 for (String alias : command.getAliases())
-                    if (alias.equals(cmd_name) && !command.isHidden()) {
+                    if (alias.equals(cmdName) && !command.isHidden()) {
                         cmd = command;
-                        cmd_name = command.getName();
+                        cmdName = command.getName();
                     }
             }
             if (cmd == null) {
@@ -64,7 +64,7 @@ public class Help extends ayaya.commands.Command {
                 event.reply("Excuse me, but you don't even have permission to use this command.");
                 return;
             }
-            help_embed.setTitle(cmd_name.substring(0, 1).toUpperCase() + cmd_name.substring(1))
+            helpEmbed.setTitle(cmdName.substring(0, 1).toUpperCase() + cmdName.substring(1))
                     .setDescription(cmd.getHelp())
                     .addField("Category", cmd.getCategory().getName(), false)
                     .addField("Way to use:",
@@ -74,20 +74,21 @@ public class Help extends ayaya.commands.Command {
             String[] aliases = cmd.getAliases();
             Permission[] perms = cmd.getUserPermissions();
             if (aliases.length > 0) {
-                StringBuilder aliases_str = new StringBuilder();
+                StringBuilder aliasesStr = new StringBuilder();
                 for (String alias : aliases)
-                    aliases_str.append(alias).append("\n");
-                help_embed.addField("Aliases:", aliases_str.toString(), false);
+                    aliasesStr.append(alias).append("\n");
+                helpEmbed.addField("Aliases:", aliasesStr.toString(), false);
             }
             if (perms.length > 0) {
-                StringBuilder permissions_str = new StringBuilder();
+                StringBuilder permissionsStr = new StringBuilder();
                 for (Permission perm : perms)
-                    permissions_str.append(perm.getName()).append("\n");
-                help_embed.addField("Permissions required:", permissions_str.toString(), false);
+                    permissionsStr.append(perm.getName()).append("\n");
+                helpEmbed.addField("Permissions required:", permissionsStr.toString(), false);
             }
-            if (cmd_name.equals("channel")) {
-                help_embed.addField("Permissions required:", "Manage Channels", false);
-            }
+            if (((ayaya.commands.Command) cmd).isPremium())
+                helpEmbed.addField("Premium:", "Yes", false);
+            else
+                helpEmbed.addField("Premium:", "No", false);
         } else {
             String description = "This is the list with all my commands. Don't forget that my prefix is `" +
                     event.getClient().getPrefix() + "` and that all commands have a 2 seconds cooldown.";
@@ -98,7 +99,7 @@ public class Help extends ayaya.commands.Command {
                 description =
                         description
                                 .concat("\nJust a friendly reminder, my developer needs your help. If you could donate on my [patreon page](" + patreon_link + ") that would be very appreciated.");
-            help_embed.setAuthor("Command's List", null, event.getJDA().getSelfUser().getAvatarUrl())
+            helpEmbed.setAuthor("Command's List", null, event.getJDA().getSelfUser().getAvatarUrl())
                     .setDescription(description)
                     .setFooter("Requested by " + event.getAuthor().getName() + " | Total commands: "
                             + String.valueOf(event.getClient().getCommands().size()), event.getAuthor().getAvatarUrl());
@@ -112,18 +113,18 @@ public class Help extends ayaya.commands.Command {
                     for (String n : l)
                         s.append("`").append(n).append("`").append(after_command);
                     if (s.length() > 0)
-                        help_embed.addField(
+                        helpEmbed.addField(
                                 c.asCategory().getName(), s.substring(0, s.length() - after_command.length()), false
                         );
                 }
             }
         }
         try {
-            help_embed.setColor(event.getGuild().getSelfMember().getColor());
+            helpEmbed.setColor(event.getGuild().getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
-            help_embed.setColor(Color.decode("#155FA0"));
+            helpEmbed.setColor(Color.decode("#155FA0"));
         }
-        event.reply(help_embed.build());
+        event.reply(helpEmbed.build());
     }
 
     /**

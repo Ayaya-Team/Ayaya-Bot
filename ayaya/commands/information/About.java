@@ -8,8 +8,6 @@ import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 
 import static ayaya.core.enums.CommandCategories.INFORMATION;
 
@@ -20,10 +18,12 @@ public class About extends Command {
 
     private String version;
     private String quote;
-    private String invite_link;
-    private String discord_link;
-    private String upvote_link;
-    private String patreon_link;
+    private String inviteLink;
+    private String discordLink;
+    private String patreonLink;
+    private String dblLink;
+    private String dboatsLink;
+    private String dbotLink;
 
     public About() {
 
@@ -35,8 +35,8 @@ public class About extends Command {
         this.isGuildOnly = false;
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
         quote = "";
-        invite_link = "";
-        discord_link = "";
+        inviteLink = "";
+        discordLink = "";
         version = "";
 
     }
@@ -46,17 +46,20 @@ public class About extends Command {
 
         fetchData();
         String java_version = System.getProperty("java.version");
-        LocalDateTime uptime = getUptime(event);
         EmbedBuilder about_embed = new EmbedBuilder();
         about_embed.setTitle("About " + event.getSelfUser().getName())
                 .setDescription(quote)
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
                 .addField("Version", version, false)
-                .addField("Invite", "[click here](" + invite_link + ")", true)
-                .addField("Discord Invite", "[click here](" + discord_link + ")", true)
-                .addField("Upvote", "[click here](" + upvote_link + ")", true)
-                .addField("Donate", "[click here](" + patreon_link + ")", true)
-                .setFooter("Requested by " + event.getAuthor().getName(), event.getAuthor().getAvatarUrl());
+                .addField("Invite", "[click here](" + inviteLink + ")", true)
+                .addField("Support Server Invite", "[click here](" + discordLink + ")",
+                        true)
+                .addField("Donate", "[click here](" + patreonLink + ")", true)
+                .addField("Upvote", "[Top gg](" + dblLink + ")\n"
+                        + "[Discord Boats](" + dboatsLink + ")\n"
+                        + "[Discord Bot List](" + dbotLink + ")", true)
+                .setFooter("Requested by " + event.getAuthor().getName(),
+                        event.getAuthor().getAvatarUrl());
         try {
             about_embed.setColor(event.getGuild().getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
@@ -64,19 +67,6 @@ public class About extends Command {
         }
         event.reply(about_embed.build());
 
-    }
-
-    /**
-     * Fetches the total uptime of the bot.
-     *
-     * @param event the event tha triggered this command
-     * @return uptime
-     */
-    private LocalDateTime getUptime(CommandEvent event) {
-        LocalDateTime start_time = event.getClient().getStartTime().toLocalDateTime();
-        LocalDateTime current_time = OffsetDateTime.now().toLocalDateTime();
-        return current_time.minusDays(start_time.getDayOfYear() - 1).minusHours(start_time.getHour())
-                .minusMinutes(start_time.getMinute()).minusSeconds(start_time.getSecond());
     }
 
     /**
@@ -91,14 +81,18 @@ public class About extends Command {
                     .getString("value");
             quote = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'about quote';", 5)
                     .getString("value");
-            invite_link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'invite';", 5)
+            inviteLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'invite';", 5)
                     .getString("value");
-            discord_link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'support';", 5)
+            discordLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'support';", 5)
                     .getString("value");
-            upvote_link = jdbc.sqlSelect("SELECT * FROM `botlists` WHERE `list` LIKE 'dbl';", 5)
+            patreonLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
+                    .getString("value");
+            dblLink = jdbc.sqlSelect("SELECT * FROM botlists WHERE `list` LIKE 'dbl';", 5)
                     .getString("upvote");
-            patreon_link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
-                    .getString("value");
+            dboatsLink = jdbc.sqlSelect("SELECT * FROM botlists WHERE `list` LIKE 'dboats';", 5)
+                    .getString("upvote");
+            dbotLink = jdbc.sqlSelect("SELECT * FROM botlists WHERE `list` LIKE 'dbot';", 5)
+                    .getString("upvote");
         } catch (SQLException e) {
             System.out.println(
                     "A problem occurred while trying to get necessary information for the " + this.name

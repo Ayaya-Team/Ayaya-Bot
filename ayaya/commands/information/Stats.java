@@ -1,6 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
+import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.Commands;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
@@ -30,6 +31,7 @@ public class Stats extends Command {
         this.help = "Do you like numbers? Then this might be a good command for you.";
         this.arguments = "{prefix}stats";
         this.aliases = new String[]{"statistics"};
+        this.category = CommandCategories.INFORMATION.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
 
     }
@@ -136,6 +138,12 @@ public class Stats extends Command {
 
     }
 
+    /**
+     * Fetches the total uptime of the bot.
+     *
+     * @param event the event tha triggered this command
+     * @return uptime
+     */
     private LocalDateTime getUptime(CommandEvent event) {
         LocalDateTime start_time = event.getClient().getStartTime().toLocalDateTime();
         LocalDateTime current_time = OffsetDateTime.now().toLocalDateTime();

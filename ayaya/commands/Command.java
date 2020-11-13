@@ -148,19 +148,15 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
         }
 
-        if(cooldownTime>0)
-        {
+        if (cooldownTime > 0) {
             String key = getCooldownKey(event);
             int remaining = event.getClient().getRemainingCooldown(key);
-            if(remaining>0)
-            {
+            if (remaining > 0) {
                 String error = getCooldownError(event, remaining);
-                if(error!=null)
-                {
+                if (error != null) {
                     return;
                 }
-            }
-            else event.getClient().applyCooldown(key, cooldownTime);
+            } else event.getClient().applyCooldown(key, cooldownTime);
         }
 
         try {
@@ -185,7 +181,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
      *
      * @param event The {@link CommandEvent CommandEvent} that triggered this Command
      */
-    protected void executeInstructions(CommandEvent event) {}
+    protected void executeInstructions(CommandEvent event) {
+    }
 
     @Override
     public Permission[] getUserPermissions() {
@@ -208,8 +205,17 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     }
 
     /**
-     * Checks in the database if the user that triggered the command is blacklisted or not.
-     * If the verification fails the command will be always executed.
+     * Returns if this command is premium or not
+     *
+     * @return true or false
+     */
+    public boolean isPremium() {
+        return isPremium;
+    }
+
+    /**
+     * Checks in the database if the user that triggered the command is blacklisted or not. If the verification fails
+     * the command will be always executed.
      *
      * @param id the id of the user
      * @return true if the user is blacklisted, false if it's not
@@ -237,8 +243,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     }
 
     /**
-     * Checks wether a user is or isn't a patron.
-     * If the verification fails, the command will never be executed.
+     * Checks wether a user is or isn't a patron. If the verification fails, the command will never be executed.
      *
      * @param event The {@link CommandEvent CommandEvent} that triggered this Command
      * @return true if the user that triggered the command is a patron, false if not
@@ -248,8 +253,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     }
 
     /**
-     * Retrieves the string with the expiration date for user who triggered the command event.
-     * In case the user isn't on the whitelist or is no longer premium, returns null.
+     * Retrieves the string with the expiration date for user who triggered the command event. In case the user isn't on
+     * the whitelist or is no longer premium, returns null.
      *
      * @param event the command event
      * @return (possibly null) string
@@ -278,8 +283,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                         jdbc.sqlInsertUpdateOrDelete(
                                 "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
                         );
-                    }
-                    else answer = result;
+                    } else answer = result;
                 }
             }
         } catch (SQLException e) {
@@ -297,8 +301,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     }
 
     /**
-     * Checks if the user is the bot's owner or a co-owner.
-     * The owner and co-owners have access to all commands without exceptions.
+     * Checks if the user is the bot's owner or a co-owner. The owner and co-owners have access to all commands without
+     * exceptions.
      *
      * @param event The {@link CommandEvent CommandEvent} that triggered this Command
      * @return true if the user is the owner or a co-owner, false if not
@@ -308,7 +312,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         if (id.equals(event.getClient().getOwnerId())) {
             return true;
         }
-        for (String co_owner: event.getClient().getCoOwnerIds())
+        for (String co_owner : event.getClient().getCoOwnerIds())
             if (id.equals(co_owner)) {
                 return true;
             }
