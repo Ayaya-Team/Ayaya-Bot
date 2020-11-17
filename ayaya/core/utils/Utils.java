@@ -113,6 +113,10 @@ public class Utils {
         }
     }
 
+    private static final String WEBP = ".webp";
+    private static final String PNG = ".png";
+    private static final String GIF = ".gif";
+
     /**
      * Returns an array with 2 urls for the same avatar of an user.
      * The first url of the avatar shows the smallest version of it.
@@ -126,22 +130,12 @@ public class Utils {
     public static String[] getAvatarUrls(User user, int size1, int size2) {
         int minSize = Math.min(size1, size2);
         int maxSize = Math.max(size1, size2);
-        String url = user.getEffectiveAvatarUrl().replace(".webp", ".png");
+        String url = user.getEffectiveAvatarUrl().replace(WEBP, PNG);
         String displayUrl;
-        if (url.endsWith(".png")) {
-            displayUrl = url + "?size=" + minSize;
-            url = url + "?size=" + maxSize;
-        } else {
-            String s[] = url.split("\\?size=");
-            String sizeString = s[s.length - 1];
-            int size = Integer.getInteger(sizeString);
-            if (size < maxSize) {
-                url = url.replace("?size=" + sizeString, "?size=" + maxSize);
-                displayUrl = url;
-            }
-            else
-                displayUrl = url;
-        }
+        if (!url.endsWith(PNG) || !url.endsWith(GIF))
+            url = url.split("\\?size=")[0];
+        displayUrl = url + "?size=" + minSize;
+        url = url + "?size=" + maxSize;
         return new String[]{url, displayUrl};
     }
 

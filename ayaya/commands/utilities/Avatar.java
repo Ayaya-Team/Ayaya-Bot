@@ -22,6 +22,9 @@ public class Avatar extends Command {
     private static final int MAX_SIZE = 2048;
     private static final int MIN_SIZE = 512;
 
+    private static final String JPG = ".jpg";
+    private static final String PNG = ".png";
+
     public Avatar() {
 
         this.name = "avatar";
@@ -108,9 +111,12 @@ public class Avatar extends Command {
         String urls[] = Utils.getAvatarUrls(user, MIN_SIZE, MAX_SIZE);
         String url = urls[0];
         String displayUrl = urls[1];
-        avatarEmbed.setDescription(
-                "[PNG](" + url + ") | [JPG](" + url.replace(".png", ".jpg") + ")"
-        );
+        if (url.contains(PNG))
+            avatarEmbed.setDescription(
+                    "[PNG](" + url + ") | [JPG](" + url.replace(PNG, JPG) + ")"
+            );
+        else
+            avatarEmbed.setDescription("[GIF](" + url + ")");
         avatarEmbed.setImage(displayUrl);
         try {
             avatarEmbed.setColor(event.getMember().getColor());
