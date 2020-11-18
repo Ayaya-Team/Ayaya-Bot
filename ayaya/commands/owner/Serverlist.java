@@ -6,9 +6,11 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -57,8 +59,11 @@ public class Serverlist extends Command {
                 return;
             }
         }
+        List<Guild> guilds = event.getJDA().getGuilds();
+        for (Guild guild: guilds)
+            guild.retrieveOwner(true).queue();
         pbuilder.clearItems();
-        event.getJDA().getGuilds().stream()
+        guilds.stream()
                 .map(g -> "**" + g.getName() + "** `" + g.getId() + "`: " + g.getMembers().size()
                         + " members\nOwner: " + Objects.requireNonNull(g.getOwner()).getUser().getName() + "#" + g.getOwner().getUser().getDiscriminator()
                         + " `" + g.getOwner().getUser().getId() + "`")

@@ -211,6 +211,7 @@ public class Ayaya {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
             ayaya = JDABuilder.create(token, intents)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS)
+                    .enableCache(CacheFlag.ROLE_TAGS)
                     .addEventListeners(client, new EventWaiter(), new EventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)

@@ -64,6 +64,8 @@ public class Blacklist extends Command {
             event.reply("No one is blacklisted right now.");
             return;
         }
+        for (String[] array: blacklist)
+            event.getJDA().retrieveUserById(array[1]).queue();
         pbuilder.clearItems();
         blacklist.stream().map(
                 array -> array[1] + " | " + Objects.requireNonNull(event.getJDA().getUserById(array[1])).getAsTag() +
