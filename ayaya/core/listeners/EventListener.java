@@ -40,7 +40,7 @@ public class EventListener extends ListenerAdapter {
     private String console;
     private String server;
     private String greetings_farewells;
-    private int messagesCounter;
+    private long messagesCounter;
     private ScheduledThreadPoolExecutor voiceTimeoutManager;
     private Map<String, ScheduledFuture<?>> scheduledTimeouts;
     private int amount;
@@ -224,7 +224,7 @@ public class EventListener extends ListenerAdapter {
      *
      * @return messages counter
      */
-    public int getMessagesCounter() {
+    public long getMessagesCounter() {
         return messagesCounter;
     }
 
