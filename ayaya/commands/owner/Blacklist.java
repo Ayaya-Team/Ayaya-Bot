@@ -7,11 +7,13 @@ import com.jagrosh.jdautilities.menu.Paginator;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.exceptions.PermissionException;
+import net.dv8tion.jda.internal.entities.UserById;
 
 import java.awt.*;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static ayaya.core.enums.CommandCategories.OWNER;
@@ -59,24 +61,20 @@ public class Blacklist extends Command {
                 return;
             }
         }
+        final int listPage = page;
         List<String[]> blacklist = getBlacklist();
         if (blacklist.size() == 0) {
             event.reply("No one is blacklisted right now.");
             return;
         }
-        for (String[] array: blacklist)
-            event.getJDA().retrieveUserById(array[1]).queue();
-        pbuilder.clearItems();
-        blacklist.stream().map(
-                array -> array[1] + " | " + Objects.requireNonNull(event.getJDA().getUserById(array[1])).getAsTag() +
-                        " | " + array[2] + "\n"
-        )
-                .forEach(pbuilder::addItems);
-        Paginator p = pbuilder
-                .setColor(event.isFromType(ChannelType.TEXT) ? event.getSelfMember().getColor() : Color.decode("#155FA0"))
-                .setUsers(event.getAuthor())
-                .build();
-        p.paginate(event.getChannel(), page);
+        for (int i = 0; i < blacklist.size(); i++) {
+            final int index = i;
+            event.getJDA().retrieveUserById(blacklist.get(i)[1]).queue(u -> {
+                if (index == blacklist.size() - 1) {
+                    printList(blacklist, event, listPage);
+                }
+            });
+        }
 
     }
 
@@ -114,6 +112,29 @@ public class Blacklist extends Command {
             }
         }
         return blacklist;
+
+    }
+
+    /**
+     * Prints the list on the channel of the event.
+     *
+     * @param blacklist the blacklist
+     * @param event     the event of this command
+     * @param page      the page of the list to print
+     */
+    private void printList(List<String[]> blacklist, CommandEvent event, int page) {
+
+        pbuilder.clearItems();
+        blacklist.stream().map(
+                array -> array[1] + " | " + Objects.requireNonNullElse(event.getJDA().getUserById(array[1]), new UserById(Long.parseLong(array[1]))).getAsTag() +
+                        " | " + array[2] + "\n"
+        )
+                .forEach(pbuilder::addItems);
+        Paginator p = pbuilder
+                .setColor(event.isFromType(ChannelType.TEXT) ? event.getSelfMember().getColor() : Color.decode("#155FA0"))
+                .setUsers(event.getAuthor())
+                .build();
+        p.paginate(event.getChannel(), page);
 
     }
 

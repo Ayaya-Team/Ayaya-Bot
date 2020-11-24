@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 import static ayaya.core.enums.CommandCategories.OWNER;
 
 /**
- * Modified by Aya Komichi#7541
+ * Modified version of the serverlist command made by John Grosh (jagrosh).
  *
- * @author John Grosh (jagrosh)
+ * @author Aya Komichi#7541
  */
 public class Serverlist extends Command {
 
@@ -59,14 +59,40 @@ public class Serverlist extends Command {
                 return;
             }
         }
+        final int listPage = page;
         List<Guild> guilds = event.getJDA().getGuilds();
-        for (Guild guild: guilds)
-            guild.retrieveOwner(true).queue();
+        for (int i = 0; i < guilds.size(); i++) {
+            final int index = i;
+            guilds.get(i).retrieveOwner(true).queue(o -> {
+                if (index == guilds.size() - 1) {
+                    printList(guilds, event, listPage);
+                }
+            }, e -> {
+                if (index == guilds.size() - 1) {
+                    printList(guilds, event, listPage);
+                }
+            });
+        }
+
+    }
+
+    /**
+     * Prints the list on the channel of the event.
+     *
+     * @param guilds the server list
+     * @param event  the event of this command
+     * @param page   the page of the list to print
+     */
+    private void printList(List<Guild> guilds, CommandEvent event, int page) {
+
         pbuilder.clearItems();
         guilds.stream()
                 .map(g -> "**" + g.getName() + "** `" + g.getId() + "`: " + g.getMembers().size()
-                        + " members\nOwner: " + Objects.requireNonNull(g.getOwner()).getUser().getName() + "#" + g.getOwner().getUser().getDiscriminator()
-                        + " `" + g.getOwner().getUser().getId() + "`")
+                        + " members\nOwner: " + (
+                                g.getOwner() == null ? "unknown" :
+                                        Objects.requireNonNull(g.getOwner()).getUser().getName()
+                                                + "#" + g.getOwner().getUser().getDiscriminator()
+                                                + " `" + g.getOwner().getUser().getId() + "`"))
                 .forEach(pbuilder::addItems);
         event.getJDA().getShardInfo();
         Paginator p = pbuilder
@@ -76,7 +102,6 @@ public class Serverlist extends Command {
                 .setUsers(event.getAuthor())
                 .build();
         p.paginate(event.getChannel(), page);
-
     }
 
 }

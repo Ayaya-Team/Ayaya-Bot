@@ -119,6 +119,12 @@ public class EventListener extends ListenerAdapter {
                             + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
             ).queue();
+        }, e -> {
+            Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
+                    "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by " +
+                            "an unknown person at `"
+                            + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
+            ).queue();
         });
 
     }
@@ -133,6 +139,12 @@ public class EventListener extends ListenerAdapter {
                     "I just left the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
                             + owner.getUser().getName() + "#"
                             + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
+                            + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
+            ).queue();
+        }, e -> {
+            Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
+                    "I just left the server " + guild.getName() + " `" + guild.getId() + "`, owned by " +
+                            "an unknown person at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
             ).queue();
         });
