@@ -97,26 +97,39 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
             for (Permission p : botPerms) {
 
-                if (p.getName().startsWith("VOICE")) {
+                if (p.isVoice()) {
 
-                    GuildVoiceState vs = event.getMember().getVoiceState();
-                    if (vs == null || vs.getChannel() == null) {
+                    if (p.getName().startsWith("VOICE")) {
 
-                        event.replyError("You must be in a voice channel to use that.");
-                        return;
+                        GuildVoiceState vs = event.getMember().getVoiceState();
+                        if (vs == null || vs.getChannel() == null) {
 
-                    } else if (!event.getSelfMember().hasPermission(vs.getChannel(), p)) {
+                            event.replyError("You must be in a voice channel to use that.");
+                            return;
 
-                        event.replyError("I need the permission **" + p.getName()
-                                + "** in the channel " + vs.getChannel().getName() + " to execute this command.");
+                        } else if (!event.getSelfMember().hasPermission(vs.getChannel(), p)) {
+
+                            event.replyError("I need the permission **" + p.getName()
+                                    + "** in the channel " + vs.getChannel().getName() + " to execute this command.");
+                            return;
+
+                        }
+
+                    } else if (!event.getSelfMember().hasPermission(event.getTextChannel(), p)) {
+
+                        event.replyError("I need the permission **" + p.getName() + "** to execute this command in this channel.");
                         return;
 
                     }
 
-                } else if (!event.getSelfMember().hasPermission(event.getTextChannel(), p)) {
+                } else {
 
-                    event.replyError("I need the permission **" + p.getName() + "** to execute this command.");
-                    return;
+                    if(!event.getSelfMember().hasPermission(p)) {
+
+                        event.replyError("I need the permission **" + p.getName() + "** to execute this command.");
+                        return;
+
+                    }
 
                 }
 

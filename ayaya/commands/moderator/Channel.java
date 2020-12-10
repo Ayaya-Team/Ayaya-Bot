@@ -5,10 +5,7 @@ import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.PermissionNames;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.managers.ChannelManager;
 
 import java.util.ArrayList;
@@ -231,8 +228,8 @@ public class Channel extends Command {
                             if (success) event.replySuccess("Channel `" + channelName + "` created with success.");
                             else event.replyWarning(
                                     "Channel `" + channelName + "` created with success." +
-                                    " Unfortunately, I do not have all the permissions you specified," +
-                                    " so consider manually allowing or denying the missing ones."
+                                            " Unfortunately, I do not have all the permissions you specified," +
+                                            " so consider manually allowing or denying the missing ones."
                             );
                         });
                 break;
@@ -293,7 +290,7 @@ public class Channel extends Command {
         String args[] = input.split("--");
 
         String name = "", newName = "", topic = "", categoryName = "", nsfw = "";
-        int slowmode = 0, bitrate = 64, userLimit = 0;
+        int slowmode = -1, bitrate = -1, userLimit = -1;
         List<Permission> permsToAdd = new ArrayList<>(30);
         List<Permission> permsToRemove = new ArrayList<>(30);
 
@@ -316,18 +313,21 @@ public class Channel extends Command {
                         try {
                             slowmode = Integer.parseInt(arg.substring(matcher.end()).trim());
                         } catch (NumberFormatException e) {
+                            slowmode = -1;
                         }
                         break;
                     case BITRATE:
                         try {
                             bitrate = Integer.parseInt(arg.substring(matcher.end()).trim());
                         } catch (NumberFormatException e) {
+                            bitrate = -1;
                         }
                         break;
                     case USER_LIMIT:
                         try {
                             userLimit = Integer.parseInt(arg.substring(matcher.end()).trim());
                         } catch (NumberFormatException e) {
+                            userLimit = -1;
                         }
                         break;
                     case NSFW:
@@ -354,8 +354,14 @@ public class Channel extends Command {
                 }
         }
 
-        if (name.isEmpty()) {
+        if (name.isBlank()) {
             event.reply("<:AyaWhat:362990028915474432> You didn't provide the name of the channel to edit.");
+            return;
+        }
+        if (newName.isBlank() && topic.isBlank() && nsfw.isBlank()
+                && slowmode < 0 && bitrate < 0 && userLimit < 0
+                && permsToAdd.isEmpty() && permsToRemove.isEmpty() && categoryName.isBlank()) {
+            event.replyError("You did not specify anything to change in this channel.");
             return;
         }
 
@@ -392,6 +398,7 @@ public class Channel extends Command {
             event.replyError("The name of the category must not be bigger than " + NAME_LENGTH + " characters.");
             return;
         }
+
         ChannelManager manager = channel.getManager();
 
         if (channel instanceof TextChannel) {
@@ -399,21 +406,41 @@ public class Channel extends Command {
                 event.replyError("The topic length must not be bigger than " + TOPIC_LENGTH + " characters.");
                 return;
             }
-            if (!newName.isEmpty())
-                manager = manager.setName(newName.toLowerCase().replaceAll(" ", "_"));
-            if (!topic.isEmpty())
-                manager = manager.setTopic(topic);
-            if (!nsfw.isEmpty())
-                manager = manager.setNSFW(nsfw.equals("yes"));
-            if (slowmode > -1)
-                manager = manager.setSlowmode(slowmode);
+            TextChannel textChannel = (TextChannel) channel;
+            if (name.equals(newName) && topic.equals(textChannel.getTopic())
+                    && nsfw.equals("yes") == textChannel.isNSFW() && slowmode == textChannel.getSlowmode()
+                    && permsToAdd.isEmpty() && permsToRemove.isEmpty()) {
+                if (channel.getParent() != null && categoryName.equals(channel.getParent().getName())) {
+                    event.replyError("All the changes specified are already present in the channel.");
+                    return;
+                }
+            } else {
+                if (!newName.isEmpty())
+                    manager = manager.setName(newName.toLowerCase().replaceAll(" ", "_"));
+                if (!topic.isEmpty())
+                    manager = manager.setTopic(topic);
+                if (!nsfw.isEmpty())
+                    manager = manager.setNSFW(nsfw.equals("yes"));
+                if (slowmode > -1)
+                    manager = manager.setSlowmode(slowmode);
+            }
         } else {
-            if (!newName.isEmpty())
-                manager = manager.setName(newName);
-            if (bitrate > -1)
-                manager = manager.setBitrate(bitrate * 1000);
-            if (userLimit > -1)
-                manager = manager.setUserLimit(userLimit);
+            VoiceChannel voiceChannel = (VoiceChannel) channel;
+            if (name.equals(newName) && bitrate == voiceChannel.getBitrate()
+                    && userLimit == voiceChannel.getUserLimit()
+                    && permsToAdd.isEmpty() && permsToRemove.isEmpty()) {
+                if (channel.getParent() != null && categoryName.equals(channel.getParent().getName())) {
+                    event.replyError("All the changes specified are already present in the channel.");
+                    return;
+                }
+            } else {
+                if (!newName.isEmpty())
+                    manager = manager.setName(newName);
+                if (bitrate > -1)
+                    manager = manager.setBitrate(bitrate * 1000);
+                if (userLimit > -1)
+                    manager = manager.setUserLimit(userLimit);
+            }
         }
         if (!categoryName.isEmpty())
             addChannelToCategory(channel, categoryName, event.getMember().getEffectiveName());

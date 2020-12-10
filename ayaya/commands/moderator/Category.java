@@ -217,6 +217,10 @@ public class Category extends Command {
             event.replyError("The new name of the category must not be bigger than " + NAME_LENGTH + " characters.");
             return;
         }
+        if (newName.isBlank() && permsToAdd.isEmpty() && permsToRemove.isEmpty()) {
+            event.replyError("You did not specify anything to change in this category.");
+            return;
+        }
 
         List<net.dv8tion.jda.api.entities.Category> categories =
                 event.getGuild().getCategoriesByName(name, true);
@@ -233,9 +237,12 @@ public class Category extends Command {
             event.replyError("You don't have enough permissions to manage this category.");
             return;
         }
-
         if (!event.getSelfMember().hasPermission(category, Permission.MANAGE_CHANNEL)) {
             event.replyError("Sadly I don't have permission to manage this category.");
+            return;
+        }
+        if (name.equals(newName) && permsToAdd.isEmpty() && permsToRemove.isEmpty()) {
+            event.replyError("All the changes specified are already present in the category.");
             return;
         }
 

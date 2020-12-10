@@ -158,7 +158,7 @@ public class Role extends Command {
         roleCreation = roleCreation.setHoisted(hoisted);
         roleCreation = roleCreation.setMentionable(mentionable);
         if (permissions.size() == 0) {
-            for (Permission p: ALL_TEXT_PERMISSIONS) {
+            for (Permission p : ALL_TEXT_PERMISSIONS) {
                 if (event.getSelfMember().hasPermission(p))
                     permissions.add(p);
             }
@@ -275,8 +275,13 @@ public class Role extends Command {
                 }
         }
 
-        if (name.isEmpty()) {
+        if (name.isBlank()) {
             event.reply("<:AyaWhat:362990028915474432> You didn't provide the name of the role to edit.");
+            return;
+        }
+        if (newName.isBlank() && colorCode.isBlank() && hoisted.isBlank() && mentionable.isBlank()
+                && permsToAdd.isEmpty() && permsToRemove.isEmpty()) {
+            event.replyError("You did not specify anything to change in this role.");
             return;
         }
         if (newName.length() > NAME_LENGTH) {
@@ -301,31 +306,31 @@ public class Role extends Command {
             default:
         }
 
+        if (!colorCode.startsWith("#"))
+            colorCode = "#" + colorCode;
+        Color color = Color.decode(colorCode);
+        if (name.equals(newName) && (role.getColor() == null || role.getColor().equals(color))
+                && role.isHoisted() == hoisted.equals("yes") && role.isMentionable() == mentionable.equals("yes")
+                && permsToAdd.isEmpty() && permsToRemove.isEmpty()) {
+            event.replyError("All the changes specified are already present in the role.");
+            return;
+        }
+
         try {
             RoleManager manager = role.getManager();
-            if (!newName.isBlank()) {
-                if (role.isPublicRole())
-                    event.reply("Note: The name of this role could not be changed because this is the public role.");
-                else manager = manager.setName(newName);
-            }
-            if (!colorCode.isBlank()) {
-                if (!colorCode.startsWith("#"))
-                    colorCode = "#" + colorCode;
-                manager = manager.setColor(Color.decode(colorCode));
-            }
-            if (!hoisted.isEmpty())
-                manager = manager.setHoisted(hoisted.equals("yes"));
-            if (!mentionable.isEmpty())
-                manager = manager.setMentionable(mentionable.equals("yes"));
-            if (!permsToAdd.isEmpty())
-                manager = manager.givePermissions(permsToAdd);
-            if (!permsToRemove.isEmpty())
-                manager = manager.revokePermissions(permsToRemove);
+            if (role.isPublicRole())
+                event.reply("Note: The name of this role could not be changed because this is the public role.");
+            else manager = manager.setName(newName);
+            manager = manager.setColor(color)
+                    .setHoisted(hoisted.equals("yes"))
+                    .setMentionable(mentionable.equals("yes"))
+                    .givePermissions(permsToAdd)
+                    .revokePermissions(permsToRemove);
 
             final String roleName = name;
             final boolean success = hasAll;
             manager
-                    .reason("Role's changes requested by " + event.getMember().getEffectiveName() + ".")
+                    .reason("Role changes requested by " + event.getMember().getEffectiveName() + ".")
                     .queue(r -> {
                         if (success) event.replySuccess("Role `" + roleName + "` edited with success.");
                         else event.replyWarning("Role `" + roleName + "` edited with success." +
@@ -381,7 +386,7 @@ public class Role extends Command {
 
         String users = "", toAdd = "", toRemove = "";
         Matcher matcher;
-        for (String arg: args) {
+        for (String arg : args) {
             matcher = WORD.matcher(arg);
             if (matcher.find()) {
                 switch (matcher.group().trim().toLowerCase()) {
@@ -418,7 +423,7 @@ public class Role extends Command {
         String rolesToRemoveInput[] = toRemove.split(",");
 
         net.dv8tion.jda.api.entities.Role role = null;
-        for (String s: rolesToAddInput) {
+        for (String s : rolesToAddInput) {
             s = s.trim();
             idFinder = ID.matcher(s);
             if (!idFinder.find()) {
@@ -431,7 +436,7 @@ public class Role extends Command {
                 rolesToAdd.add(role);
             }
         }
-        for (String s: rolesToRemoveInput) {
+        for (String s : rolesToRemoveInput) {
             s = s.trim();
             idFinder = ID.matcher(s);
             if (!idFinder.find()) {
@@ -464,7 +469,7 @@ public class Role extends Command {
                     manageRolesForMember(m, author, guild, rolesToAdd, rolesToRemove);
             });
         }
-        for (String s: users.split(",")) {
+        for (String s : users.split(",")) {
             s = s.trim();
             mentionFinder = USER_MENTION.matcher(s);
             if (!mentionFinder.find()) {
@@ -474,10 +479,12 @@ public class Role extends Command {
                         guild.retrieveMemberById(arg, true).queue(m -> {
                             if (m != null)
                                 manageRolesForMember(m, author, guild, rolesToAdd, rolesToRemove);
-                        }, t -> {});
+                        }, t -> {
+                        });
                     } else
                         manageRolesForMember(l.get(0), author, guild, rolesToAdd, rolesToRemove);
-                }).onError(t -> {});
+                }).onError(t -> {
+                });
             }
         }
 
@@ -504,9 +511,8 @@ public class Role extends Command {
      * @param role       the role to check for
      * @param member     the member user that triggered the command
      * @param selfMember the member bot representing this bot
-     * @return 1 if the role can be managed,
-     *         0 if the bot doesn't have enough permissions,
-     *         -1 if the user doesn't have enough permissions
+     * @return 1 if the role can be managed, 0 if the bot doesn't have enough permissions, -1 if the user doesn't have
+     * enough permissions
      */
     private int ableToManageRole(
             net.dv8tion.jda.api.entities.Role role, Member member, Member selfMember
@@ -537,15 +543,14 @@ public class Role extends Command {
             Member member, Member author, Guild guild,
             List<net.dv8tion.jda.api.entities.Role> rolesToAdd,
             List<net.dv8tion.jda.api.entities.Role> rolesToRemove
-    )
-    {
-        for (net.dv8tion.jda.api.entities.Role roleToAdd: rolesToAdd) {
+    ) {
+        for (net.dv8tion.jda.api.entities.Role roleToAdd : rolesToAdd) {
             guild.addRoleToMember(member, roleToAdd)
                     .reason("Role assignment to user requested by "
                             + author.getEffectiveName() + ".")
                     .queue();
         }
-        for (net.dv8tion.jda.api.entities.Role roleToRemove: rolesToRemove) {
+        for (net.dv8tion.jda.api.entities.Role roleToRemove : rolesToRemove) {
             guild.removeRoleFromMember(member, roleToRemove)
                     .reason("Role unassignment from user requested by "
                             + author.getEffectiveName() + ".")
