@@ -303,15 +303,16 @@ public class Role extends Command {
 
         try {
             RoleManager manager = role.getManager();
-            if (!newName.isEmpty()) {
+            if (!newName.isBlank()) {
                 if (role.isPublicRole())
                     event.reply("Note: The name of this role could not be changed because this is the public role.");
                 else manager = manager.setName(newName);
             }
-            if (!colorCode.isEmpty())
+            if (!colorCode.isBlank()) {
                 if (!colorCode.startsWith("#"))
                     colorCode = "#" + colorCode;
                 manager = manager.setColor(Color.decode(colorCode));
+            }
             if (!hoisted.isEmpty())
                 manager = manager.setHoisted(hoisted.equals("yes"));
             if (!mentionable.isEmpty())
