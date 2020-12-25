@@ -18,8 +18,8 @@ import java.util.regex.Pattern;
  */
 public class Help extends ayaya.commands.Command {
 
-    private String discord_link;
-    private String patreon_link;
+    private String discordLink;
+    private String patreonLink;
 
     public Help() {
 
@@ -29,8 +29,8 @@ public class Help extends ayaya.commands.Command {
         this.arguments = "{prefix}help <command>\n\nTo just get the help list run: {prefix}help";
         this.category = CommandCategories.INFORMATION.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
-        discord_link = "";
-        patreon_link = "";
+        discordLink = "";
+        patreonLink = "";
 
     }
 
@@ -89,16 +89,17 @@ public class Help extends ayaya.commands.Command {
                 helpEmbed.addField("Premium:", "Yes", false);
             else
                 helpEmbed.addField("Premium:", "No", false);
+            helpEmbed.addField("Cooldown", cmd.getCooldown() + " seconds", false);
         } else {
             String description = "This is the list with all my commands. Don't forget that my prefix is `" +
-                    event.getClient().getPrefix() + "` and that all commands have a 2 seconds cooldown.";
+                    event.getClient().getPrefix() + "`.";
             getData();
-            if (!discord_link.isEmpty())
-                description = description.concat(" For support, please join my [server](" + discord_link + ").");
-            if (!patreon_link.isEmpty())
+            if (!discordLink.isEmpty())
+                description = description.concat(" For support, please join my [server](" + discordLink + ").");
+            if (!patreonLink.isEmpty())
                 description =
                         description
-                                .concat("\nJust a friendly reminder, my developer needs your help. If you could donate on my [patreon page](" + patreon_link + ") that would be very appreciated.");
+                                .concat("\nJust a friendly reminder, my developer needs your help. If you could donate on my [patreon page](" + patreonLink + ") that would be very appreciated.");
             helpEmbed.setAuthor("Command's List", null, event.getJDA().getSelfUser().getAvatarUrl())
                     .setDescription(description)
                     .setFooter("Requested by " + event.getAuthor().getName() + " | Total commands: "
@@ -148,9 +149,9 @@ public class Help extends ayaya.commands.Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open("jdbc:sqlite:data.db");
-            discord_link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'support';", 5)
+            discordLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'support';", 5)
                     .getString("value");
-            patreon_link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
+            patreonLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
                     .getString("value");
         } catch (SQLException e) {
             System.out.println(

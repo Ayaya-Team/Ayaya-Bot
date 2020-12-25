@@ -1,19 +1,31 @@
 package ayaya.commands.moderator;
 
-import ayaya.commands.Command;
+import ayaya.commands.ModCommand;
 import ayaya.core.enums.CommandCategories;
+import ayaya.core.utils.ModActionData;
+import ayaya.core.utils.ParallelThreadHandler;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 
 /**
  * Class of the unmute command.
  */
-public class Unmute extends Command {
+public class Unmute extends ModCommand {
+
+    private Map<CommandEvent, ModActionData> cmdData;
+    private ReentrantLock lock;
 
     public Unmute() {
 
@@ -27,6 +39,8 @@ public class Unmute extends Command {
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
+        this.cooldownTime = 5;
+        cmdData = new HashMap<>(10);
 
     }
 
@@ -71,14 +85,23 @@ public class Unmute extends Command {
         if (!message.isEmpty()) {
             Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(message);
             Matcher idFinder;
+            ParallelThreadHandler<Member, List<Member>> threadHandler =
+                    new ParallelThreadHandler<>();
+            threadHandler.setFinalCallback(this::onFinish);
+            threadHandler.setCommandEvent(event);
+            ModActionData data = new ModActionData();
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                guild.retrieveMemberById(idFinder.group()).queue(m -> {
-                    if (m != null)
-                        unmute(author, authorHighestPosition, event.getSelfMember(),
-                                highestPosition, m, guild, muteRole);
-                }, t -> {});
+                threadHandler.addRestAction(
+                        guild.retrieveMemberById(idFinder.group()),
+                        m -> unmute(author, authorHighestPosition, event.getSelfMember(),
+                                highestPosition, m, guild, muteRole, data, threadHandler),
+                        e -> {
+                            data.putNotFound();
+                            threadHandler.onExecutionFinish();
+                        }
+                );
             }
             String[] input = message.split(",");
             for (String s : input) {
@@ -86,20 +109,32 @@ public class Unmute extends Command {
                 mentionFinder = USER_MENTION.matcher(s);
                 if (!mentionFinder.find()) {
                     final String arg = s;
-                    guild.retrieveMembersByPrefix(s, 1).onSuccess(l -> {
-                        if (l.isEmpty()) {
-                            guild.retrieveMemberById(arg, true).queue(m -> {
-                                if (m != null)
+                    threadHandler.addTask(
+                            guild.retrieveMembersByPrefix(s, 1),
+                            l -> {
+                                if (l.isEmpty()) {
+                                    guild.retrieveMemberById(arg, true).queue(
+                                            m -> unmute(author, authorHighestPosition, event.getSelfMember(),
+                                                    highestPosition, m, guild, muteRole, data, threadHandler),
+                                            t -> {
+                                                data.putNotFound();
+                                                threadHandler.onExecutionFinish();
+                                            }
+                                    );
+                                } else
                                     unmute(author, authorHighestPosition, event.getSelfMember(),
-                                            highestPosition, m, guild, muteRole);
-                            }, t -> {});
-                        } else
-                            unmute(author, authorHighestPosition, event.getSelfMember(),
-                                    highestPosition, l.get(0), guild, muteRole);
-                    }).onError(t -> {});
+                                            highestPosition, l.get(0), guild, muteRole, data, threadHandler);
+                            },
+                            e -> {
+                                e.printStackTrace();
+                                data.putException();
+                                threadHandler.onExecutionFinish();
+                            }
+                    );
                 }
             }
-            event.replySuccess("I attempted to unmute all the members mentioned.");
+            cmdData.put(event, data);
+            threadHandler.run();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to mute? You didn't tell me yet.");
         }
@@ -115,10 +150,13 @@ public class Unmute extends Command {
      * @param member                the member to be unmuted
      * @param guild                 the guild where this command was triggered
      * @param muteRole              the mute role to be used
+     * @param data                  the action data
+     * @param threadHandler         the thread handler in use
      */
     private void unmute(Member author, int authorHighestPosition, Member self, int highestPosition,
-                      Member member, Guild guild, Role muteRole)
-    {
+                        Member member, Guild guild, Role muteRole, ModActionData data,
+                        ParallelThreadHandler<Member, List<Member>> threadHandler) {
+        boolean abort = false;
         List<Role> memberRoles;
         int memberHighestPosition = 0;
         memberRoles = member.getRoles();
@@ -134,12 +172,93 @@ public class Unmute extends Command {
         ) {
             for (Role role : memberRoles) {
                 if (role.equals(muteRole)) {
+                    data.putRedundantAction();
+                    abort = true;
                     break;
                 }
             }
-            guild.removeRoleFromMember(member, muteRole)
-                    .reason("Unmute requested by " + author.getEffectiveName() + ".")
-                    .queue(s -> {}, t -> {});
+            if (abort) {
+                threadHandler.onExecutionFinish();
+            } else {
+                guild.removeRoleFromMember(member, muteRole)
+                        .reason("Unmute requested by " + author.getEffectiveName() + ".")
+                        .queue(
+                                v -> {
+                                    data.incrementSuccesses();
+                                    threadHandler.onExecutionFinish();
+                                },
+                                e -> {
+                                    if (e instanceof ErrorResponseException &&
+                                            ((ErrorResponseException) e).getErrorResponse() ==
+                                                    ErrorResponse.UNKNOWN_MEMBER) {
+                                        data.putLeftGuild();
+                                    } else
+                                        data.putException();
+                                    threadHandler.onExecutionFinish();
+                                }
+                        );
+            }
+        } else {
+            data.putLackingPerms();
+            threadHandler.onExecutionFinish();
+        }
+    }
+
+    @Override
+    protected void onFinish(CommandEvent event) {
+        lock.lock();
+        ModActionData data = cmdData.remove(event);
+        lock.unlock();
+        String answer;
+        switch (data.getSuccesses()) {
+            case 0:
+                if (data.getLeftGuild())
+                    event.replyWarning("One or more users left the guild while I was unmuting them.");
+                else if (data.getLackingPerms())
+                    event.replyError(
+                            "Due to lack of permissions I couldn't unmute some of the people you mentioned." +
+                                    " You aren't able to unmute yourself or to unmute people who are already unmuted."
+                    );
+                else if (data.getRedundantAction())
+                    event.replyWarning("One or more users are already unmuted.");
+                else if (data.getNotFound())
+                    event.replyWarning("One or more users mentioned couldn't be found.");
+                else
+                    event.replyError("Couldn't unmute one or more of the mentioned users" +
+                            " due to an error in the Discord API.");
+                break;
+            case 1:
+                answer = "<:KawaiiThumbup:361601400079253515> 1 member was unmuted." +
+                        " When you want to unmute them, use the unmute command.";
+                if (data.getLeftGuild())
+                    event.replyWarning("One or more users left the guild while I was unmuting them.");
+                else if (data.getLackingPerms())
+                    answer += " Couldn't unmute all the people mentioned due to lack of permissions.";
+                else if (data.getRedundantAction())
+                    answer += " One or more users are already unmuted.";
+                else if (data.getNotFound())
+                    answer += " One or more users mentioned couldn't be found.";
+                else if (data.hasException())
+                    answer += " Couldn't unmute one or more of the mentioned users" +
+                            " due to an error in the Discord API.";
+                event.reply(answer);
+                break;
+            default:
+                answer = "<:KawaiiThumbup:361601400079253515> "
+                        + data.getSuccesses() + " members were unmuted. " +
+                        "When you want to unmute them, use the unmute command.";
+                if (data.getLeftGuild())
+                    event.replyWarning("One or more users left the guild while I was unmuting them.");
+                else if (data.getLackingPerms())
+                    answer += " Couldn't unmute all the people mentioned due to lack of permissions.";
+                else if (data.getRedundantAction())
+                    answer += " One or more users are already unmuted.";
+                else if (data.getNotFound())
+                    answer += " One or more users mentioned couldn't be found.";
+                else if (data.hasException())
+                    answer += " Couldn't unmute one or more of the mentioned users" +
+                            " due to an error in the Discord API.";
+                event.reply(answer);
         }
     }
 

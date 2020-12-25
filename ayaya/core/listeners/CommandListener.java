@@ -4,11 +4,12 @@ import ayaya.commands.information.Stats;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.entities.TextChannel;
 
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Class overriding the default CommandListener to listen to all the commands.
@@ -68,20 +69,20 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
                 + event.getAuthor().getId() + "`";
         String stackTrace = writer.toString();
         String moment = "`" + final_day + "/" + final_month + "/" + final_year + " " + final_hour + ":" + final_minute + ":" + final_second + "`";
-        Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(warning).queue();
-        if (stackTrace.length() > 2000) {
-            try {
-                ArrayList<String> stackTracePieces = CommandEvent.splitMessage(stackTrace);
-                for (String p : stackTracePieces) {
-                    Objects.requireNonNull(
-                            event.getJDA().getTextChannelById(console)
-                    ).sendMessage("```" + p + "```").queue();
-                }
-            } catch (IllegalArgumentException e) {}
-        } else Objects.requireNonNull(
-                event.getJDA().getTextChannelById(console)
-        ).sendMessage("```" + stackTrace + "```").queue();
-        Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(moment).queue();
+        TextChannel consoleChannel = event.getJDA().getTextChannelById(console);
+        if (consoleChannel != null) {
+            consoleChannel.sendMessage(warning).queue();
+            if (stackTrace.length() > 2000) {
+                try {
+                    ArrayList<String> stackTracePieces = CommandEvent.splitMessage(stackTrace);
+                    for (String p : stackTracePieces) {
+                        consoleChannel.sendMessage("```" + p + "```").queue();
+                    }
+                } catch (IllegalArgumentException e) {}
+            } else
+                consoleChannel.sendMessage("```" + stackTrace + "```").queue();
+            consoleChannel.sendMessage(moment).queue();
+        }
         throw throwable instanceof RuntimeException ? (RuntimeException) throwable : new RuntimeException(throwable);
     }
 

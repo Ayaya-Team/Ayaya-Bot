@@ -217,6 +217,11 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         return isOwnerCommand;
     }
 
+    @Override
+    public int getCooldown() {
+        return cooldownTime;
+    }
+
     /**
      * Returns if this command is premium or not
      *

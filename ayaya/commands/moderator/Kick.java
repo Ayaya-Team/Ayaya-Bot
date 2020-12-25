@@ -1,19 +1,31 @@
 package ayaya.commands.moderator;
 
-import ayaya.commands.Command;
+import ayaya.commands.ModCommand;
 import ayaya.core.enums.CommandCategories;
+import ayaya.core.utils.ModActionData;
+import ayaya.core.utils.ParallelThreadHandler;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 
 /**
  * Class of the kick command.
  */
-public class Kick extends Command {
+public class Kick extends ModCommand {
+
+    private Map<CommandEvent, ModActionData> cmdData;
+    private ReentrantLock lock;
 
     public Kick() {
 
@@ -27,6 +39,8 @@ public class Kick extends Command {
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.KICK_MEMBERS};
         this.userPerms = new Permission[]{Permission.KICK_MEMBERS};
+        this.cooldownTime = 5;
+        cmdData = new HashMap<>(10);
 
     }
 
@@ -39,13 +53,22 @@ public class Kick extends Command {
         if (!message.isEmpty()) {
             Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(message);
             Matcher idFinder;
+            ParallelThreadHandler<Member, List<Member>> threadHandler =
+                    new ParallelThreadHandler<>();
+            threadHandler.setFinalCallback(this::onFinish);
+            threadHandler.setCommandEvent(event);
+            ModActionData data = new ModActionData();
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                guild.retrieveMemberById(idFinder.group()).queue(m -> {
-                    if (m != null)
-                        kick(author, event.getSelfMember(), m, guild);
-                }, t -> {});
+                threadHandler.addRestAction(
+                        guild.retrieveMemberById(idFinder.group()),
+                        m -> kick(author, event.getSelfMember(), m, guild, data, threadHandler),
+                        e -> {
+                            data.putNotFound();
+                            threadHandler.onExecutionFinish();
+                        }
+                );
             }
             String[] input = message.split(",");
             for (String s : input) {
@@ -53,18 +76,29 @@ public class Kick extends Command {
                 mentionFinder = USER_MENTION.matcher(s);
                 if (!mentionFinder.find()) {
                     final String arg = s;
-                    guild.retrieveMembersByPrefix(s, 1).onSuccess(l -> {
-                        if (l.isEmpty()) {
-                            guild.retrieveMemberById(arg, true).queue(m -> {
-                                if (m != null)
-                                    kick(author, event.getSelfMember(), m, guild);
-                            }, t -> {});
-                        } else
-                            kick(author, event.getSelfMember(), l.get(0), guild);
-                    }).onError(t -> {});
+                    threadHandler.addTask(
+                            guild.retrieveMembersByPrefix(s, 1),
+                            l -> {
+                                if (l.isEmpty()) {
+                                    guild.retrieveMemberById(arg, true).queue(
+                                            m -> kick(author, event.getSelfMember(), m, guild, data, threadHandler),
+                                            t -> {
+                                                data.putNotFound();
+                                                threadHandler.onExecutionFinish();
+                                            });
+                                } else
+                                    kick(author, event.getSelfMember(), l.get(0), guild, data, threadHandler);
+                            },
+                            e -> {
+                                e.printStackTrace();
+                                data.putException();
+                                threadHandler.onExecutionFinish();
+                            }
+                    );
                 }
             }
-            event.replySuccess("I attempted to kick all the members mentioned.");
+            cmdData.put(event, data);
+            threadHandler.run();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to kick? You didn't tell me yet.");
         }
@@ -78,7 +112,8 @@ public class Kick extends Command {
      * @param member the member to be kicked
      * @param guild  the guild where the command was triggered
      */
-    private void kick(Member author, Member self, Member member, Guild guild) {
+    private void kick(Member author, Member self, Member member, Guild guild, ModActionData data,
+                      ParallelThreadHandler<Member, List<Member>> threadHandler) {
         int authorHighestPosition = -1;
         if (!author.getRoles().isEmpty())
             authorHighestPosition = author.getRoles().get(0).getPosition();
@@ -99,8 +134,75 @@ public class Kick extends Command {
                         && !member.equals(self)
         ) {
             guild.kick(member,"Kick requested by " + author.getEffectiveName() + ".")
-                    .queue(s -> {}, t -> {});
+                    .queue(
+                            v -> {
+                                data.incrementSuccesses();
+                                threadHandler.onExecutionFinish();
+                            },
+                            e -> {
+                                if (e instanceof ErrorResponseException &&
+                                        ((ErrorResponseException) e).getErrorResponse() ==
+                                                ErrorResponse.UNKNOWN_MEMBER) {
+                                    data.putLeftGuild();
+                                } else
+                                    data.putException();
+                                threadHandler.onExecutionFinish();
+                            }
+                    );
+        } else {
+            data.putLackingPerms();
+            threadHandler.onExecutionFinish();
         }
     }
 
+    @Override
+    protected void onFinish(CommandEvent event) {
+        lock.lock();
+        ModActionData data = cmdData.remove(event);
+        lock.unlock();
+        String answer;
+        switch (data.getSuccesses()) {
+            case 0:
+                if (data.getLeftGuild())
+                    event.replyWarning("One or more users left the guild while I was kicking them.");
+                else if (data.getLackingPerms())
+                    event.replyError(
+                            "Due to lack of permissions I couldn't kick some of the people you mentioned." +
+                                    " You aren't able to kick yourself or to kick people who aren't in the server."
+                    );
+                else if (data.getNotFound())
+                    event.replyWarning("One or more users mentioned couldn't be found.");
+                else
+                    event.replyError("Couldn't kick one or more of the mentioned users" +
+                            " due to an error in the Discord API.");
+                break;
+            case 1:
+                answer = "<:KawaiiThumbup:361601400079253515> 1 member was kicked." +
+                        " No more actions are needed now.";
+                if (data.getLeftGuild())
+                    event.replyWarning("One or more users left the guild while I was kicking them.");
+                else if (data.getLackingPerms())
+                    answer += " Couldn't kick all the people mentioned due to lack of permissions.";
+                else if (data.getNotFound())
+                    answer += " One or more users mentioned couldn't be found.";
+                else if (data.hasException())
+                    answer += " Couldn't kick one or more of the mentioned users" +
+                            " due to an error in the Discord API.";
+                event.reply(answer);
+                break;
+            default:
+                answer = "<:KawaiiThumbup:361601400079253515> "
+                        + data.getSuccesses() + " members were kicked. No more actions are needed now.";
+                if (data.getLeftGuild())
+                    event.replyWarning("One or more users left the guild while I was kicking them.");
+                else if (data.getLackingPerms())
+                    answer += " Couldn't kick all the people mentioned due to lack of permissions.";
+                else if (data.getNotFound())
+                    answer += " One or more users mentioned couldn't be found.";
+                else if (data.hasException())
+                    answer += " Couldn't kick one or more of the mentioned users" +
+                            " due to an error in the Discord API.";
+                event.reply(answer);
+        }
+    }
 }

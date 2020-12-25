@@ -438,7 +438,7 @@ public class Ayaya {
             }
         } else {
             System.out.println("None of the bot list tokens were found." +
-                    " The stats post thread won't be started.");
+                    " The stats posting thread won't be started.");
         }
 
     }

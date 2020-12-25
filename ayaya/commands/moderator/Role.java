@@ -1,8 +1,10 @@
 package ayaya.commands.moderator;
 
-import ayaya.commands.Command;
+import ayaya.commands.ModCommand;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.PermissionNames;
+import ayaya.core.utils.ParallelThreadHandler;
+import ayaya.core.utils.RoleManageActionData;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -15,12 +17,14 @@ import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 
 /**
  * Class of the role command.
  */
-public class Role extends Command {
+public class Role extends ModCommand {
 
     private static final int NAME_LENGTH = 100;
 
@@ -35,6 +39,9 @@ public class Role extends Command {
     private static final String ADD_ROLES = "add-roles";
     private static final String REMOVE_ROLES = "remove-roles";
 
+    private Map<CommandEvent, RoleManageActionData> cmdData;
+    private ReentrantLock lock;
+
     public Role() {
 
         this.name = "role";
@@ -44,6 +51,7 @@ public class Role extends Command {
         this.botPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.isGuildOnly = true;
+        this.cooldownTime = 5;
 
     }
 
@@ -415,12 +423,11 @@ public class Role extends Command {
         Guild guild = event.getGuild();
         Member author = event.getMember();
         List<net.dv8tion.jda.api.entities.Role> roles;
-        List<net.dv8tion.jda.api.entities.Role> rolesToAdd = new ArrayList<>(20);
-        List<net.dv8tion.jda.api.entities.Role> rolesToRemove = new ArrayList<>(20);
         Matcher mentionFinder, idFinder;
 
-        String rolesToAddInput[] = toAdd.split(",");
-        String rolesToRemoveInput[] = toRemove.split(",");
+        String[] rolesToAddInput = toAdd.split(",");
+        String[] rolesToRemoveInput = toRemove.split(",");
+        RoleManageActionData data = new RoleManageActionData();
 
         net.dv8tion.jda.api.entities.Role role = null;
         for (String s : rolesToAddInput) {
@@ -433,7 +440,7 @@ public class Role extends Command {
                 role = guild.getRoleById(s);
             }
             if (role != null && ableToManageRole(role, author, event.getSelfMember()) == 0) {
-                rolesToAdd.add(role);
+                data.addRole(role);
             }
         }
         for (String s : rolesToRemoveInput) {
@@ -446,11 +453,11 @@ public class Role extends Command {
                 role = guild.getRoleById(s);
             }
             if (role != null && ableToManageRole(role, author, event.getSelfMember()) == 0) {
-                rolesToRemove.add(role);
+                data.removeRole(role);
             }
         }
 
-        if (rolesToAdd.isEmpty() && rolesToRemove.isEmpty()) {
+        if (data.getRolesToAdd().isEmpty() && data.getRolesToRemove().isEmpty()) {
             event.replyError(
                     "Either I couldn't find any of the roles in the server," +
                             " or I don't have permission to manage them or you don't have permission to manage them."
@@ -460,48 +467,45 @@ public class Role extends Command {
 
         Member member;
         mentionFinder = Message.MentionType.USER.getPattern().matcher(users);
+        ParallelThreadHandler<Member, List<Member>> threadHandler =
+                new ParallelThreadHandler<>();
+        threadHandler.setFinalCallback(this::onFinish);
+        threadHandler.setCommandEvent(event);
         while (mentionFinder.find()) {
             idFinder = ANY_ID.matcher(mentionFinder.group());
             idFinder.find();
             final String id = idFinder.group();
-            guild.retrieveMemberById(id).queue(m -> {
-                if (m != null)
-                    manageRolesForMember(m, author, guild, rolesToAdd, rolesToRemove);
-            });
+            threadHandler.addRestAction(
+                    guild.retrieveMemberById(id),
+                    m -> manageRolesForMember(m, author, guild, data),
+                    e -> threadHandler.onExecutionFinish()
+            );
         }
         for (String s : users.split(",")) {
             s = s.trim();
             mentionFinder = USER_MENTION.matcher(s);
             if (!mentionFinder.find()) {
                 final String arg = s;
-                guild.retrieveMembersByPrefix(s, 1).onSuccess(l -> {
-                    if (l.isEmpty()) {
-                        guild.retrieveMemberById(arg, true).queue(m -> {
-                            if (m != null)
-                                manageRolesForMember(m, author, guild, rolesToAdd, rolesToRemove);
-                        }, t -> {
-                        });
-                    } else
-                        manageRolesForMember(l.get(0), author, guild, rolesToAdd, rolesToRemove);
-                }).onError(t -> {
-                });
+                threadHandler.addTask(
+                        guild.retrieveMembersByPrefix(s, 1),
+                        l -> {
+                            if (l.isEmpty())
+                                guild.retrieveMemberById(arg, true).queue(
+                                        m -> manageRolesForMember(m, author, guild, data),
+                                        t -> threadHandler.onExecutionFinish()
+                                );
+                            else
+                                manageRolesForMember(l.get(0), author, guild, data);
+                        },
+                        e -> {
+                            e.printStackTrace();
+                            threadHandler.onExecutionFinish();
+                        }
+                );
             }
         }
-
-        StringBuilder answer = new StringBuilder().append("I ");
-        if (!rolesToAdd.isEmpty())
-            answer.append("added ").append(rolesToAdd.size()).append(" roles");
-        if (!rolesToRemove.isEmpty()) {
-            if (!rolesToAdd.isEmpty())
-                answer.append(" and ");
-            answer.append("removed ").append(rolesToRemove.size()).append(" roles from ");
-        } else
-            answer.append(" to ");
-        answer.append("all the members mentioned I could find.");
-        if (rolesToAdd.size() < rolesToAddInput.length && rolesToRemove.size() < rolesToRemoveInput.length)
-            answer.append(" Couldn't add/remove all the roles due to me or you having a lack of permissions" +
-                    " or the roles not existing.");
-        event.replySuccess(answer.toString());
+        cmdData.put(event, data);
+        threadHandler.run();
 
     }
 
@@ -533,29 +537,27 @@ public class Role extends Command {
     /**
      * Adds and removes roles from a guild member.
      *
-     * @param member        the target member
-     * @param author        the author of the triggered command
-     * @param guild         the guild where the command was triggered
-     * @param rolesToAdd    the list of roles to add
-     * @param rolesToRemove the list of roles to remove
+     * @param member the target member
+     * @param author the author of the triggered command
+     * @param guild  the guild where the command was triggered
+     * @param data   the action data
      */
-    private void manageRolesForMember(
-            Member member, Member author, Guild guild,
-            List<net.dv8tion.jda.api.entities.Role> rolesToAdd,
-            List<net.dv8tion.jda.api.entities.Role> rolesToRemove
+    private synchronized void manageRolesForMember(
+            Member member, Member author, Guild guild, RoleManageActionData data
     ) {
-        for (net.dv8tion.jda.api.entities.Role roleToAdd : rolesToAdd) {
+        for (net.dv8tion.jda.api.entities.Role roleToAdd : data.getRolesToAdd()) {
             guild.addRoleToMember(member, roleToAdd)
                     .reason("Role assignment to user requested by "
                             + author.getEffectiveName() + ".")
                     .queue();
         }
-        for (net.dv8tion.jda.api.entities.Role roleToRemove : rolesToRemove) {
+        for (net.dv8tion.jda.api.entities.Role roleToRemove : data.getRolesToRemove()) {
             guild.removeRoleFromMember(member, roleToRemove)
                     .reason("Role unassignment from user requested by "
                             + author.getEffectiveName() + ".")
                     .queue();
         }
+        data.incrementMemberAmount();
     }
 
     /**
@@ -604,6 +606,35 @@ public class Role extends Command {
                 "You don't need to always set these options or to always change a role's name.\n\n" +
                 "Note: don't write the [] in your commands.\n" +
                 "For more help join my support server. Use the link in " + prefix + "support.```");
+    }
+
+    @Override
+    protected void onFinish(CommandEvent event) {
+        lock.lock();
+        RoleManageActionData data = cmdData.remove(event);
+        lock.unlock();
+        int memberAmount = data.getMemberAmount();
+        List<net.dv8tion.jda.api.entities.Role> rolesToAdd = data.getRolesToAdd();
+        List<net.dv8tion.jda.api.entities.Role> rolesToRemove = data.getRolesToRemove();
+        if (memberAmount == 0)
+            event.replyError("I couldn't find any of the members you mentioned in the server.");
+        else {
+            StringBuilder answer = new StringBuilder().append("I ");
+            if (!rolesToAdd.isEmpty())
+                answer.append("added ").append(rolesToAdd.size()).append(" roles");
+            if (!rolesToRemove.isEmpty()) {
+                if (!rolesToAdd.isEmpty())
+                    answer.append(" and ");
+                answer.append("removed ").append(rolesToRemove.size()).append(" roles from ");
+            } else
+                answer.append(" to ");
+            answer.append(memberAmount).append(" members.");
+            if (rolesToAdd.size() < data.getAmountOfRolesToAdd() ||
+                    rolesToRemove.size() < data.getAmountOfRolesToRemove())
+                answer.append(" Couldn't add/remove all the roles due to me or you having a lack of permissions" +
+                        " or the roles not existing.");
+            event.replySuccess(answer.toString());
+        }
     }
 
 }

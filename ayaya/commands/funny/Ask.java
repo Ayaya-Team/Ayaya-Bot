@@ -18,7 +18,7 @@ public class Ask extends Command {
 
         this.name = "ask";
         this.help = "Ask me anything! I will try to give the best answer possible.";
-        this.arguments = "{prefix}say <message>";
+        this.arguments = "{prefix}ask <message>";
         this.category = FUNNY.asCategory();
         this.isGuildOnly = false;
 
@@ -40,7 +40,7 @@ public class Ask extends Command {
      *
      * @return the answer
      */
-    protected String getRandomAnswer() {
+    private String getRandomAnswer() {
         int amount = getAnswersAmount();
         Random rng = new Random();
         int id = rng.nextInt((amount & 0xff)) + 1;
@@ -71,7 +71,7 @@ public class Ask extends Command {
      *
      * @return answers amount
      */
-    protected int getAnswersAmount() {
+    private int getAnswersAmount() {
         int amount = 0;
         SQLController jdbc = new SQLController();
         try {

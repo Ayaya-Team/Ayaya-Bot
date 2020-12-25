@@ -143,8 +143,8 @@ public class EventListener extends ListenerAdapter {
             ).queue();
         }, e -> {
             Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
-                    "I just left the server " + guild.getName() + " `" + guild.getId() + "`, owned by " +
-                            "an unknown person at `"
+                    "I just left the server " + guild.getName() + " `" + guild.getId() + "`, " +
+                            "at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
             ).queue();
         });

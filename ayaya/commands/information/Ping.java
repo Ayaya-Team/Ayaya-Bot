@@ -66,16 +66,7 @@ public class Ping extends Command {
                         + create_Hour + ":" + create_Minute + ":" + create_Second
                         + "`. The result was **" + ping + "ms** with a websocket ping of **" + websocket_ping
                         + "ms**.").queue();
-            } catch (NullPointerException | IllegalStateException e) {
-                Objects.requireNonNull(
-                        event.getJDA().getTextChannelById(console)).sendMessage(":warning: `"
-                        + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator()
-                        + "` checked my ping through direct messages on `"
-                        + create_day + "/" + create_month + "/" + create_year + "` at `"
-                        + create_Hour + ":" + create_Minute + ":" + create_Second
-                        + "`. The result was **" + ping + "ms** with a websocket ping of **" + websocket_ping
-                        + "ms**.").queue();
-            }
+            } catch (NullPointerException | IllegalStateException e) {}
         });
 
     }

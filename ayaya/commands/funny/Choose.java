@@ -16,7 +16,7 @@ public class Choose extends Command {
 
         this.name = "choose";
         this.help = "Want me to pick an option for you?";
-        this.arguments = "{prefix}choose option 1, option 2\n\n" +
+        this.arguments = "{prefix}choose <option 1>, <option 2>, ... <option n>\n\n" +
                 "If no commas are found in the input, the options will be considered as " +
                 "delimited by spaces.";
         this.category = FUNNY.asCategory();

@@ -1,22 +1,28 @@
 package ayaya.commands.moderator;
 
-import ayaya.commands.Command;
+import ayaya.commands.ModCommand;
 import ayaya.core.enums.CommandCategories;
+import ayaya.core.utils.ParallelThreadHandler;
+import ayaya.core.utils.PruneActionData;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 
 /**
  * Class of the prune command.
  */
-public class Prune extends Command {
+public class Prune extends ModCommand {
+
+    private Map<CommandEvent, PruneActionData> cmdData;
+    private ReentrantLock lock;
 
     public Prune() {
 
@@ -29,6 +35,7 @@ public class Prune extends Command {
         this.category = CommandCategories.MODERATOR.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_MANAGE};
         this.userPerms = new Permission[]{Permission.MESSAGE_MANAGE};
+        this.cooldownTime = 5;
 
     }
 
@@ -36,17 +43,18 @@ public class Prune extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         Guild guild = event.getGuild();
-        MessageChannel channel = event.getChannel();
         String input = event.getArgs();
         String args[] = input.split("--");
         String amountString = "";
-        List<String> users = new LinkedList<>();
         boolean pruneBots = false;
 
         Matcher matcher, mentionFinder, idFinder;
-        List<User> userList;
-        List<Member> memberList;
-        for (String arg: args) {
+        ParallelThreadHandler<Member, List<Member>> threadHandler =
+                new ParallelThreadHandler<>();
+        threadHandler.setFinalCallback(this::onFinish);
+        threadHandler.setCommandEvent(event);
+        PruneActionData data = new PruneActionData();
+        for (String arg : args) {
             arg = arg.trim();
             matcher = ARG.matcher(arg);
             if (matcher.find())
@@ -59,28 +67,34 @@ public class Prune extends Command {
                         while (mentionFinder.find()) {
                             idFinder = ANY_ID.matcher(mentionFinder.group());
                             idFinder.find();
-                            users.add(idFinder.group());
+                            data.addUserId(idFinder.group());
                         }
-                        for (String s: arg.trim().split(",")) {
+                        for (String s : arg.trim().split(",")) {
                             s = s.trim();
                             mentionFinder = USER_MENTION.matcher(s);
                             idFinder = ID.matcher(s);
                             if (!mentionFinder.find()) {
-                                if (idFinder.find())
-                                    users.add(s);
-                                else {
-                                    userList = event.getJDA().getUsersByName(s, false);
-                                    if (userList.isEmpty()) {
-                                        memberList = guild.getMembersByEffectiveName(s, false);
-                                        if (!memberList.isEmpty()) users.add(memberList.get(0).getId());
-                                    } else users.add(userList.get(0).getId());
-                                }
+                                String finalS = s;
+                                threadHandler.addTask(
+                                        guild.retrieveMembersByPrefix(s, 1),
+                                        l -> {
+                                            if (l.isEmpty())
+                                                data.addUserId(finalS);
+                                            else
+                                                data.addMember(l.get(0));
+                                            threadHandler.onExecutionFinish();
+                                        },
+                                        e -> {
+                                            e.printStackTrace();
+                                            threadHandler.onExecutionFinish();
+                                        }
+                                );
                             }
                         }
                         break;
                     default:
                         amountString = matcher.group().trim();
-            }
+                }
         }
 
         if (amountString.isEmpty()) {
@@ -104,46 +118,9 @@ public class Prune extends Command {
             return;
         }
 
-        final boolean bots = pruneBots;
-        event.getMessage().delete().queue();
-        List<Message> messages = new ArrayList<>(amount);
-        channel.getHistoryBefore(event.getMessage(), amount).queue(h -> {
-            int amountDeleted = 0;
-            for (Message message : h.getRetrievedHistory()) {
-                User author = message.getAuthor();
-                if ((bots && message.getAuthor().isBot())
-                        || (users.contains(author.getId()))
-                        || (!bots && users.isEmpty())) {
-                    messages.add(message);
-                    amountDeleted++;
-                }
-            }
-
-            try {
-                ((TextChannel) channel).deleteMessages(messages).queue();
-                event.reply("<:KawaiiThumbup:361601400079253515> "
-                                + amountDeleted + " messages pruned with success.",
-                        msg -> {
-                            try {
-                                TimeUnit.SECONDS.sleep(5);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } finally {
-                                msg.delete().queue();
-                            }
-                        });
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                event.replyError(
-                        "Sadly I could not delete some or all of the messages because they are way too old."
-                );
-            } catch (ErrorResponseException e) {
-                e.printStackTrace();
-                event.replyError(
-                        "Sadly I could not delete some or all of the messages because they don't exist anymore."
-                );
-            }
-        });
+        data.setAmount(amount);
+        data.setBotsFlag(pruneBots);
+        threadHandler.run();
 
     }
 
@@ -162,6 +139,77 @@ public class Prune extends Command {
                 "Note: don't write the [] in your commands.\n" +
                 " In servers with over 250 accounts connected this command is more reliable with user mentions than with user names/nicknames.\n" +
                 "For more help join my support server. Use the link in " + prefix + "support.```");
+    }
+
+    @Override
+    protected void onFinish(CommandEvent event) {
+
+        lock.lock();
+        PruneActionData data = cmdData.remove(event);
+        lock.unlock();
+        int amount = data.getAmount();
+        List<String> users = data.getUsers();
+        List<Member> members = data.getMembers();
+        boolean bots = data.getBotsFlag();
+        TextChannel channel = event.getTextChannel();
+        Message message = event.getMessage();
+        List<Message> messages = new ArrayList<>(amount);
+        channel.getHistoryBefore(event.getMessage(), amount).queue(h -> {
+            message.delete().queue();
+            int amountDeleted = 0;
+            for (Message m : h.getRetrievedHistory()) {
+                User author = m.getAuthor();
+                if ((bots && m.getAuthor().isBot())
+                        || users.contains(author.getId())
+                        || members.contains(m.getMember())
+                        || (!bots && users.isEmpty()) && members.isEmpty()) {
+                    messages.add(m);
+                    amountDeleted++;
+                }
+            }
+
+            try {
+                int finalAmountDeleted = amountDeleted;
+                if (finalAmountDeleted == 1)
+                    messages.get(0).delete().queue(
+                            v -> event.reply("<:KawaiiThumbup:361601400079253515> "
+                                            + "1 message pruned with success.",
+                                    msg -> {
+                                        try {
+                                            TimeUnit.SECONDS.sleep(5);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        } finally {
+                                            msg.delete().queue();
+                                        }
+                                    })
+                    );
+                else
+                    channel.deleteMessages(messages).queue(
+                            v -> event.reply("<:KawaiiThumbup:361601400079253515> "
+                                            + finalAmountDeleted + " messages pruned with success.",
+                                    msg -> {
+                                        try {
+                                            TimeUnit.SECONDS.sleep(5);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        } finally {
+                                            msg.delete().queue();
+                                        }
+                                    })
+                    );
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                event.replyError(
+                        "Sadly I could not delete some or all of the messages because they are way too old."
+                );
+            } catch (ErrorResponseException e) {
+                e.printStackTrace();
+                event.replyError(
+                        "Sadly I could not delete some or all of the messages because they don't exist anymore."
+                );
+            }
+        });
     }
 
 }

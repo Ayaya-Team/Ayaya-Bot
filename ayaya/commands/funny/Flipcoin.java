@@ -34,8 +34,7 @@ public class Flipcoin extends Command {
         if (!message.isEmpty()) {
             int amount = getAmount(args);
             if (amount < 0)
-                event.replyError(
-                        "That's not a valid positive amount of coins.");
+                event.replyError("That's not a valid positive amount of coins.");
             else if (amount == 0) event.reply("Throwing an air coin? <:AyaWhat:362990028915474432>");
             else if (amount == 1) {
                 event.reply("You throw a coin up in the air...", m ->
@@ -43,7 +42,7 @@ public class Flipcoin extends Command {
                             "You throw a coin up in the air...\nAnd you got "
                                     + flip() + "!").queueAfter(1, TimeUnit.SECONDS));
             } else if (amount > LIMIT) {
-                event.replyError("S-Sorry but, the maximum limit of coins at once is "+LIMIT+".");
+                event.replyError("Sorry but, the maximum limit of coins at once is "+LIMIT+".");
             } else {
                 int heads = 0;
                 int tails = 0;
