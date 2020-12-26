@@ -41,6 +41,7 @@ public class Ban extends ModCommand {
         this.userPerms = new Permission[]{Permission.BAN_MEMBERS};
         this.cooldownTime = 5;
         cmdData = new HashMap<>(10);
+        lock = new ReentrantLock();
 
     }
 
@@ -82,10 +83,7 @@ public class Ban extends ModCommand {
                                 if (l.isEmpty()) {
                                     guild.retrieveMemberById(arg, true).queue(
                                             m -> ban(author, event.getSelfMember(), m, guild, data, threadHandler),
-                                            t -> {
-                                                data.putNotFound();
-                                                threadHandler.onExecutionFinish();
-                                            }
+                                            t -> ban(author, arg, guild, data, threadHandler)
                                     );
                                 } else
                                     ban(author, event.getSelfMember(), l.get(0), guild, data, threadHandler);

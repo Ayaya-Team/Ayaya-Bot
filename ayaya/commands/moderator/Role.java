@@ -52,6 +52,7 @@ public class Role extends ModCommand {
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.isGuildOnly = true;
         this.cooldownTime = 5;
+        lock = new ReentrantLock();
 
     }
 
