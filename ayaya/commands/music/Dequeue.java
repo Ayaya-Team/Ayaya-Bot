@@ -53,15 +53,15 @@ public class Dequeue extends MusicCommand {
                     + Objects.requireNonNull(voiceChannel).getName() + "`.");
             event.reply("The queue is already empty.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            try {
-                AudioTrack track = musicHandler.dequeue(textChannel, track_number);
-                String track_title = track.getInfo().title;
-                if (track_title == null || track_title.isEmpty())
-                    track_title = "Undefined";
-                event.reply("The track `" + track_title + "` was removed from the queue.");
-            } catch (IndexOutOfBoundsException e) {
+            AudioTrack track = musicHandler.dequeue(textChannel, track_number);
+            if (track == null) {
                 event.replyError("The track number " + track_number + " wasn't found in the queue.");
+                return;
             }
+            String track_title = track.getInfo().title;
+            if (track_title == null || track_title.isEmpty())
+                track_title = "Undefined";
+            event.reply("The track `" + track_title + "` was removed from the queue.");
         } else {
             event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         }

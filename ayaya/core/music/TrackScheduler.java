@@ -1,29 +1,27 @@
 package ayaya.core.music;
 
-import ayaya.core.exceptions.music.FullQueueException;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import org.apache.commons.collections4.list.CursorableLinkedList;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Random;
 
 /**
- * This class schedules tracks for the audio player. It contains the playTrack of tracks.
+ * This class schedules tracks for the audio player. It contains the queue of tracks.
  */
 public class TrackScheduler extends AudioEventAdapter {
 
-    private static final int QUEUE_CAPACITY = 30;
+    private static final int QUEUE_CAPACITY = 31;
     private static final int INITIAL_VOLUME = 50;
 
     private final AudioPlayer player;
-    private final BlockingQueue<AudioTrack> queue;
-    private final List<AudioTrack> tracks;
-    private final ReentrantLock lock;
+    private CursorableLinkedList<AudioTrack> queue;
+    private int limit;
     private boolean repeat;
 
     /**
@@ -31,37 +29,10 @@ public class TrackScheduler extends AudioEventAdapter {
      */
     TrackScheduler(AudioPlayer player) {
         this.player = player;
-        this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
-        tracks = new ArrayList<>(QUEUE_CAPACITY + 1);
-        player.setVolume(INITIAL_VOLUME);
-        lock = new ReentrantLock();
+        this.player.setVolume(INITIAL_VOLUME);
+        queue = new CursorableLinkedList<>();
+        this.limit = QUEUE_CAPACITY;
         repeat = false;
-    }
-
-    /**
-     * Add the next track to queue.
-     *
-     * @param track The track to queue.
-     */
-    protected void queue(AudioTrack track) {
-        if (!queue.offer(track) || tracks.size() == QUEUE_CAPACITY)
-            throw new FullQueueException();
-        tracks.add(track);
-    }
-
-    /**
-     * Remove the next track from the queue.
-     *
-     * @param trackNumber The number of the track to remove from the queue
-     * @return the removed track
-     */
-    AudioTrack dequeue(int trackNumber) {
-        AudioTrack track = tracks.get(trackNumber);
-        if (track != null) {
-            queue.remove(track);
-            tracks.remove(trackNumber);
-        }
-        return track;
     }
 
     /**
@@ -69,17 +40,17 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>int</code>
      */
-    int amountOfTracksInQueue() {
-        return tracks.size();
+    synchronized int getTrackAmount() {
+        return queue.size();
     }
 
     /**
      * Tells wether the music is currently stopped or not.
      *
-     * @return <code>boolean</code> if the player is stopped or not track is playing at the moment
+     * @return <code>boolean</code> if the player is stopped or no track is playing at the moment
      */
-    public boolean musicStopped() {
-        return player.isPaused() || player.getPlayingTrack() == null;
+    synchronized public boolean musicStopped() {
+        return player.isPaused() || noMusicPlaying();
     }
 
     /**
@@ -87,8 +58,70 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return true if the situation above applies, false on the contrary
      */
-    public boolean noMusicPlaying() {
+    synchronized public boolean noMusicPlaying() {
         return player.getPlayingTrack() == null;
+    }
+
+    /**
+     * Add the next track to queue.
+     *
+     * @param track The track to queue.
+     */
+    synchronized boolean queue(AudioTrack track) {
+        return track != null && queue.size() < limit && queue.addLast(track);
+    }
+
+    /**
+     * Remove the next track from the queue.
+     *
+     * @param index The number of the track to remove from the queue
+     * @return the removed track
+     */
+    synchronized AudioTrack dequeue(int index) {
+        if (index >= queue.size())
+            return null;
+        return queue.remove(index);
+    }
+
+    synchronized boolean move(int i, int j) {
+        if (i < 1 || i >= queue.size() || j < 1 || j >= queue.size())
+            return false;
+        if (i == j)
+            return true;
+        if (j == queue.size() - 1) {
+            AudioTrack track = dequeue(i);
+            return queue.addLast(track);
+        }
+        if (i < j) {
+            CursorableLinkedList.Cursor<AudioTrack> c = queue.cursor(i);
+            AudioTrack track = c.next();
+            c.remove();
+            while (c.hasNext() && c.nextIndex() <= j + 1) c.next();
+            c.add(track);
+            c.close();
+            return true;
+        } else {
+            CursorableLinkedList.Cursor<AudioTrack> c = queue.cursor(i);
+            AudioTrack track = c.next();
+            c.remove();
+            while (c.hasPrevious() && c.previousIndex() > j) c.previous();
+            c.add(track);
+            c.close();
+            return true;
+        }
+    }
+
+    synchronized void shuffle() {
+        CursorableLinkedList<AudioTrack> newQueue = new CursorableLinkedList<>();
+        List<AudioTrack> array = new ArrayList<>(queue.size());
+        array.addAll(queue);
+
+        newQueue.addFirst(array.remove(0));
+        Random rng = new Random();
+        while (!array.isEmpty())
+            newQueue.addLast(array.remove(rng.nextInt(array.size())));
+
+        queue = newQueue;
     }
 
     /**
@@ -98,21 +131,14 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @param track The track to play or add to queue.
      */
-    void playTrack(AudioTrack track) {
+    synchronized void playTrack(AudioTrack track) {
         // Calling startTrack with the noInterrupt set to true will start the track only if nothing is currently playing. If
         // something is playing, it returns false and does nothing. In that case the player was already playing so this
         // track goes to the queue instead.
-        if (track == null) {
-            player.startTrack(queue.poll(), true);
-        } else if (player.getPlayingTrack() == null) {
-            if (!player.startTrack(queue.poll(), true)) {
-                player.startTrack(track, true);
-                tracks.add(track);
-            } else {
-                queue(track);
-            }
-        } else queue(track);
-        player.setPaused(false);
+        if (player.startTrack(getCurrentTrack(), true)) {
+            player.setPaused(false);
+        }
+        queue(track);
     }
 
     /**
@@ -120,27 +146,29 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>AudioTrack</code>
      */
-    public AudioTrack getCurrentTrack() {
-        if (tracks.isEmpty()) return null;
-        return tracks.get(0);
+    synchronized public AudioTrack getCurrentTrack() {
+        return player.getPlayingTrack();
+    }
+
+    synchronized public AudioTrack getNextTrack() {
+        if (queue.isEmpty()) return null;
+        return queue.getFirst();
     }
 
     /**
-     * Returns the list of tracks in the queue. This list also contains the track that is currently playing.
+     * Returns the track iterator of the queue.
      *
-     * @return <code>List</code>
+     * @return <code>Iterator</code>
      */
-    public List<AudioTrack> getTracks() {
-        return tracks;
+    public Iterator<AudioTrack> getTrackIterator() {
+        return queue.iterator();
     }
 
     /**
      * Toggles the repeat mode on or off for the queue.
      */
-    void repeat() {
-        lock.lock();
+    synchronized void repeat() {
         repeat = !repeat;
-        lock.unlock();
     }
 
     /**
@@ -148,38 +176,35 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>boolean</code>
      */
-    boolean isRepeating() {return repeat;}
+    synchronized boolean isRepeating() {return repeat;}
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
         if (endReason.mayStartNext) {
-            nextTrack(track);
+            nextTrack();
         }
     }
 
     /**
      * Start the next track, stopping the current one if it is playing.
      *
-     * @param track the track that is playing to requeue if needed
      * @return <code>boolean</code>
      */
-    boolean nextTrack(AudioTrack track) {
+    synchronized boolean nextTrack() {
         // Start the next track, regardless of if something is already playing or not. In case queue was empty, we are
         // giving null to startTrack, which is a valid argument and will simply stop the player.
-        if (tracks.size() > 0)
-            tracks.remove(0);
+        AudioTrack track = dequeue(0);
         if (this.isRepeating())
             queue(track.makeClone());
-        return player.startTrack(queue.poll(), false);
+        return player.startTrack(getNextTrack(), false);
     }
 
     /**
      * Stops the player and prunes the queue.
      */
-    void stopAllTracks() {
+    synchronized void stopAndClear() {
         queue.clear();
-        tracks.clear();
         player.startTrack(null, false);
     }
 
@@ -188,7 +213,7 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @param volume the new volume
      */
-    void setVolume(int volume) {
+    synchronized void setVolume(int volume) {
         if (volume > 0 && volume < 101) player.setVolume(volume);
     }
 

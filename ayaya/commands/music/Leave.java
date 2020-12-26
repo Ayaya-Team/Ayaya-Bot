@@ -22,7 +22,6 @@ public class Leave extends MusicCommand {
         this.arguments = "{prefix}leave";
         this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.aliases = new String[]{"disconnect"};
         this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
 
     }

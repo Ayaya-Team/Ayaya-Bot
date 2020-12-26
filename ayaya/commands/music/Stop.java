@@ -32,7 +32,7 @@ public class Stop extends MusicCommand {
         VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        GuildMusicManager musicManager = musicHandler.getGuildAudioPlayer(guild);
+        GuildMusicManager musicManager = musicHandler.getGuildMusicManager(guild);
         if (voiceState == null || !voiceState.inVoiceChannel() || musicManager.getScheduler().getCurrentTrack() == null) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {
