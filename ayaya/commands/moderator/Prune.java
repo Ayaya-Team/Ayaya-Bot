@@ -36,6 +36,7 @@ public class Prune extends ModCommand {
         this.botPerms = new Permission[]{Permission.MESSAGE_MANAGE};
         this.userPerms = new Permission[]{Permission.MESSAGE_MANAGE};
         this.cooldownTime = 5;
+        lock = new ReentrantLock();
 
     }
 

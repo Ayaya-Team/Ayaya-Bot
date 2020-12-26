@@ -41,6 +41,7 @@ public class Unmute extends ModCommand {
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.cooldownTime = 5;
         cmdData = new HashMap<>(10);
+        lock = new ReentrantLock();
 
     }
 

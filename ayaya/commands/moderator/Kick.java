@@ -41,6 +41,7 @@ public class Kick extends ModCommand {
         this.userPerms = new Permission[]{Permission.KICK_MEMBERS};
         this.cooldownTime = 5;
         cmdData = new HashMap<>(10);
+        lock = new ReentrantLock();
 
     }
 
