@@ -28,7 +28,7 @@ public class Channelinfo extends Command {
         this.arguments = "{prefix}channelinfo <#channel or name>\n\nTo get the info of the channel you're in run: {prefix}channelinfo";
         this.category = INFORMATION.asCategory();
         this.isGuildOnly = true;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

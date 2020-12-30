@@ -3,6 +3,8 @@ package ayaya.commands.owner;
 import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.User;
 
 import java.sql.*;
@@ -42,11 +44,13 @@ public class Unblock extends Command {
 
         User u = event.getJDA().getUserById(id);
         if (u == null) {
-            event.reply("That user does not exist.");
+            if (event.getChannelType() == ChannelType.TEXT && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.reply("That user does not exist.");
             return;
         }
         if (!isBlocked(id)) {
-            event.reply("That user isn't blocked.");
+            if (event.getChannelType() == ChannelType.TEXT && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.reply("That user isn't blocked.");
             return;
         }
         Connection connection = null;
@@ -58,7 +62,12 @@ public class Unblock extends Command {
             statement.executeUpdate();
             statement.close();
         } catch (SQLException e) {
-            event.replyError("There was a problem while assigning you the premium key. If this error persists, try again later.");
+            if (event.getChannelType() == ChannelType.TEXT && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.replyError("There was a problem while trying to unblock this user. If the problem persists, check my server logs.");
+            else
+                System.err.println("There was a problem while trying to unblock this user. If the problem persists, check my server logs.");
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         } finally {
             try {
                 if (connection != null)

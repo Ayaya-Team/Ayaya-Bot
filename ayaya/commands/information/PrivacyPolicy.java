@@ -2,6 +2,7 @@ package ayaya.commands.information;
 
 import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import static ayaya.core.enums.CommandCategories.INFORMATION;
 
@@ -43,6 +44,7 @@ public class PrivacyPolicy extends Command {
         this.arguments = "{prefix}privacypolicy";
         this.category = INFORMATION.asCategory();
         this.aliases = new String[]{"pp"};
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
     }
 
     @Override

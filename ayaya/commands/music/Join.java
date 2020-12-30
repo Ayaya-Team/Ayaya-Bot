@@ -20,9 +20,8 @@ public class Join extends MusicCommand {
         this.name = "join";
         this.help = "Have me to join the voice channel you're in.";
         this.arguments = "{prefix}join";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
 
     }
 

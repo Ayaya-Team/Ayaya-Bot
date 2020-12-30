@@ -2,6 +2,7 @@ package ayaya.commands.funny;
 
 import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
@@ -16,6 +17,7 @@ public class NSFW extends Command {
         this.name = "nsfw";
         this.category = FUNNY.asCategory();
         this.hidden = true;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

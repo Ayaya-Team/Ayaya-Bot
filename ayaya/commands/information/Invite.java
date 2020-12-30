@@ -26,7 +26,7 @@ public class Invite extends Command {
         this.help = "So you want to invite me to your server? Then use this command to see how.";
         this.arguments = "{prefix}invite";
         this.category = INFORMATION.asCategory();
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

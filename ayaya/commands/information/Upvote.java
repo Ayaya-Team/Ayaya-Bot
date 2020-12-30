@@ -26,7 +26,7 @@ public class Upvote extends Command {
         this.help = "If you like me you can upvote me in discordbots.org. This command will give you the link to upvote.";
         this.arguments = "{prefix}upvote";
         this.category = INFORMATION.asCategory();
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
         this.aliases = new String[]{"vote"};
 
     }

@@ -27,7 +27,7 @@ public class Roleinfo extends Command {
                         "but the upper case and lower case don't matter.";
         this.category = INFORMATION.asCategory();
         this.isGuildOnly = true;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

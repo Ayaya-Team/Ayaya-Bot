@@ -4,6 +4,7 @@ import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.sql.SQLException;
 import java.util.Random;
@@ -25,6 +26,7 @@ public class RPS extends Command {
         this.help = "Play the rock paper scissors game!";
         this.arguments = "{prefix}rps rock/paper/scissors";
         this.category = CommandCategories.FUNNY.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

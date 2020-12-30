@@ -3,6 +3,7 @@ package ayaya.commands.funny;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
 import java.sql.SQLException;
@@ -23,6 +24,7 @@ public class Kawaii extends ayaya.commands.Command {
         this.aliases = new String[]{"cute"};
         this.category = FUNNY.asCategory();
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

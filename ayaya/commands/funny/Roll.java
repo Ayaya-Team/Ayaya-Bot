@@ -2,6 +2,7 @@ package ayaya.commands.funny;
 
 import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +28,7 @@ public class Roll extends Command {
                 "dice",
                 "die"};
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

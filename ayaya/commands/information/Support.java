@@ -3,6 +3,7 @@ package ayaya.commands.information;
 import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.sql.SQLException;
 
@@ -21,6 +22,7 @@ public class Support extends Command {
         this.help = "For troubles with any command or direct bug reports, use this command.";
         this.arguments = "{prefix}support";
         this.category = INFORMATION.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

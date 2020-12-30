@@ -31,7 +31,7 @@ public class Avatar extends Command {
         this.help = "A command to an image and it's link of the avatar of someone. It works with yours too!";
         this.arguments = "{prefix}avatar <mention, name/nickname or id>\n\nIf you don't mention anyone, I will just get your avatar.";
         this.category = UTILITIES.asCategory();
-        this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
         this.isGuildOnly = false;
 
     }

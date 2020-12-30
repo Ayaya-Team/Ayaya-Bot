@@ -3,6 +3,7 @@ package ayaya.commands.funny;
 import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.sql.SQLException;
 import java.util.Random;
@@ -21,6 +22,7 @@ public class Ask extends Command {
         this.arguments = "{prefix}ask <message>";
         this.category = FUNNY.asCategory();
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

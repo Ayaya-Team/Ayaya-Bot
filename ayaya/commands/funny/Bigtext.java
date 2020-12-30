@@ -28,6 +28,7 @@ public class Bigtext extends Command {
         this.aliases = new String[]{"emojitext", "regionaltext"};
         this.category = FUNNY.asCategory();
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

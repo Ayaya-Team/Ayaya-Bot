@@ -20,9 +20,8 @@ public class Seek extends MusicCommand {
         this.name = "seek";
         this.help = "If you need to skip or go back to a certain point of a song, use this command.";
         this.arguments = "{prefix}seek <seconds>";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
         this.isPremium = true;
 
     }
@@ -43,7 +42,7 @@ public class Seek extends MusicCommand {
                 return;
             }
         }
-        if (musicHandler.getGuildMusicManager(event.getGuild()).getScheduler().noMusicPlaying()) {
+        if (musicHandler.getGuildAudioPlayer(event.getGuild()).getScheduler().noMusicPlaying()) {
             event.reply("There is no music being played right now.");
             return;
         }

@@ -5,7 +5,9 @@ import ayaya.core.Ayaya;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.managers.AudioManager;
 
@@ -33,7 +35,8 @@ public class Shutdown extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        event.reply(SHUTDOWN_REPLY);
+        if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+            event.reply(SHUTDOWN_REPLY);
         JDA jda = event.getJDA();
         jda.getPresence().setActivity(Activity.playing(SHUTDOWN_GAME));
         event.getClient().shutdown();

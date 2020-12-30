@@ -8,6 +8,7 @@ import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import ayaya.core.utils.HTTP;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,6 +35,7 @@ public class CheckColor extends Command {
         this.help = "This command allows you to check for a color and its name through its code.";
         this.arguments = "{prefix}color <hex/rgb> <color code>";
         this.category = CommandCategories.UTILITIES.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
     }
 
     @Override

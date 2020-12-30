@@ -3,6 +3,8 @@ package ayaya.commands.owner;
 import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -17,6 +19,7 @@ public class Channellist extends Command {
         this.category = CommandCategories.OWNER.asCategory();
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

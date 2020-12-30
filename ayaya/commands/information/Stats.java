@@ -32,7 +32,7 @@ public class Stats extends Command {
         this.arguments = "{prefix}stats";
         this.aliases = new String[]{"statistics"};
         this.category = CommandCategories.INFORMATION.asCategory();
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

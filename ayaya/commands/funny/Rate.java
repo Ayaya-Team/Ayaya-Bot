@@ -3,6 +3,7 @@ package ayaya.commands.funny;
 import ayaya.commands.Command;
 import ayaya.core.enums.RateSpecialCases;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class Rate extends Command {
         this.help = "Want my opinion about someone or something?";
         this.arguments = "{prefix}rate <@user, name or whatever to rate>";
         this.category = FUNNY.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

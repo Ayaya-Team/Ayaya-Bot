@@ -20,9 +20,8 @@ public class Skip extends MusicCommand {
         this.name = "skip";
         this.help = "Skips the current track.";
         this.arguments = "{prefix}skip";
-        this.isGuildOnly = false;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT,Permission.MESSAGE_WRITE};
 
     }
 

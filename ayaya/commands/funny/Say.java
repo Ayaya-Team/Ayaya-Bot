@@ -27,6 +27,7 @@ public class Say extends Command {
         this.arguments = "{prefix}say <message>";
         this.category = FUNNY.asCategory();
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

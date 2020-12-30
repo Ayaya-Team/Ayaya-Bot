@@ -4,6 +4,7 @@ import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.io.Serializable;
 import java.sql.*;
@@ -26,6 +27,7 @@ public class Premium extends Command {
         this.arguments = "{prefix}premium";
         this.category = CommandCategories.INFORMATION.asCategory();
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

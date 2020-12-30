@@ -5,6 +5,8 @@ import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.ChannelType;
 
 import static ayaya.core.enums.CommandCategories.OWNER;
 
@@ -25,12 +27,14 @@ public class Unload extends ayaya.commands.Command {
 
         String[] args = event.getArgs().split(" ");
         if (event.getArgs().isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't specify any command for me to unload.");
+            if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.reply("<:AyaWhat:362990028915474432> You didn't specify any command for me to unload.");
             return;
         }
         String commandName = args[0].toLowerCase();
         if (commandName.equals("load") || commandName.equals("unload")) {
-            event.replyError("That command cannot be unloaded.");
+            if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.replyError("That command cannot be unloaded.");
             return;
         }
         CommandClient client = event.getClient();
@@ -39,11 +43,13 @@ public class Unload extends ayaya.commands.Command {
                 ListCategory listCategory = CommandCategories.getListCategory(c.getCategory().getName());
                 if (listCategory != null) listCategory.remove(commandName);
                 client.removeCommand(commandName);
-                event.replySuccess("Command `" + commandName + "` unloaded with success.");
+                if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                    event.replySuccess("Command `" + commandName + "` unloaded with success.");
                 return;
             }
         }
-        event.reply("That command is already unloaded or doesn't exist.");
+        if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+            event.reply("That command is already unloaded or doesn't exist.");
 
     }
 

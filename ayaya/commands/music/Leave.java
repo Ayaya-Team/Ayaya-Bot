@@ -20,9 +20,9 @@ public class Leave extends MusicCommand {
         this.name = "leave";
         this.help = "Once all the musics are over you can tell me to leave the channel.";
         this.arguments = "{prefix}leave";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.aliases = new String[]{"disconnect"};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
 
     }
 

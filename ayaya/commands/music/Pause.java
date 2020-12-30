@@ -21,9 +21,8 @@ public class Pause extends MusicCommand {
         this.name = "pause";
         this.help = "If you need a break I can pause the music.";
         this.arguments = "{prefix}pause";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
         this.isPremium = true;
 
     }

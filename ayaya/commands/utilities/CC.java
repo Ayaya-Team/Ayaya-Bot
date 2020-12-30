@@ -7,6 +7,7 @@ import ayaya.core.exceptions.http.HttpResponseFailedException;
 import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,6 +29,7 @@ public class CC extends Command {
                 "<prefix of the currency to convert to> <amount>\n\n"
                 + "For the currencies list do `{prefix}cc currencies`.";
         this.category = CommandCategories.UTILITIES.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

@@ -5,6 +5,7 @@ import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
 import java.sql.SQLException;
@@ -37,6 +38,7 @@ public class Convert extends Command {
                 "<prefix of the unit to convert to> <amount>\n\n" +
                 "For the units list do `{prefix}convert units`.";
         this.category = CommandCategories.UTILITIES.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

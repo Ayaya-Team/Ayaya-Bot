@@ -7,6 +7,7 @@ import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.MusicCommands;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.managers.AudioManager;
 
@@ -29,6 +30,7 @@ public class MusicSwitch extends Command {
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
         isOn = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_ADD_REACTION};
 
     }
 

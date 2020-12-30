@@ -32,7 +32,7 @@ public class Quote extends Command {
                 " The message content also can only be part of the content of a message, but you can put the whole content for a more accurate search.";
         this.category = CommandCategories.FUNNY.asCategory();
         this.isGuildOnly = true;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

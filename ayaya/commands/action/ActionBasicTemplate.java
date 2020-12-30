@@ -34,7 +34,7 @@ public class ActionBasicTemplate extends GuildDMSCommand {
         this.isGuildOnly = false;
         this.description = description;
         this.footer = footer;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

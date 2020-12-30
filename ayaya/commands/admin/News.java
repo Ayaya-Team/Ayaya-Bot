@@ -24,7 +24,7 @@ public class News extends Command {
                 " | to check if there is a news channel just run the command without any additional keyword.";
         this.isGuildOnly = true;
         this.category = CommandCategories.ADMINISTRATOR.asCategory();
-        this.botPerms = new Permission[]{Permission.MANAGE_CHANNEL};
+        this.botPerms = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.ADMINISTRATOR};
 
     }

@@ -4,6 +4,7 @@ import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.time.DateTimeException;
 import java.time.ZoneId;
@@ -21,6 +22,7 @@ public class Time extends Command {
         this.help = "Use this command to check the current time for any timezone.";
         this.arguments = "{prefix}time <timezone>\n{prefix}time timezones - for the list of timezones";
         this.category = CommandCategories.UTILITIES.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

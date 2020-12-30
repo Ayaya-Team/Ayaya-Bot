@@ -27,7 +27,7 @@ public class Changelog extends Command {
                 "To check any older versions write `{prefix}changelog list`.\n" +
                 "Run the command without any arguments if you just want to check the changes of the latest minor updates.";
         this.category = CommandCategories.INFORMATION.asCategory();
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

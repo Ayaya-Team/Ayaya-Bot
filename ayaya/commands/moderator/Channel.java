@@ -40,7 +40,7 @@ public class Channel extends Command {
         this.arguments = "{prefix}channel";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
-        this.botPerms = new Permission[]{Permission.MANAGE_CHANNEL};
+        this.botPerms = new Permission[]{Permission.MANAGE_CHANNEL, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.MANAGE_CHANNEL};
 
     }

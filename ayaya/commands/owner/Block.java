@@ -3,6 +3,8 @@ package ayaya.commands.owner;
 import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.User;
 
 import java.sql.*;
@@ -29,15 +31,18 @@ public class Block extends Command {
 
         String id = event.getArgs();
         if (id.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't tell me who to block.");
+            if (event.getChannelType() == ChannelType.TEXT && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.reply("<:AyaWhat:362990028915474432> You didn't tell me who to block.");
             return;
         } else if (event.getClient().getOwnerId().equals(id)) {
-            event.reply("Owner and Co-Owners cannot be blacklisted.");
+            if (event.getChannelType() == ChannelType.TEXT && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.reply("Owner and Co-Owners cannot be blacklisted.");
             return;
         }
         for (String s: event.getClient().getCoOwnerIds()) {
             if (s.equals(id)) {
-                event.reply("Owner and Co-Owners cannot be blacklisted.");
+                if (event.getChannelType() == ChannelType.TEXT && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                    event.reply("Owner and Co-Owners cannot be blacklisted.");
                 return;
             }
         }
@@ -73,7 +78,10 @@ public class Block extends Command {
             statement.setString(2, date.format(DateTimeFormatter.ofPattern(PATTERN)));
             statement.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("A problem occurred while trying to store the key. Aborting the process...");
+            if (event.getGuild() == null || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                event.replyError("There was a problem while trying to block this user. If the problem persists, check my server logs.");
+            else
+                System.err.println("There was a problem while trying to block this user. If the problem persists, check my server logs.");
             System.err.println(e.getMessage());
             e.printStackTrace();
         } finally {

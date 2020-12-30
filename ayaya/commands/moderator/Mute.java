@@ -39,7 +39,7 @@ public class Mute extends ModCommand {
                 " The mentions don't need to be separated between themselves.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
-        this.botPerms = new Permission[]{Permission.MANAGE_ROLES};
+        this.botPerms = new Permission[]{Permission.MANAGE_ROLES, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.cooldownTime = 5;
         cmdData = new HashMap<>(10);

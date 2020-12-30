@@ -20,9 +20,8 @@ public class Stop extends MusicCommand {
         this.name = "stop";
         this.help = "Stops the music and clears the queue.";
         this.arguments = "{prefix}stop";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
 
     }
 
@@ -32,7 +31,7 @@ public class Stop extends MusicCommand {
         VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        GuildMusicManager musicManager = musicHandler.getGuildMusicManager(guild);
+        GuildMusicManager musicManager = musicHandler.getGuildAudioPlayer(guild);
         if (voiceState == null || !voiceState.inVoiceChannel() || musicManager.getScheduler().getCurrentTrack() == null) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {

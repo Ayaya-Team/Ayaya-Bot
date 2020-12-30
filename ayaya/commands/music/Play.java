@@ -21,9 +21,8 @@ public class Play extends MusicCommand {
         this.name = "play";
         this.help = "Listen to some music while you do whatever you have to do.";
         this.arguments = "{prefix}play <url or search query>\n\nTo just play what's already in the queue do {prefix}play.";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
 
     }
 

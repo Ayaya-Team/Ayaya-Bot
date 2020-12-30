@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -79,13 +80,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         if (isBlocked(event.getAuthor().getId()))
             return;
 
-        if (isOwnerCommand && !event.isOwner()) {
-
-            event.replyError("You do not own the required permission to execute this command.");
-            return;
-
-        }
-
         if (isGuildOnly && !(event.getChannel() instanceof TextChannel)) {
 
             event.reply("This command can only be used in a server.");
@@ -94,6 +88,14 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         }
 
         if (event.getChannelType() == ChannelType.TEXT) {
+
+            if (isOwnerCommand && !event.isOwner()) {
+
+                if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                    event.replyError("You do not own the required permission to execute this command.");
+                return;
+
+            }
 
             for (Permission p : botPerms) {
 
@@ -104,20 +106,23 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                         GuildVoiceState vs = event.getMember().getVoiceState();
                         if (vs == null || vs.getChannel() == null) {
 
-                            event.replyError("You must be in a voice channel to use that.");
+                            if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                                event.replyError("You must be in a voice channel to use that.");
                             return;
 
                         } else if (!event.getSelfMember().hasPermission(vs.getChannel(), p)) {
 
-                            event.replyError("I need the permission **" + p.getName()
-                                    + "** in the channel " + vs.getChannel().getName() + " to execute this command.");
+                            if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                                event.replyError("I need the permission **" + p.getName()
+                                        + "** in the channel " + vs.getChannel().getName() + " to execute this command.");
                             return;
 
                         }
 
                     } else if (!event.getSelfMember().hasPermission(event.getTextChannel(), p)) {
 
-                        event.replyError("I need the permission **" + p.getName() + "** to execute this command in this channel.");
+                        if (p != Permission.MESSAGE_WRITE)
+                            event.replyError("I need the permission **" + p.getName() + "** to execute this command in this channel.");
                         return;
 
                     }
@@ -126,7 +131,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
                     if(!event.getSelfMember().hasPermission(p)) {
 
-                        event.replyError("I need the permission **" + p.getName() + "** to execute this command.");
+                        if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                            event.replyError("I need the permission **" + p.getName() + "** to execute this command.");
                         return;
 
                     }
@@ -158,6 +164,11 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                 }
 
             }
+
+        } else if (isOwnerCommand && !event.isOwner()) {
+
+            event.replyError("You do not own the required permission to execute this command.");
+            return;
 
         }
 

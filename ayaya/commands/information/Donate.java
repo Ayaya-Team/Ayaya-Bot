@@ -3,6 +3,7 @@ package ayaya.commands.information;
 import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.sql.SQLException;
 
@@ -21,6 +22,7 @@ public class Donate extends Command {
         this.help = "This command will give you the link of my patreon page. If you really like me, please, consider donating.";
         this.arguments = "{prefix}donate";
         this.category = INFORMATION.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -33,9 +34,10 @@ public class Prune extends ModCommand {
         this.aliases = new String[]{"purge"};
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
-        this.botPerms = new Permission[]{Permission.MESSAGE_MANAGE};
+        this.botPerms = new Permission[]{Permission.MESSAGE_MANAGE, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.MESSAGE_MANAGE};
         this.cooldownTime = 5;
+        cmdData = new HashMap<>(10);
         lock = new ReentrantLock();
 
     }
@@ -121,6 +123,7 @@ public class Prune extends ModCommand {
 
         data.setAmount(amount);
         data.setBotsFlag(pruneBots);
+        cmdData.put(event, data);
         threadHandler.run();
 
     }

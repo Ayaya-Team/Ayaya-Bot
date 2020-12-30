@@ -3,6 +3,8 @@ package ayaya.commands.owner;
 import ayaya.commands.Command;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.sql.*;
 import java.util.Objects;
@@ -18,6 +20,7 @@ public class InsertKey extends Command {
         this.name = "insertkey";
         this.category = CommandCategories.OWNER.asCategory();
         this.isOwnerCommand = true;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 
@@ -31,9 +34,16 @@ public class InsertKey extends Command {
         }
         int duration = Integer.parseInt(event.getArgs());
         String key = generateKey();
-        storeKey(key, duration);
-        Objects.requireNonNull(event.getJDA().getTextChannelById(getConsoleID()))
-                .sendMessage("The new key is `" + key + "`.").queue();
+        if (storeKey(key, duration)) {
+            TextChannel consoleChannel = event.getJDA().getTextChannelById(getConsoleID());
+            if (consoleChannel != null)
+                consoleChannel.sendMessage("The new key is `" + key + "`.").queue();
+            else {
+                System.out.println("The new key is " + key + ".");
+                event.reply("The key was sent to the server logs.");
+            }
+        } else
+            event.replyError("There was a problem when trying to store the key. If this occurs again, check my server console.");
 
     }
 
@@ -93,9 +103,11 @@ public class InsertKey extends Command {
      *
      * @param key      the key to store
      * @param duration the duration of the key
+     * @return true if the key was stored, false if there was a problem
      */
-    private void storeKey(String key, int duration) {
+    private boolean storeKey(String key, int duration) {
 
+        boolean success = false;
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:data.db");
@@ -105,6 +117,7 @@ public class InsertKey extends Command {
             statement.setString(1, key);
             statement.setInt(2, duration);
             statement.executeUpdate();
+            success = true;
         } catch (SQLException e) {
             System.out.println("A problem occurred while trying to store the key. Aborting the process...");
             System.err.println(e.getMessage());
@@ -118,6 +131,7 @@ public class InsertKey extends Command {
                 e.printStackTrace();
             }
         }
+        return success;
 
     }
 

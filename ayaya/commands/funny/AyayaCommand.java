@@ -28,7 +28,7 @@ public class AyayaCommand extends Command {
         this.arguments = "{prefix}ayaya";
         this.category = FUNNY.asCategory();
         this.isGuildOnly = false;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

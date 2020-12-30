@@ -14,6 +14,7 @@ public class MusicCommand extends Command {
 
     public MusicCommand() {
         super();
+        this.isGuildOnly = true;
     }
 
     /**
@@ -29,7 +30,7 @@ public class MusicCommand extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         GuildVoiceState voiceState = event.getMember().getVoiceState();
-        if (voiceState != null) {
+        if (voiceState != null && voiceState.getChannel() != null) {
             executeMusicCommand(event);
         } else event.reply("You must be in a voice channel to use this command.");
 

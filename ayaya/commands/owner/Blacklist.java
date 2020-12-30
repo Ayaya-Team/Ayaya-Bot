@@ -30,7 +30,7 @@ public class Blacklist extends Command {
         this.name = "blacklist";
         this.category = OWNER.asCategory();
         this.arguments = "[pagenum]";
-        this.botPermissions = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_ADD_REACTION};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_WRITE};
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
         pbuilder = new Paginator.Builder().setColumns(1)

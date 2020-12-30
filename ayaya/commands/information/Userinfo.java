@@ -45,7 +45,7 @@ public class Userinfo extends Command {
         this.arguments = "{prefix}userinfo <mention, name/nickname or id>";
         this.category = INFORMATION.asCategory();
         this.isGuildOnly = true;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
 
     }
 

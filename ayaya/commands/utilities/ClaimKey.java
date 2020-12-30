@@ -4,6 +4,7 @@ import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.io.Serializable;
 import java.sql.*;
@@ -23,6 +24,7 @@ public class ClaimKey extends Command {
                 "ask for your patreon key to my developer and use this command to claim the key so you can be whitelisted.";
         this.arguments = "{prefix}claimkey <key>";
         this.category = CommandCategories.UTILITIES.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

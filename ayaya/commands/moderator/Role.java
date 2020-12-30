@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.requests.restaction.RoleAction;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -48,10 +49,11 @@ public class Role extends ModCommand {
         this.help = "With this command you can create, delete or edit any role in a server.";
         this.arguments = "{prefix}role";
         this.category = CommandCategories.MODERATOR.asCategory();
-        this.botPerms = new Permission[]{Permission.MANAGE_ROLES};
+        this.botPerms = new Permission[]{Permission.MANAGE_ROLES, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.isGuildOnly = true;
         this.cooldownTime = 5;
+        cmdData = new HashMap<>(10);
         lock = new ReentrantLock();
 
     }

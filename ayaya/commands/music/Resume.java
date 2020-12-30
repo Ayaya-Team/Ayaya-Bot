@@ -22,9 +22,8 @@ public class Resume extends MusicCommand {
         this.help = "For when your music break is over.";
         this.arguments = "{prefix}resume";
         this.aliases = new String[]{"resume"};
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
         this.isPremium = true;
 
     }

@@ -12,9 +12,8 @@ public class Volume extends MusicCommand {
         this.help = "Check the current volume or change it.";
         this.arguments = "{prefix}volume <integer>\nRun the command without arguments to check the current volume." +
                 " The volume is always a number from 1 to 100.";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
         this.isPremium = true;
     }
 

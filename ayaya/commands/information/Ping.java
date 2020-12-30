@@ -3,6 +3,7 @@ package ayaya.commands.information;
 import ayaya.commands.Command;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.sql.SQLException;
 import java.time.temporal.ChronoUnit;
@@ -27,6 +28,7 @@ public class Ping extends Command {
         this.arguments = "{prefix}ping";
         this.category = INFORMATION.asCategory();
         this.isGuildOnly = false;
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

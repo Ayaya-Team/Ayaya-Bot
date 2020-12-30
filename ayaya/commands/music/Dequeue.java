@@ -18,9 +18,8 @@ public class Dequeue extends MusicCommand {
         this.name = "dequeue";
         this.help = "Any song queued by mistake? I can remove them from the queue.";
         this.arguments = "{prefix}dequeue <track number>";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
 
     }
 
@@ -53,15 +52,15 @@ public class Dequeue extends MusicCommand {
                     + Objects.requireNonNull(voiceChannel).getName() + "`.");
             event.reply("The queue is already empty.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            AudioTrack track = musicHandler.dequeue(textChannel, track_number);
-            if (track == null) {
+            try {
+                AudioTrack track = musicHandler.dequeue(textChannel, track_number);
+                String track_title = track.getInfo().title;
+                if (track_title == null || track_title.isEmpty())
+                    track_title = "Undefined";
+                event.reply("The track `" + track_title + "` was removed from the queue.");
+            } catch (IndexOutOfBoundsException e) {
                 event.replyError("The track number " + track_number + " wasn't found in the queue.");
-                return;
             }
-            String track_title = track.getInfo().title;
-            if (track_title == null || track_title.isEmpty())
-                track_title = "Undefined";
-            event.reply("The track `" + track_title + "` was removed from the queue.");
         } else {
             event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         }

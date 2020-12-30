@@ -20,9 +20,8 @@ public class Repeat extends MusicCommand {
         this.name = "repeat";
         this.help = "I can repeat the current queue if you want.";
         this.arguments = "{prefix}repeat";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
         this.isPremium = true;
 
     }

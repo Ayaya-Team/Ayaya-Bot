@@ -2,6 +2,7 @@ package ayaya.commands.funny;
 
 import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 import java.util.Random;
 
@@ -20,6 +21,7 @@ public class Choose extends Command {
                 "If no commas are found in the input, the options will be considered as " +
                 "delimited by spaces.";
         this.category = FUNNY.asCategory();
+        this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
 
     }
 

@@ -25,9 +25,8 @@ public class Queue extends MusicCommand {
         this.name = "queue";
         this.help = "Queue some songs before I start playing them.";
         this.arguments = "{prefix}queue <url or search query>\n\nDo {prefix}queue to get the list of tracks in the queue.";
-        this.isGuildOnly = true;
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
 
     }
 

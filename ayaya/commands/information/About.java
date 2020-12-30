@@ -33,7 +33,7 @@ public class About extends Command {
         this.category = INFORMATION.asCategory();
         this.aliases = new String[]{"info"};
         this.isGuildOnly = false;
-        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
         quote = "";
         inviteLink = "";
         discordLink = "";

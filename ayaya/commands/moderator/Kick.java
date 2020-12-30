@@ -37,7 +37,7 @@ public class Kick extends ModCommand {
                 " The mentions don't need to be separated between themselves.";
         this.isGuildOnly = true;
         this.category = CommandCategories.MODERATOR.asCategory();
-        this.botPerms = new Permission[]{Permission.KICK_MEMBERS};
+        this.botPerms = new Permission[]{Permission.KICK_MEMBERS, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.KICK_MEMBERS};
         this.cooldownTime = 5;
         cmdData = new HashMap<>(10);
