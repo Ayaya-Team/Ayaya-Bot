@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Ayaya {
 
-    private static final GatewayIntent INTENTS[] = {
+    private static final GatewayIntent[] INTENTS = {
             GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS,
             GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES
     };
@@ -61,7 +61,7 @@ public class Ayaya {
     private static String dblToken = "";
     private static String owner = "";
     private static String[] coOwners;
-    private static int idsAmount = 3;
+    private static final int idsAmount = 3;
     private static int status = 1;
 
     public static void main(String[] args) {
@@ -91,11 +91,10 @@ public class Ayaya {
                     .getString("discord_id");
             for (int i = idsAmount - 1; i > 0; i--)
                 coOwners[i - 1] = jdbc.sqlSelect("SELECT * FROM owners WHERE id LIKE '" +
-                        String.valueOf(i + 1) + "';", 60).getString("discord_id");
+                        (i + 1) + "';", 60).getString("discord_id");
 
         } catch (SQLException e) {
 
-            String message = e.getMessage();
             System.out.println("A problem occurred while trying to get necessary information! Aborting the process...");
             System.err.println(e.getMessage());
             e.printStackTrace();
@@ -125,10 +124,6 @@ public class Ayaya {
      * @return the Command Client
      */
     private static CommandClient buildCommandClient() {
-
-        Command load = new Load();
-        Command unload = new Unload();
-        Command mswitch = new MusicSwitch();
 
         CommandClientBuilder client = new CommandClientBuilder()
                 .setOwnerId(owner)
@@ -431,9 +426,7 @@ public class Ayaya {
                     }
                 } catch (InterruptedException e) {
                     //Retry.
-                } catch (IOException | MissingHeaderInfoException e) {
-
-                }
+                } catch (IOException | MissingHeaderInfoException ignored) {}
 
             }
         } else {

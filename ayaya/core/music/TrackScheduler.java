@@ -21,7 +21,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
     private final AudioPlayer player;
     private CursorableLinkedList<AudioTrack> queue;
-    private int limit;
+    private final int limit;
     private boolean repeat;
 
     /**

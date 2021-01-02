@@ -1,6 +1,5 @@
 package ayaya.commands.information;
 
-import ayaya.commands.ListCategory;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.Command;
@@ -97,9 +96,14 @@ public class Help extends ayaya.commands.Command {
             if (!discordLink.isEmpty())
                 description = description.concat(" For support, please join my [server](" + discordLink + ").");
             if (!patreonLink.isEmpty())
-                description =
-                        description
-                                .concat("\nJust a friendly reminder, my developer needs your help. If you could donate on my [patreon page](" + patreonLink + ") that would be very appreciated.");
+                description = description
+                        .concat("\nJust a friendly reminder, my developer needs your help." +
+                                " If you could donate on my [patreon page](" + patreonLink + ") that would be very appreciated.");
+            if (CommandCategories.MUSIC.asListCategory().getCommands().isEmpty())
+                description = description
+                        .concat("\n**The music system is currently disabled.**" +
+                        " My developer sometimes disables it when my current host is weak or doesn't have a good " +
+                        "internet connection. For updates on the situation, please head to my support server.");
             helpEmbed.setAuthor("Command's List", null, event.getJDA().getSelfUser().getAvatarUrl())
                     .setDescription(description)
                     .setFooter("Requested by " + event.getAuthor().getName() + " | Total commands: "
@@ -126,19 +130,6 @@ public class Help extends ayaya.commands.Command {
             helpEmbed.setColor(Color.decode("#155FA0"));
         }
         event.reply(helpEmbed.build());
-    }
-
-    /**
-     * Fetches the list category by name.
-     *
-     * @param name list category's name
-     * @return list category
-     */
-    private ListCategory getListCategory(String name) {
-        for (CommandCategories c : CommandCategories.values())
-            if (c.asCategory().getName().equals(name))
-                return c.asListCategory();
-        return null;
     }
 
     /**

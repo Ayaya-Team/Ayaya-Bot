@@ -38,6 +38,10 @@ public class MusicSwitch extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String[] args = event.getArgs().split(" ");
+        isOn = false;
+        for (com.jagrosh.jdautilities.command.Command cmd: event.getClient().getCommands())
+            if (cmd.getCategory().equals(CommandCategories.MUSIC.asCategory()))
+                isOn = true;
         if (event.getArgs().isEmpty()) {
             if (isOn) event.reply(String.format(REPLY, ON));
             else event.reply(String.format(REPLY, OFF));
