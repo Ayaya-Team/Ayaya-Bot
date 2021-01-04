@@ -71,8 +71,8 @@ public class MusicHandler {
      *
      * @param guild   the server
      * @param channel the voice channel to connect to
-     * @return true if the connection was successful,
-     * false if there was a connection already open in that server.
+     * @return true if the connection was open,
+     * false if it was already open in that server.
      */
     public boolean connect(Guild guild, VoiceChannel channel) {
         if (guild.getAudioManager().isConnected()) return false;
