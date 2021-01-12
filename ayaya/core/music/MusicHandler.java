@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.util.HashMap;
@@ -95,14 +96,14 @@ public class MusicHandler {
         return false;
     }
 
-    public boolean play(final Guild guild, final String trackUrl) {
-        return false;
+    public void play(final TextChannel channel, final String trackUrl) {
+        GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        if (!trackUrl.isEmpty())
+            playerManager.loadItemOrdered(musicManager, trackUrl, new PlayHandler(channel, musicManager.getScheduler()));
     }
 
-    public boolean queue(final Guild guild, final String trackUrl) {
+    public void queue(final Guild guild, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(guild);
-        
-        return false;
     }
 
 }
