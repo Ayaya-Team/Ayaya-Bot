@@ -8,11 +8,17 @@ import net.dv8tion.jda.api.entities.TextChannel;
 
 public class PlayHandler implements AudioLoadResultHandler {
 
+    private static final String URL_PREFIX = "https://";
+    private static final String SOUNDCLOUD_SEARCH = "scsearch:";
+    private static final String YOUTUBE_SEARCH = "ytsearch:";
+
+    private String url;
     private TextChannel channel;
     private TrackScheduler scheduler;
 
-    PlayHandler(TextChannel channel, TrackScheduler scheduler) {
+    PlayHandler(String url, TextChannel channel, TrackScheduler scheduler) {
 
+        this.url = url;
         this.channel = channel;
         this.scheduler = scheduler;
 
@@ -35,6 +41,12 @@ public class PlayHandler implements AudioLoadResultHandler {
 
     @Override
     public void playlistLoaded(AudioPlaylist playlist) {
+
+        if (url.startsWith(URL_PREFIX)) {
+            
+        } else {
+
+        }
 
     }
 
