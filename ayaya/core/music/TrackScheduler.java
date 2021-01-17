@@ -66,6 +66,7 @@ public class TrackScheduler extends AudioEventAdapter {
      * Add the next track to queue.
      *
      * @param track The track to queue.
+     * @return true if the track was added, false otherwise
      */
     synchronized boolean queue(AudioTrack track) {
         return track != null && queue.size() < limit && queue.addLast(track);
@@ -125,20 +126,22 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     /**
-     * Add the next track to queue or play right away if nothing is in the queue. If the queue had already something and
-     * the player was stopped, plays the element at the head of the queue and adds the new track to the tail of the
-     * queue.
+     * Add the next track to queue or play it right away if nothing is in the queue.
+     * If the queue had already something and the player was stopped, plays the element at the head of the queue and
+     * adds the new track to the tail of the queue.
      *
      * @param track The track to play or add to queue.
+     * @return true if the track was added, false otherwise
      */
-    synchronized void playTrack(AudioTrack track) {
+    synchronized boolean playTrack(AudioTrack track) {
         // Calling startTrack with the noInterrupt set to true will start the track only if nothing is currently playing. If
         // something is playing, it returns false and does nothing. In that case the player was already playing so this
         // track goes to the queue instead.
-        if (player.startTrack(getCurrentTrack(), true)) {
+        boolean r;
+        if ((r = queue(track)) && player.startTrack(getCurrentTrack(), true)) {
             player.setPaused(false);
         }
-        queue(track);
+        return r;
     }
 
     /**

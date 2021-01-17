@@ -99,8 +99,7 @@ public class MusicHandler {
     public void play(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
         if (!trackUrl.isEmpty())
-            playerManager.loadItemOrdered(musicManager, trackUrl,
-                    new PlayHandler(trackUrl, channel, musicManager.getScheduler()));
+            playerManager.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
     }
 
     public void queue(final Guild guild, final String trackUrl) {
