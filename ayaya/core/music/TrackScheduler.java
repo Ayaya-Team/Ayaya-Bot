@@ -131,7 +131,7 @@ public class TrackScheduler extends AudioEventAdapter {
      * adds the new track to the tail of the queue.
      *
      * @param track The track to play or add to queue.
-     * @return true if the track was added, false otherwise
+     * @return true if the track was queued, false otherwise
      */
     synchronized boolean playTrack(AudioTrack track) {
         // Calling startTrack with the noInterrupt set to true will start the track only if nothing is currently playing. If

@@ -1,5 +1,6 @@
 package ayaya.core.music;
 
+import ayaya.core.exceptions.music.NoAudioMatchingException;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -10,6 +11,7 @@ import java.util.List;
 
 public class PlayHandler implements AudioLoadResultHandler {
 
+    private static final String HTTPS = "https://";
     private static final String SOUNDCLOUD_SEARCH = "scsearch:";
     private static final String YOUTUBE_SEARCH = "ytsearch:";
 
@@ -28,16 +30,16 @@ public class PlayHandler implements AudioLoadResultHandler {
     @Override
     public void trackLoaded(AudioTrack track) {
 
-        String track_title = track.getInfo().title;
-        if (track_title == null || track_title.isEmpty())
-            track_title = "Undefined";
+        String trackTitle = track.getInfo().title;
+        if (trackTitle == null || trackTitle.isEmpty())
+            trackTitle = "Unknown";
 
         boolean queueOnly = guildMusicManager.getScheduler().getTrackAmount() != 0;
         if (guildMusicManager.getScheduler().playTrack(track)) {
             if (queueOnly)
-                channel.sendMessage("`" + track_title + "` was added to the queue.").queue();
+                channel.sendMessage("`" + trackTitle + "` was added to the queue.").queue();
             else
-                channel.sendMessage("Now playing `" + track_title + "`.").queue();
+                channel.sendMessage("Now playing `" + trackTitle + "`.").queue();
         } else {
             channel.sendMessage("I couldn't queue this track because the queue is too full.").queue();
         }
@@ -50,11 +52,11 @@ public class PlayHandler implements AudioLoadResultHandler {
         FriendlyException fe = null;
         List<AudioTrack> tracks = playlist.getTracks();
         if (playlist.isSearchResult()) {
-
+            trackLoaded(playlist.getTracks().get(0));
         } else {
             boolean noErrors = true;
             AudioTrack firstTrack;
-            String track_title;
+            String trackTitle;
             int i = 0;
             boolean queueOnly = guildMusicManager.getScheduler().getTrackAmount() != 0;
             do {
@@ -84,12 +86,13 @@ public class PlayHandler implements AudioLoadResultHandler {
                             "None of the tracks of this playlist could be queued due to errors." +
                                     " Please try other url."
                     ).queue();
-                    throw fe;
+                    System.err.println(fe.getMessage());
+                    fe.printStackTrace();
                 }
             }
-            String playing_track_title = guildMusicManager.getPlayer().getPlayingTrack().getInfo().title;
-            if (playing_track_title == null || playing_track_title.isEmpty())
-                playing_track_title = "Undefined";
+            String playingTrackTitle = guildMusicManager.getPlayer().getPlayingTrack().getInfo().title;
+            if (playingTrackTitle == null || playingTrackTitle.isEmpty())
+                playingTrackTitle = "Undefined";
             for (; i < tracks.size(); i++) {
                 AudioTrack track = tracks.get(i);
                 if (track != firstTrack)
@@ -100,7 +103,7 @@ public class PlayHandler implements AudioLoadResultHandler {
                                             + "` because the queue is now full."
                             ).queue();
                             if (!queueOnly)
-                                channel.sendMessage("Now playing `" + playing_track_title + "`.").queue();
+                                channel.sendMessage("Now playing `" + playingTrackTitle + "`.").queue();
                             return;
                         }
                     } catch (FriendlyException e) {
@@ -114,19 +117,29 @@ public class PlayHandler implements AudioLoadResultHandler {
             else
                 channel.sendMessage("I couldn't queue all the tracks of `" + playlist.getName()
                         + "` because there were errors loading some of them.").queue();
-            if (!queueOnly) channel.sendMessage("Now playing `" + playing_track_title + "`.").queue();
+            if (!queueOnly)
+                channel.sendMessage("Now playing `" + playingTrackTitle + "`.").queue();
         }
 
     }
 
     @Override
     public void noMatches() {
-
+        if (url.startsWith(HTTPS)) {
+            channel.sendMessage("I didn't find anything for that url.").queue();
+        } else {
+            throw new NoAudioMatchingException("The provided query did not return any results.");
+        }
     }
 
     @Override
     public void loadFailed(FriendlyException exception) {
-
+        if (url.startsWith(HTTPS)) {
+            channel.sendMessage("I couldn't queue this track due to an exception."
+                    + "Try another url or try a search query.").queue();
+            exception.printStackTrace();
+        } else
+            throw exception;
     }
 
 }

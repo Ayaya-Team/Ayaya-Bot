@@ -1,8 +1,10 @@
 package ayaya.core.music;
 
+import ayaya.core.exceptions.music.NoAudioMatchingException;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -16,19 +18,20 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class MusicHandler {
 
-    private static final String URL_PREFIX = "https://";
+    private static final String HTTP = "http://";
+    private static final String HTTPS = "https://";
     private static final String SOUNDCLOUD_SEARCH = "scsearch:";
     private static final String YOUTUBE_SEARCH = "ytsearch:";
 
-    private final AudioPlayerManager playerManager;
-    private final Map<Long, GuildMusicManager> musicManagers;
+    private final AudioPlayerManager player;
+    private final Map<String, GuildMusicManager> musicManagers;
     private final ReentrantLock lock;
 
     public MusicHandler() {
-        playerManager = new DefaultAudioPlayerManager();
+        player = new DefaultAudioPlayerManager();
         musicManagers = new HashMap<>();
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        AudioSourceManagers.registerLocalSource(playerManager);
+        AudioSourceManagers.registerRemoteSources(player);
+        AudioSourceManagers.registerLocalSource(player);
         lock = new ReentrantLock();
     }
 
@@ -37,8 +40,8 @@ public class MusicHandler {
      *
      * @return player manager
      */
-    public AudioPlayerManager getPlayerManager() {
-        return playerManager;
+    public AudioPlayerManager getPlayer() {
+        return player;
     }
 
     /**
@@ -49,13 +52,13 @@ public class MusicHandler {
      */
     public GuildMusicManager getGuildMusicManager(Guild guild) {
 
-        long guildId = guild.getIdLong();
+        String guildId = guild.getId();
         lock.lock();
         GuildMusicManager musicManager = musicManagers.get(guildId);
         lock.unlock();
 
         if (musicManager == null) {
-            musicManager = new GuildMusicManager(playerManager);
+            musicManager = new GuildMusicManager(player);
             lock.lock();
             musicManagers.put(guildId, musicManager);
             lock.unlock();
@@ -98,12 +101,61 @@ public class MusicHandler {
 
     public void play(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
-        if (!trackUrl.isEmpty())
-            playerManager.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
+        if (!trackUrl.isEmpty()) {
+            if (trackUrl.startsWith(HTTP)) {
+                channel.sendMessage("For security reasons, http urls aren't allowed. Try an https url instead.").queue();
+            } else if (trackUrl.startsWith(HTTPS))
+                player.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
+            else {
+                playFromQuery(channel, trackUrl, musicManager);
+            }
+        }
     }
 
-    public void queue(final Guild guild, final String trackUrl) {
-        GuildMusicManager musicManager = getGuildMusicManager(guild);
+    private void playFromQuery(final TextChannel channel, final String trackUrl, final GuildMusicManager musicManager) {
+        try {
+            if (!trackUrl.startsWith(YOUTUBE_SEARCH) && !trackUrl.startsWith(SOUNDCLOUD_SEARCH))
+                player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
+                    new PlayHandler(trackUrl, channel, musicManager));
+            else
+                player.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
+        } catch (FriendlyException e) {
+            e.printStackTrace();
+            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
+                channel.sendMessage(
+                        "The search for the provided query failed."
+                                + "Try providing an url or try a different search query."
+                                + "\nIf the problem persists, "
+                                + "it's likely that my ip has got temporarily banned by youtube and soundcloud."
+                ).queue();
+            else
+                playFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
+        } catch (NoAudioMatchingException e) {
+            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
+                channel.sendMessage(
+                        "The search for the provided query returned no results."
+                                + "Try providing an url or try a different search query."
+                ).queue();
+            else
+                playFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
+        }
+    }
+
+    public void queue(final TextChannel channel, final String trackUrl) {
+        GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        if (!trackUrl.isEmpty()) {
+            if (trackUrl.startsWith(HTTP)) {
+                channel.sendMessage("For security reasons, http urls aren't allowed. Try an https url instead.").queue();
+            } else if (trackUrl.startsWith(HTTPS))
+                player.loadItemOrdered(musicManager, trackUrl, new QueueHandler(trackUrl, channel, musicManager));
+            else {
+                queueFromQuery(channel, trackUrl, musicManager);
+            }
+        }
+    }
+
+    private void queueFromQuery(final TextChannel channel, final String trackUrl, final GuildMusicManager musicManager) {
+        
     }
 
 }
