@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -126,6 +127,25 @@ public class MusicHandler {
                     playFromQuery(channel, trackUrl, musicManager);
                 }
             }
+        } else {
+            TrackScheduler trackScheduler = musicManager.getScheduler();
+            if (trackScheduler.getTrackAmount() > 0) {
+                if (!trackScheduler.musicStopped()) {
+                    channel.sendMessage(
+                            "Already playing `" + trackScheduler.getCurrentTrack().getInfo().title + "`."
+                    ).queue();
+                } else {
+                    trackScheduler.playTrack(null);
+                    AudioTrack track = trackScheduler.getCurrentTrack();
+                    String playingTrackTitle = track.getInfo().title;
+                    playingTrackTitle =
+                            (playingTrackTitle == null || playingTrackTitle.isEmpty()) ? "Undefined" : playingTrackTitle;
+                    channel.sendMessage(
+                            "Now playing `" + playingTrackTitle + "`."
+                    ).queue();
+                }
+            }
+            else channel.sendMessage("There are no tracks to play right now.").queue();
         }
     }
 
@@ -180,7 +200,10 @@ public class MusicHandler {
             else {
                 queueFromQuery(channel, trackUrl, musicManager);
             }
-        }
+        } else
+            channel.sendMessage(
+                    "<:AyaWhat:362990028915474432> You didn't say anything about the track you wanted to queue."
+            ).queue();
     }
 
     private void queueFromQuery(final TextChannel channel, final String trackUrl, final GuildMusicManager musicManager) {
