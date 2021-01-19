@@ -31,15 +31,13 @@ public class PlayHandler implements AudioLoadResultHandler {
     public void trackLoaded(AudioTrack track) {
 
         String trackTitle = track.getInfo().title;
-        if (trackTitle == null || trackTitle.isEmpty())
-            trackTitle = "Unknown";
+        trackTitle = (trackTitle == null || trackTitle.isEmpty()) ? "Unknown" : trackTitle;
 
         boolean queueOnly = guildMusicManager.getScheduler().getTrackAmount() != 0;
         if (guildMusicManager.getScheduler().playTrack(track)) {
-            if (queueOnly)
-                channel.sendMessage("`" + trackTitle + "` was added to the queue.").queue();
-            else
-                channel.sendMessage("Now playing `" + trackTitle + "`.").queue();
+            channel.sendMessage(
+                    queueOnly ? "`" + trackTitle + "` was added to the queue." : "Now playing `" + trackTitle + "`."
+            ).queue();
         } else {
             channel.sendMessage("I couldn't queue this track because the queue is too full.").queue();
         }
@@ -50,10 +48,44 @@ public class PlayHandler implements AudioLoadResultHandler {
     public void playlistLoaded(AudioPlaylist playlist) {
 
         List<AudioTrack> tracks = playlist.getTracks();
-        if (playlist.isSearchResult()) {
+        if (tracks.size() == 0)
+            channel.sendMessage("You found an empty playlist, there's nothing to queue.").queue();
+        else if (playlist.isSearchResult()) {
             trackLoaded(tracks.get(0));
         } else {
-            
+            String playlistName = playlist.getName();
+            playlistName = (playlistName == null || playlistName.isEmpty()) ? "Unknown" : playlistName;
+
+            AudioTrack firstTrack = null;
+            boolean queueOnly = guildMusicManager.getScheduler().getTrackAmount() != 0;
+
+            for (AudioTrack track: tracks) {
+                if (!guildMusicManager.getScheduler().playTrack(track)) {
+                    if (firstTrack == null)
+                        channel.sendMessage(
+                                "I couldn't queue any tracks from the playlist "
+                                        + playlistName
+                                        + " because the queue is full."
+                        ).queue();
+
+                    else {
+                        String trackTitle = firstTrack.getInfo().title;
+                        trackTitle = (trackTitle == null || trackTitle.isEmpty()) ? "Unknown" : trackTitle;
+                        channel.sendMessage(
+                                "I couldn't queue all tracks from the playlist "
+                                        + playlistName
+                                        + " because the queue is now full."
+                                        + (queueOnly ? "" : "\nNow playing `" + trackTitle + "`.")
+                        ).queue();
+                    }
+                    return;
+                }
+
+                if (firstTrack == null)
+                    firstTrack = track;
+            }
+
+            channel.sendMessage("Finished queueing all the tracks from `" + playlistName + "`.").queue();
         }
 
     }
