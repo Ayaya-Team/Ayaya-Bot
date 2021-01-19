@@ -44,11 +44,15 @@ public class QueueHandler implements AudioLoadResultHandler {
     public void playlistLoaded(AudioPlaylist playlist) {
         FriendlyException fe = null;
         List<AudioTrack> tracks = playlist.getTracks();
-        if (playlist.isSearchResult()) {
+
+        if (tracks.size() == 0)
+            channel.sendMessage("You found an empty playlist, there's nothing to queue.").queue();
+        else if (playlist.isSearchResult()) {
             trackLoaded(playlist.getTracks().get(0));
         } else {
 
         }
+
     }
 
     @Override

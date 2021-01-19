@@ -12,8 +12,6 @@ import java.util.List;
 public class PlayHandler implements AudioLoadResultHandler {
 
     private static final String HTTPS = "https://";
-    private static final String SOUNDCLOUD_SEARCH = "scsearch:";
-    private static final String YOUTUBE_SEARCH = "ytsearch:";
 
     private String url;
     private TextChannel channel;
@@ -48,10 +46,11 @@ public class PlayHandler implements AudioLoadResultHandler {
     public void playlistLoaded(AudioPlaylist playlist) {
 
         List<AudioTrack> tracks = playlist.getTracks();
-        if (tracks.size() == 0)
-            channel.sendMessage("You found an empty playlist, there's nothing to queue.").queue();
-        else if (playlist.isSearchResult()) {
-            trackLoaded(tracks.get(0));
+        if (playlist.isSearchResult()) {
+            if (tracks.isEmpty())
+                throw new NoAudioMatchingException("The provided query did not return any results.");
+            else
+                trackLoaded(tracks.get(0));
         } else {
             String playlistName = playlist.getName();
             playlistName = (playlistName == null || playlistName.isEmpty()) ? "Unknown" : playlistName;
@@ -85,7 +84,16 @@ public class PlayHandler implements AudioLoadResultHandler {
                     firstTrack = track;
             }
 
-            channel.sendMessage("Finished queueing all the tracks from `" + playlistName + "`.").queue();
+            if (firstTrack == null)
+                channel.sendMessage("You found an empty playlist, there's nothing to queue.").queue();
+            else {
+                String trackTitle = firstTrack.getInfo().title;
+                trackTitle = (trackTitle == null || trackTitle.isEmpty()) ? "Unknown" : trackTitle;
+                channel.sendMessage(
+                        "Finished queueing all the tracks from `" + playlistName + "`."
+                                + (queueOnly ? "" : "\nNow playing `" + trackTitle + "`.")
+                ).queue();
+            }
         }
 
     }
