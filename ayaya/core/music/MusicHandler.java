@@ -155,7 +155,32 @@ public class MusicHandler {
     }
 
     private void queueFromQuery(final TextChannel channel, final String trackUrl, final GuildMusicManager musicManager) {
-        
+        try {
+            if (!trackUrl.startsWith(YOUTUBE_SEARCH) && !trackUrl.startsWith(SOUNDCLOUD_SEARCH))
+                player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
+                        new PlayHandler(trackUrl, channel, musicManager));
+            else
+                player.loadItemOrdered(musicManager, trackUrl, new QueueHandler(trackUrl, channel, musicManager));
+        } catch (FriendlyException e) {
+            e.printStackTrace();
+            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
+                channel.sendMessage(
+                        "The search for the provided query failed."
+                                + "Try providing an url or try a different search query."
+                                + "\nIf the problem persists, "
+                                + "it's likely that my ip has got temporarily banned by youtube and soundcloud."
+                ).queue();
+            else
+                queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
+        } catch (NoAudioMatchingException e) {
+            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
+                channel.sendMessage(
+                        "The search for the provided query returned no results."
+                                + "Try providing an url or try a different search query."
+                ).queue();
+            else
+                queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
+        }
     }
 
 }
