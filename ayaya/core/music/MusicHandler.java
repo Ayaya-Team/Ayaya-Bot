@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -102,12 +104,19 @@ public class MusicHandler {
     public void play(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
         if (!trackUrl.isEmpty()) {
-            if (trackUrl.startsWith(HTTP)) {
-                channel.sendMessage("For security reasons, http urls aren't allowed. Try an https url instead.").queue();
-            } else if (trackUrl.startsWith(HTTPS))
-                player.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
+            if (trackUrl.startsWith(HTTP))
+                channel.sendMessage("For security reasons, http urls aren't allowed. Try a https url instead.").queue();
             else {
-                playFromQuery(channel, trackUrl, musicManager);
+                if (trackUrl.startsWith(HTTPS))
+                    try {
+                        URL url = new URL(trackUrl);
+                        player.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
+                    } catch (MalformedURLException e) {
+                        channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
+                    }
+                else {
+                    playFromQuery(channel, trackUrl, musicManager);
+                }
             }
         }
     }
@@ -123,10 +132,10 @@ public class MusicHandler {
             e.printStackTrace();
             if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
                 channel.sendMessage(
-                        "The search for the provided query failed."
-                                + "Try providing an url or try a different search query."
+                        "The search for the provided query failed. "
+                                + "Try providing a url or try a different search query."
                                 + "\nIf the problem persists, "
-                                + "it's likely that my ip has got temporarily banned by youtube and soundcloud."
+                                + "it's likely that youtube and soundcloud are unavailable for me at the moment."
                 ).queue();
             else
                 playFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
@@ -134,7 +143,7 @@ public class MusicHandler {
             if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
                 channel.sendMessage(
                         "The search for the provided query returned no results."
-                                + "Try providing an url or try a different search query."
+                                + "Try providing a url or try a different search query."
                 ).queue();
             else
                 playFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
@@ -144,10 +153,15 @@ public class MusicHandler {
     public void queue(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
         if (!trackUrl.isEmpty()) {
-            if (trackUrl.startsWith(HTTP)) {
-                channel.sendMessage("For security reasons, http urls aren't allowed. Try an https url instead.").queue();
-            } else if (trackUrl.startsWith(HTTPS))
-                player.loadItemOrdered(musicManager, trackUrl, new QueueHandler(trackUrl, channel, musicManager));
+            if (trackUrl.startsWith(HTTP))
+                channel.sendMessage("For security reasons, http urls aren't allowed. Try a https url instead.").queue();
+            else if (trackUrl.startsWith(HTTPS))
+                try {
+                    URL url = new URL(trackUrl);
+                    player.loadItemOrdered(musicManager, trackUrl, new QueueHandler(trackUrl, channel, musicManager));
+                } catch (MalformedURLException e) {
+                    channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
+                }
             else {
                 queueFromQuery(channel, trackUrl, musicManager);
             }
@@ -165,10 +179,10 @@ public class MusicHandler {
             e.printStackTrace();
             if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
                 channel.sendMessage(
-                        "The search for the provided query failed."
-                                + "Try providing an url or try a different search query."
+                        "The search for the provided query failed. "
+                                + "Try providing a url or try a different search query."
                                 + "\nIf the problem persists, "
-                                + "it's likely that my ip has got temporarily banned by youtube and soundcloud."
+                                + "it's likely that youtube and soundcloud are unavailable for me at the moment."
                 ).queue();
             else
                 queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
@@ -176,7 +190,7 @@ public class MusicHandler {
             if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
                 channel.sendMessage(
                         "The search for the provided query returned no results."
-                                + "Try providing an url or try a different search query."
+                                + "Try providing a url or try a different search query."
                 ).queue();
             else
                 queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
