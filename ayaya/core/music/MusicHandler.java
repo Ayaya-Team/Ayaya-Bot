@@ -1,5 +1,6 @@
 package ayaya.core.music;
 
+import ayaya.core.enums.TrustedHosts;
 import ayaya.core.exceptions.music.NoAudioMatchingException;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -110,7 +111,14 @@ public class MusicHandler {
                 if (trackUrl.startsWith(HTTPS))
                     try {
                         URL url = new URL(trackUrl);
-                        player.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
+                        try {
+                            TrustedHosts.valueOf(url.getHost());
+                            player.loadItemOrdered(musicManager, trackUrl,
+                                    new PlayHandler(trackUrl, channel, musicManager));
+                        } catch (IllegalArgumentException e) {
+                            channel.sendMessage("The url points to a non trusted host."
+                                    + " I only accept youtube and soundcloud urls").queue();
+                        }
                     } catch (MalformedURLException e) {
                         channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                     }
@@ -158,7 +166,14 @@ public class MusicHandler {
             else if (trackUrl.startsWith(HTTPS))
                 try {
                     URL url = new URL(trackUrl);
-                    player.loadItemOrdered(musicManager, trackUrl, new QueueHandler(trackUrl, channel, musicManager));
+                    try {
+                        TrustedHosts.valueOf(url.getHost());
+                        player.loadItemOrdered(musicManager, trackUrl,
+                                new QueueHandler(trackUrl, channel, musicManager));
+                    } catch (IllegalArgumentException e) {
+                        channel.sendMessage("The url points to a non trusted host."
+                                + " I only accept youtube and soundcloud urls").queue();
+                    }
                 } catch (MalformedURLException e) {
                     channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                 }
