@@ -36,7 +36,7 @@ public class Leave extends MusicCommand {
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             event.reply("I'm not connected to a voice channel.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            musicHandler.leave(guild, textChannel);
+            musicHandler.disconnect(guild);
         } else {
             event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         }

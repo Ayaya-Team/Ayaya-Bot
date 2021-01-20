@@ -4,6 +4,7 @@ import ayaya.commands.Command;
 import ayaya.core.music.MusicHandler;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 /**
  * This is the superclass of the music commands.
@@ -30,12 +31,13 @@ public class MusicCommand extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         GuildVoiceState voiceState = event.getMember().getVoiceState();
-        if (voiceState != null && voiceState.getChannel() != null) {
-            executeMusicCommand(event);
+        VoiceChannel voiceChannel;
+        if (voiceState != null && (voiceChannel = voiceState.getChannel()) != null) {
+            executeMusicCommand(event, voiceChannel);
         } else event.reply("You must be in a voice channel to use this command.");
 
     }
 
-    protected void executeMusicCommand(CommandEvent event) {}
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {}
 
 }

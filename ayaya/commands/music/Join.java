@@ -26,14 +26,13 @@ public class Join extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             try {
-                musicHandler.join(guild, voiceChannel);
+                musicHandler.connect(guild, voiceChannel);
                 event.reply("Now connected to the voice channel `" + Objects.requireNonNull(voiceChannel).getName() + "`.");
             } catch (InsufficientPermissionException e) {
                 event.replyError("Could not connect to the voice channel because it's already full.");

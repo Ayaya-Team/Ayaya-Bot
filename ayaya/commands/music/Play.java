@@ -9,8 +9,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import java.util.Objects;
-
 /**
  * Class of the play command.
  */
@@ -27,26 +25,23 @@ public class Play extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        String prefix = event.getClient().getPrefix();
         String url = event.getArgs();
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            try {
-                musicHandler.join(guild, voiceChannel);
-                event.reply("Now connected to the voice channel `" + Objects.requireNonNull(voiceChannel).getName() + "`.");
+        try {
+            if (musicHandler.connect(guild, voiceChannel)) {
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
                 musicHandler.play(textChannel, url);
-            } catch (InsufficientPermissionException e) {
-                event.replyError("Could not connect to the voice channel because it's already full.");
+            } else if (voiceState != null && voiceState.getChannel() == voiceChannel) {
+                musicHandler.play(textChannel, url);
+            } else {
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }
-        } else if (voiceChannel == voiceState.getChannel()) {
-            musicHandler.play(textChannel, url);
-        } else {
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
         }
 
     }
