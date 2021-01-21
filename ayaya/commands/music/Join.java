@@ -30,17 +30,16 @@ public class Join extends MusicCommand {
 
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            try {
-                musicHandler.connect(guild, voiceChannel);
+        try {
+            if (musicHandler.connect(guild, voiceChannel))
                 event.reply("Now connected to the voice channel `" + Objects.requireNonNull(voiceChannel).getName() + "`.");
-            } catch (InsufficientPermissionException e) {
-                event.replyError("Could not connect to the voice channel because it's already full.");
+            else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                event.reply("I'm already connected to your channel.");
+            } else {
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }
-        } else if (voiceChannel == voiceState.getChannel()) {
-            event.reply("I'm already connected to your channel.");
-        } else {
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
         }
 
     }

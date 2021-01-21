@@ -8,8 +8,6 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-import java.util.Objects;
-
 /**
  * Class of the leave command.
  */
@@ -27,16 +25,18 @@ public class Leave extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             event.reply("I'm not connected to a voice channel.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            musicHandler.disconnect(guild);
+            if (musicHandler.disconnect(guild))
+                event.reply("Disconnected from voice channel.");
+            else
+                event.reply("There's still music being played right now.");
         } else {
             event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         }

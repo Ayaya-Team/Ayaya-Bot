@@ -96,7 +96,7 @@ public class MusicHandler {
      * false if there wasn't any connection open in that server.
      */
     public boolean disconnect(Guild guild) {
-        if (guild.getAudioManager().isConnected()) {
+        if (guild.getAudioManager().isConnected() && getGuildMusicManager(guild).getScheduler().musicStopped()) {
             guild.getAudioManager().closeAudioConnection();
             return true;
         }
