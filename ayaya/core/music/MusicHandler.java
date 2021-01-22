@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -54,7 +55,7 @@ public class MusicHandler {
      * @param guild the guild
      * @return guild music manager
      */
-    public GuildMusicManager getGuildMusicManager(Guild guild) {
+    private GuildMusicManager getGuildMusicManager(Guild guild) {
 
         String guildId = guild.getId();
         lock.lock();
@@ -233,6 +234,47 @@ public class MusicHandler {
             else
                 queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
         }
+    }
+
+    public Iterator<AudioTrack> getTrackIterator(final Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().getTrackIterator();
+    }
+
+    public int getTrackAmount(final Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().getTrackAmount();
+    }
+
+    /**
+     * Checks wether the music currently playing is paused or not.
+     *
+     * @param guild the guild where the command was sent.
+     * @return true if the music is paused, false if not
+     */
+    public boolean musicStopped(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().musicStopped();
+    }
+
+    /**
+     * Enables or disables the repeat mode of the queue.
+     *
+     * @param guild the guild where the command was sent
+     */
+    public void repeat(Guild guild) {
+        getGuildMusicManager(guild).getScheduler().repeat();
+    }
+
+    /**
+     * Checks if the repeat mode is enabled or not.
+     *
+     * @param guild the guild where the command was sent
+     * @return true if the queue is in repeat mode, false if not
+     */
+    public boolean isRepeating(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().isRepeating();
+    }
+
+    public AudioTrack getCurrentTrack(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().getCurrentTrack();
     }
 
 }

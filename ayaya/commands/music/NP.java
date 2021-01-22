@@ -1,13 +1,13 @@
 package ayaya.commands.music;
 
 import ayaya.core.enums.CommandCategories;
-import ayaya.core.music.GuildMusicManager;
-import ayaya.core.music.TrackScheduler;
 import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.awt.*;
 
@@ -27,22 +27,22 @@ public class NP extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        GuildMusicManager musicManager = musicHandler.getGuildAudioPlayer(event.getGuild());
-        TrackScheduler scheduler = musicManager.getScheduler();
+        Guild guild = event.getGuild();
+        int trackAmount = musicHandler.getTrackAmount(guild);
         String message;
-        if (scheduler.getTracks().isEmpty())
+        if (trackAmount == 0)
             message = "There are no tracks in the queue right now.";
         else {
-            AudioTrack track = scheduler.getCurrentTrack();
+            AudioTrack track = musicHandler.getCurrentTrack(guild);
             String trackName = track.getInfo().title;
             long time = track.getDuration() / 1000;
             long current = track.getPosition() / 1000;
             if (trackName == null)
                 trackName = "Undefined";
             String bar = Utils.printBar(current, time, BAR_LENGTH);
-            if (scheduler.musicStopped())
+            if (musicHandler.musicStopped(guild))
                 message = String.format(
                         "Current track to play is `%s`\n\n**%02d:%02d / %02d:%02d** ー %s",
                         trackName, current/60, current%60, time/60, time%60, bar
@@ -58,11 +58,11 @@ public class NP extends MusicCommand {
                 .setDescription(message);
         if (musicHandler.isRepeating(event.getGuild()))
             npEmbed.setFooter(
-                    "Repeat mode on | " + scheduler.getTracks().size() + " tracks queued", null
+                    "Repeat mode on | " + trackAmount + " tracks queued", null
             );
         else
             npEmbed.setFooter(
-                    "Repeat mode off | " + scheduler.getTracks().size() + " tracks queued", null
+                    "Repeat mode off | " + trackAmount + " tracks queued", null
             );
         try {
             npEmbed.setColor(event.getGuild().getSelfMember().getColor());

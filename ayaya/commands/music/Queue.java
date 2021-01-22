@@ -12,13 +12,14 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
 import java.awt.*;
-import java.util.List;
-import java.util.Objects;
+import java.util.Iterator;
 
 /**
  * Class of the queue command.
  */
 public class Queue extends MusicCommand {
+
+    private static final int LIST_LIMIT = 10;
 
     public Queue() {
 
@@ -31,87 +32,79 @@ public class Queue extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         String prefix = event.getClient().getPrefix();
         String url = event.getArgs();
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            try {
-                musicHandler.join(guild, voiceChannel);
+        try {
+            if (musicHandler.connect(guild, voiceChannel)) {
                 event.reply(
-                        "Now connected to the voice channel `"
-                                + Objects.requireNonNull(voiceChannel).getName() + "`."
+                        "Now connected to the voice channel `" + voiceChannel.getName() + "`."
                 );
-                List<AudioTrack> tracks = queueOrShowList(textChannel, url);
-                if (tracks != null) {
-                    printTrackList(event, tracks);
+                Iterator<AudioTrack> iterator = queueOrShowList(textChannel, url);
+                if (iterator != null) {
+                    printTrackList(event, iterator);
                 }
-            } catch (InsufficientPermissionException e) {
-                event.replyError("Could not connect to the voice channel because it's already full.");
+            } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                Iterator<AudioTrack> iterator = queueOrShowList(textChannel, url);
+                if (iterator != null) {
+                    printTrackList(event, iterator);
+                }
+            } else {
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }
-        } else if (voiceChannel == voiceState.getChannel()) {
-            List<AudioTrack> tracks = queueOrShowList(textChannel, url);
-            if (tracks != null) {
-                printTrackList(event, tracks);
-            }
-        } else {
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
         }
 
     }
 
-    private List<AudioTrack> queueOrShowList(TextChannel textChannel, String url) {
-        if (url.isEmpty()) return musicHandler.trackList(textChannel.getGuild());
+    private Iterator<AudioTrack> queueOrShowList(TextChannel textChannel, String url) {
+        if (url.isEmpty()) return musicHandler.getTrackIterator(textChannel.getGuild());
         else {
             musicHandler.queue(textChannel, url);
             return null;
         }
     }
 
-    private void printTrackList(CommandEvent event, List<AudioTrack> tracks) {
-        if (tracks.isEmpty())
+    private void printTrackList(CommandEvent event, Iterator<AudioTrack> iterator) {
+        if (!iterator.hasNext()) {
             event.reply("There are no tracks in the queue right now.");
-        else {
-            StringBuilder queue_list = new StringBuilder();
+        } else {
+            Guild guild = event.getGuild();
+            StringBuilder queueList = new StringBuilder();
             int i = 0;
             String trackTitle;
-            for (AudioTrack track : tracks) {
-                if (i == 0) {
-                    if (musicHandler.musicStopped(event.getGuild()))
-                        queue_list.append("Next music: `");
-                    else
-                        queue_list.append("Now playing: `");
-                } else
-                    queue_list.append(i).append(": `");
-                trackTitle = track.getInfo().title;
-                if (trackTitle != null && !trackTitle.isEmpty())
-                    queue_list.append(track.getInfo().title);
+
+            do {
+                AudioTrack track = iterator.next();
+                if (i == 0)
+                    queueList.append((musicHandler.musicStopped(guild)) ? "Next music: `" : "Now playing: `");
                 else
-                    queue_list.append("Undefined");
-                queue_list.append("`\n");
+                    queueList.append(i).append(": `");
+                trackTitle = track.getInfo().title;
+                queueList.append((trackTitle != null && !trackTitle.isEmpty()) ? track.getInfo().title : "Undefined")
+                        .append("`\n");
                 if (i == 10) {
-                    queue_list.append("And ").append(tracks.size() - 11).append(" more tracks.");
+                    queueList.append("And ").append(musicHandler.getTrackAmount(guild) - 11).append(" more tracks.");
                     break;
                 }
                 i++;
-            }
-            EmbedBuilder queue_embed = new EmbedBuilder()
+            } while (iterator.hasNext());
+
+            EmbedBuilder queueEmbed = new EmbedBuilder()
                     .setAuthor("Queue", null, event.getSelfUser().getAvatarUrl())
-                    .setDescription(queue_list.toString());
+                    .setDescription(queueList.toString())
+                    .setFooter((musicHandler.isRepeating(guild)) ? "Repeat mode on" : "Repeat mode off", null);
             try {
-                queue_embed.setColor(event.getGuild().getSelfMember().getColor());
+                queueEmbed.setColor(guild.getSelfMember().getColor());
             } catch (NullPointerException e) {
-                queue_embed.setColor(Color.decode("#155FA0"));
+                queueEmbed.setColor(Color.decode("#155FA0"));
             }
-            if (musicHandler.isRepeating(event.getGuild()))
-                queue_embed.setFooter("Repeat mode on", null);
-            else
-                queue_embed.setFooter("Repeat mode off", null);
-            event.reply(queue_embed.build());
+            event.reply(queueEmbed.build());
         }
     }
 

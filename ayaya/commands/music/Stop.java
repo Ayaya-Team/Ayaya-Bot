@@ -26,13 +26,11 @@ public class Stop extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        GuildMusicManager musicManager = musicHandler.getGuildAudioPlayer(guild);
-        if (voiceState == null || !voiceState.inVoiceChannel() || musicManager.getScheduler().getCurrentTrack() == null) {
+        if (voiceState == null || !voiceState.inVoiceChannel() || musicHandler.getCurrentTrack(guild) == null) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {
             event.reply("Stopping the music.");
