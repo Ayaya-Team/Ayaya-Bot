@@ -8,8 +8,6 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import java.util.Objects;
-
 /**
  * Class of the repeat command.
  */
@@ -27,31 +25,28 @@ public class Repeat extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            try {
-                musicHandler.join(guild, voiceChannel);
-                event.reply("Now connected to the voice channel `" + Objects.requireNonNull(voiceChannel).getName() + "`.");
+        try {
+            if (musicHandler.connect(guild, voiceChannel)) {
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
                 musicHandler.repeat(guild);
-            } catch (InsufficientPermissionException e) {
-                event.replyError("Could not connect to the voice channel because it's already full.");
-            }
-            if (musicHandler.isRepeating(guild))
-                event.reply("Repeat mode on.");
-            else
-                event.reply("Repeat mode off.");
-        } else if (voiceChannel == voiceState.getChannel()) {
-            musicHandler.repeat(guild);
-            if (musicHandler.isRepeating(guild))
-                event.reply("Repeat mode on.");
-            else
-                event.reply("Repeat mode off.");
-        } else {
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+                if (musicHandler.isRepeating(guild))
+                    event.reply("Repeat mode on.");
+                else
+                    event.reply("Repeat mode off.");
+            } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                musicHandler.repeat(guild);
+                if (musicHandler.isRepeating(guild))
+                    event.reply("Repeat mode on.");
+                else
+                    event.reply("Repeat mode off.");
+            } else
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
         }
 
     }

@@ -42,7 +42,7 @@ public class Seek extends MusicCommand {
                 return;
             }
         }
-        if (musicHandler.getGuildAudioPlayer(event.getGuild()).getScheduler().noMusicPlaying()) {
+        if (musicHandler.noMusicPlaying(guild)) {
             event.reply("There is no music being played right now.");
             return;
         }

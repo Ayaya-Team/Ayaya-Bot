@@ -49,7 +49,7 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>boolean</code> if the player is stopped or no track is playing at the moment
      */
-    synchronized public boolean musicStopped() {
+    synchronized public boolean musicPaused() {
         return player.isPaused() || noMusicPlaying();
     }
 

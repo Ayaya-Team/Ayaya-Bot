@@ -97,7 +97,7 @@ public class MusicHandler {
      * false if there wasn't any connection open in that server.
      */
     public boolean disconnect(Guild guild) {
-        if (guild.getAudioManager().isConnected() && getGuildMusicManager(guild).getScheduler().musicStopped()) {
+        if (guild.getAudioManager().isConnected() && getGuildMusicManager(guild).getScheduler().musicPaused()) {
             guild.getAudioManager().closeAudioConnection();
             return true;
         }
@@ -131,7 +131,7 @@ public class MusicHandler {
         } else {
             TrackScheduler trackScheduler = musicManager.getScheduler();
             if (trackScheduler.getTrackAmount() > 0) {
-                if (!trackScheduler.musicStopped()) {
+                if (!trackScheduler.musicPaused()) {
                     channel.sendMessage(
                             "Already playing `" + trackScheduler.getCurrentTrack().getInfo().title + "`."
                     ).queue();
@@ -250,8 +250,8 @@ public class MusicHandler {
      * @param guild the guild where the command was sent.
      * @return true if the music is paused, false if not
      */
-    public boolean musicStopped(Guild guild) {
-        return getGuildMusicManager(guild).getScheduler().musicStopped();
+    public boolean musicPaused(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().musicPaused();
     }
 
     /**
@@ -273,8 +273,51 @@ public class MusicHandler {
         return getGuildMusicManager(guild).getScheduler().isRepeating();
     }
 
+    public boolean noMusicPlaying(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().noMusicPlaying();
+    }
+
     public AudioTrack getCurrentTrack(Guild guild) {
         return getGuildMusicManager(guild).getScheduler().getCurrentTrack();
+    }
+
+    public boolean stopMusic(Guild guild) {
+        TrackScheduler scheduler = getGuildMusicManager(guild).getScheduler();
+        if (!scheduler.noMusicPlaying() || scheduler.getTrackAmount() != 0) {
+            scheduler.stopAndClear();
+            return true;
+        } else
+            return false;
+    }
+
+    /**
+     * Skips the current music.
+     *
+     * @param guild the guild where the command was sent
+     * @return true if a new track started playing, false if not
+     */
+    public boolean skip(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().nextTrack();
+    }
+
+    /**
+     * Sets the volume of the player.
+     *
+     * @param guild  the guild of the player
+     * @return player volume
+     */
+    public int getVolume(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().getVolume();
+    }
+
+    /**
+     * Sets the volume of the player.
+     *
+     * @param guild  the guild of the player
+     * @param volume the volume to set
+     */
+    public void setVolume(Guild guild, int volume) {
+        getGuildMusicManager(guild).getScheduler().setVolume(volume);
     }
 
 }

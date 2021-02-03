@@ -42,7 +42,7 @@ public class NP extends MusicCommand {
             if (trackName == null)
                 trackName = "Undefined";
             String bar = Utils.printBar(current, time, BAR_LENGTH);
-            if (musicHandler.musicStopped(guild))
+            if (musicHandler.musicPaused(guild))
                 message = String.format(
                         "Current track to play is `%s`\n\n**%02d:%02d / %02d:%02d** ー %s",
                         trackName, current/60, current%60, time/60, time%60, bar

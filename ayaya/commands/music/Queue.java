@@ -82,7 +82,7 @@ public class Queue extends MusicCommand {
             do {
                 AudioTrack track = iterator.next();
                 if (i == 0)
-                    queueList.append((musicHandler.musicStopped(guild)) ? "Next music: `" : "Now playing: `");
+                    queueList.append((musicHandler.musicPaused(guild)) ? "Next music: `" : "Now playing: `");
                 else
                     queueList.append(i).append(": `");
                 trackTitle = track.getInfo().title;

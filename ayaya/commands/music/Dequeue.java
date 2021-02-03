@@ -24,7 +24,7 @@ public class Dequeue extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
         if (event.getArgs().isEmpty()) {
             event.reply("<:AyaWhat:362990028915474432> You didn't tell me which track to dequeue. Remember that "
@@ -33,7 +33,6 @@ public class Dequeue extends MusicCommand {
         }
         String[] args = event.getArgs().split(" ");
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        VoiceChannel voiceChannel = Objects.requireNonNull(voiceState).getChannel();
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         int track_number;
@@ -46,7 +45,8 @@ public class Dequeue extends MusicCommand {
             event.replyError("That's not a valid number.");
             return;
         }
-        if (!voiceState.inVoiceChannel()) {
+        
+        if (voiceState == null || !voiceState.inVoiceChannel()) {
             musicHandler.join(guild, voiceChannel);
             event.reply("Now connected to the voice channel `"
                     + Objects.requireNonNull(voiceChannel).getName() + "`.");

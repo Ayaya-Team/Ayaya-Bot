@@ -4,6 +4,8 @@ import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public class Volume extends MusicCommand {
 
@@ -18,13 +20,16 @@ public class Volume extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
         String[] args = event.getArgs().split(" ");
         Guild guild = event.getGuild();
+        GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         if (event.getArgs().isEmpty()) {
             int volume = musicHandler.getVolume(guild);
             event.reply("The current volume is " + volume + ".");
-        } else {
+        } else if (
+                voiceState == null || !voiceState.inVoiceChannel() || voiceChannel == voiceState.getChannel()
+        ) {
             int volume = 0;
             for (String s : args) {
                 try {
@@ -37,6 +42,8 @@ public class Volume extends MusicCommand {
                 event.replySuccess("Volume successfully set to " + volume + ".");
             } else
                 event.replyError("The volume can only be a number from 1 to 100");
+        } else {
+            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         }
     }
 
