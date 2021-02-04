@@ -236,6 +236,30 @@ public class MusicHandler {
         }
     }
 
+    /**
+     * Dequeues a certain track, given it's number.
+     *
+     * @param channel     the channel where the command was executed
+     * @param trackNumber the number of the track in the queue
+     * @return removed track
+     */
+    public AudioTrack dequeue(final TextChannel channel, int trackNumber) {
+
+        Guild guild = channel.getGuild();
+        TrackScheduler scheduler = getGuildMusicManager(guild).getScheduler();
+        AudioTrack removedTrack;
+        if (trackNumber == 0) {
+            removedTrack = scheduler.getCurrentTrack();
+            if (isRepeating(guild))
+                scheduler.nextTrack(true);
+            else
+                skip(guild);
+        } else
+            removedTrack = scheduler.dequeue(trackNumber);
+        return removedTrack;
+
+    }
+
     public Iterator<AudioTrack> getTrackIterator(final Guild guild) {
         return getGuildMusicManager(guild).getScheduler().getTrackIterator();
     }
@@ -297,7 +321,7 @@ public class MusicHandler {
      * @return true if a new track started playing, false if not
      */
     public boolean skip(Guild guild) {
-        return getGuildMusicManager(guild).getScheduler().nextTrack();
+        return getGuildMusicManager(guild).getScheduler().nextTrack(false);
     }
 
     /**

@@ -27,16 +27,15 @@ public class Seek extends MusicCommand {
     }
 
     @Override
-    protected void executeMusicCommand(CommandEvent event) {
+    protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
         String message = event.getArgs();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             try {
-                VoiceChannel voiceChannel = Objects.requireNonNull(event.getMember().getVoiceState()).getChannel();
                 musicHandler.join(guild, voiceChannel);
-                event.reply("Now connected to the voice channel `" + Objects.requireNonNull(voiceChannel).getName() + "`.");
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
             } catch (InsufficientPermissionException e) {
                 event.replyError("Could not connect to the voice channel because it's already full.");
                 return;

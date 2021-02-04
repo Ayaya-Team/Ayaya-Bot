@@ -4,9 +4,11 @@ import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
-
-import java.util.Objects;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
 /**
  * Class of the dequeue command.
@@ -35,36 +37,37 @@ public class Dequeue extends MusicCommand {
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
-        int track_number;
+        int trackNumber;
         try {
-            track_number = Integer.parseInt(args[args.length-1]);
+            trackNumber = Integer.parseInt(args[args.length-1]);
         } catch (NumberFormatException e) {
-            track_number = -1;
+            trackNumber = -1;
         }
-        if (track_number < 0) {
+        if (trackNumber < 0) {
             event.replyError("That's not a valid number.");
             return;
         }
-        
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            musicHandler.join(guild, voiceChannel);
-            event.reply("Now connected to the voice channel `"
-                    + Objects.requireNonNull(voiceChannel).getName() + "`.");
-            event.reply("The queue is already empty.");
-        } else if (voiceChannel == voiceState.getChannel()) {
-            try {
-                AudioTrack track = musicHandler.dequeue(textChannel, track_number);
-                String track_title = track.getInfo().title;
-                if (track_title == null || track_title.isEmpty())
-                    track_title = "Undefined";
-                event.reply("The track `" + track_title + "` was removed from the queue.");
-            } catch (IndexOutOfBoundsException e) {
-                event.replyError("The track number " + track_number + " wasn't found in the queue.");
+        try {
+            if ((voiceState == null || !voiceState.inVoiceChannel()) && musicHandler.connect(guild, voiceChannel))
+            {
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
+                event.reply("The queue is already empty.");
+            } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                try {
+                    AudioTrack track = musicHandler.dequeue(textChannel, trackNumber);
+                    String track_title = track.getInfo().title;
+                    if (track_title == null || track_title.isEmpty())
+                        track_title = "Undefined";
+                    event.reply("The track `" + track_title + "` was removed from the queue.");
+                } catch (IndexOutOfBoundsException e) {
+                    event.replyError("The track number " + trackNumber + " wasn't found in the queue.");
+                }
+            } else {
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }
-        } else {
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
         }
-
     }
 
 }
