@@ -49,7 +49,7 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>boolean</code> if the player is stopped or no track is playing at the moment
      */
-    synchronized public boolean musicPaused() {
+    synchronized boolean musicPaused() {
         return player.isPaused() || noMusicPlaying();
     }
 
@@ -58,7 +58,7 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return true if the situation above applies, false on the contrary
      */
-    synchronized public boolean noMusicPlaying() {
+    synchronized boolean noMusicPlaying() {
         return player.getPlayingTrack() == null;
     }
 
@@ -149,11 +149,11 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>AudioTrack</code>
      */
-    synchronized public AudioTrack getCurrentTrack() {
+    synchronized AudioTrack getCurrentTrack() {
         return player.getPlayingTrack();
     }
 
-    synchronized public AudioTrack getNextTrack() {
+    private synchronized AudioTrack getNextTrack() {
         if (queue.isEmpty()) return null;
         return queue.getFirst();
     }
@@ -163,15 +163,17 @@ public class TrackScheduler extends AudioEventAdapter {
      *
      * @return <code>Iterator</code>
      */
-    public Iterator<AudioTrack> getTrackIterator() {
+    Iterator<AudioTrack> getTrackIterator() {
         return queue.iterator();
     }
 
     /**
      * Toggles the repeat mode on or off for the queue.
+     *
+     * @return the new repeat boolean value
      */
-    synchronized void repeat() {
-        repeat = !repeat;
+    synchronized boolean repeat() {
+        return repeat = !repeat;
     }
 
     /**
@@ -198,7 +200,7 @@ public class TrackScheduler extends AudioEventAdapter {
         // Start the next track, regardless of if something is already playing or not. In case queue was empty, we are
         // giving null to startTrack, which is a valid argument and will simply stop the player.
         AudioTrack track = dequeue(0);
-        if (this.isRepeating() && !ignoreRepeat)
+        if (isRepeating() && !ignoreRepeat)
             queue(track.makeClone());
         return player.startTrack(getNextTrack(), false);
     }

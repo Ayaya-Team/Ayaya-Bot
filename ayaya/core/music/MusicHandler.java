@@ -269,6 +269,21 @@ public class MusicHandler {
     }
 
     /**
+     * Pauses the music that is currently playing.
+     *
+     * @param channel the channel where the command was sent.
+     * @return if the music has been paused or not
+     */
+    public boolean pause(TextChannel channel) {
+        GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        if (musicManager.getScheduler().getTrackAmount() != 0 && !musicManager.getPlayer().isPaused()) {
+            musicManager.getPlayer().setPaused(true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks wether the music currently playing is paused or not.
      *
      * @param guild the guild where the command was sent.
@@ -279,12 +294,28 @@ public class MusicHandler {
     }
 
     /**
+     * Resumes the currently playing music.
+     *
+     * @param channel the channel where the command was sent
+     * @return if the music was resumed or not
+     */
+    public boolean resume(TextChannel channel) {
+        GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        if (musicManager.getPlayer().isPaused()) {
+            musicManager.getPlayer().setPaused(false);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Enables or disables the repeat mode of the queue.
      *
      * @param guild the guild where the command was sent
+     * @return the new repeat boolean value
      */
-    public void repeat(Guild guild) {
-        getGuildMusicManager(guild).getScheduler().repeat();
+    public boolean repeat(Guild guild) {
+        return getGuildMusicManager(guild).getScheduler().repeat();
     }
 
     /**
@@ -342,6 +373,22 @@ public class MusicHandler {
      */
     public void setVolume(Guild guild, int volume) {
         getGuildMusicManager(guild).getScheduler().setVolume(volume);
+    }
+
+    /**
+     * Seeks x seconds ahead or back (depending on the signal of the amount requested).
+     *
+     * @param guild   the guild associated with the player
+     * @param seconds the amount of seconds
+     * @return true if the operation was successful, false on the contrary.
+     */
+    public boolean seek(Guild guild, long seconds) {
+        GuildMusicManager musicManager = getGuildMusicManager(guild);
+        AudioTrack track = musicManager.getPlayer().getPlayingTrack();
+        if (!track.isSeekable()) return false;
+        long currentTime = track.getPosition();
+        track.setPosition(Math.max(0, Math.min(currentTime + seconds * 1000, track.getDuration())));
+        return true;
     }
 
 }

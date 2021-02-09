@@ -8,8 +8,6 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import java.util.Objects;
-
 /**
  * The class of the seek command.
  */
@@ -31,41 +29,41 @@ public class Seek extends MusicCommand {
 
         String message = event.getArgs();
         Guild guild = event.getGuild();
-        GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            try {
-                musicHandler.join(guild, voiceChannel);
+        try {
+            if (musicHandler.connect(guild, voiceChannel))
                 event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
-            } catch (InsufficientPermissionException e) {
-                event.replyError("Could not connect to the voice channel because it's already full.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
+            return;
+        }
+        GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
+        if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+            if (musicHandler.noMusicPlaying(guild)) {
+                event.reply("There is no music being played right now.");
                 return;
             }
-        }
-        if (musicHandler.noMusicPlaying(guild)) {
-            event.reply("There is no music being played right now.");
-            return;
-        }
-        if (message.isEmpty()) {
-            event.reply(
-                    "<:AyaWhat:362990028915474432> You didn't tell me how many seconds I should skip or rewind." +
-                            " Remember to put a negative value in case you want to rewind."
-            );
-            return;
-        }
-        long amount = amountInString(message);
-        if (amount == 0) {
-            event.reply("Please use a value different than 0.");
-            return;
-        }
-        if (musicHandler.seek(event.getGuild(), amount)) {
-            if (amount < 0) event.replySuccess("Time rewinded.");
-            else event.replySuccess("Time skipped.");
-        } else {
-            event.reply(
-                    "Could not perform this action due to either the track not being seekable or" +
-                            " the amount not being a valid integer."
-            );
-        }
+            if (message.isEmpty()) {
+                event.reply(
+                        "<:AyaWhat:362990028915474432> You didn't tell me how many seconds I should skip or rewind." +
+                                " Remember to put a negative value in case you want to rewind."
+                );
+                return;
+            }
+            long amount = amountInString(message);
+            if (amount == 0) {
+                event.reply("Please use a value different than 0.");
+                return;
+            }
+            if (musicHandler.seek(event.getGuild(), amount)) {
+                if (amount < 0) event.replySuccess("Time rewinded.");
+                else event.replySuccess("Time skipped.");
+            } else
+                event.reply(
+                        "Could not perform this action due to either the track not being seekable or" +
+                                " the amount not being a valid integer."
+                );
+        } else
+            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
 
     }
 

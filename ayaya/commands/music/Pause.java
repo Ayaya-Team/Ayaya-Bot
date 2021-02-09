@@ -9,8 +9,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
-import java.util.Objects;
-
 /**
  * Class of the pause command.
  */
@@ -33,18 +31,23 @@ public class Pause extends MusicCommand {
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState == null || !voiceState.inVoiceChannel()) {
-            try {
-                musicHandler.join(guild, voiceChannel);
+        try {
+            if (musicHandler.connect(guild, voiceChannel)) {
                 event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
                 musicHandler.pause(textChannel);
-            } catch (InsufficientPermissionException e) {
-                event.replyError("Could not connect to the voice channel because it's already full.");
+                event.reply("There is no track in the queue to pause.");
+            } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                if (musicHandler.getTrackAmount(guild) == 0)
+                    event.reply("There is no track in the queue to pause.");
+                else if (musicHandler.pause(textChannel))
+                    event.reply("The music was paused.");
+                else
+                    event.reply("The music is already paused.");
+            } else {
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }
-        } else if (voiceChannel == event.getSelfMember().getVoiceState().getChannel()) {
-            musicHandler.pause(textChannel);
-        } else {
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+        } catch (InsufficientPermissionException e) {
+            event.replyError("Could not connect to the voice channel because it's already full.");
         }
 
     }
