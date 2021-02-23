@@ -136,8 +136,11 @@ public class MusicHandler {
                             "Already playing `" + trackScheduler.getCurrentTrack().getInfo().title + "`."
                     ).queue();
                 } else {
-                    trackScheduler.playTrack(null);
-                    AudioTrack track = trackScheduler.getCurrentTrack();
+                    AudioTrack track;
+                    if ((track = trackScheduler.getCurrentTrack()) != null)
+                        resume(channel);
+                    else
+                        musicManager.getPlayer().playTrack((track = trackScheduler.getNextTrack()));
                     String playingTrackTitle = track.getInfo().title;
                     playingTrackTitle =
                             (playingTrackTitle == null || playingTrackTitle.isEmpty()) ? "Undefined" : playingTrackTitle;

@@ -34,6 +34,8 @@ public class NP extends MusicCommand {
         String message;
         if (trackAmount == 0)
             message = "There are no tracks in the queue right now.";
+        else if (musicHandler.noMusicPlaying(guild))
+            message = "No music is being played, but there are musics queued.";
         else {
             AudioTrack track = musicHandler.getCurrentTrack(guild);
             String trackName = track.getInfo().title;

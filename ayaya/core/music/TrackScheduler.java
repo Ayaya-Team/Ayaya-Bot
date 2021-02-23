@@ -153,7 +153,7 @@ public class TrackScheduler extends AudioEventAdapter {
         return player.getPlayingTrack();
     }
 
-    private synchronized AudioTrack getNextTrack() {
+    synchronized AudioTrack getNextTrack() {
         if (queue.isEmpty()) return null;
         return queue.getFirst();
     }

@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -180,15 +181,28 @@ public class EventListener extends ListenerAdapter {
     public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
         VoiceChannel channel = event.getChannelJoined();
         Guild guild = event.getGuild();
-        if (Objects.requireNonNull(channel).getMembers().size() == 2
+        if (channel.getMembers().size() >= 2
                 && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
-            stopTimer(guild.getId());
+            cancelTimer(guild.getId());
     }
 
     @Override
     public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
         VoiceChannel channel = event.getChannelLeft();
-        if (Objects.requireNonNull(channel).getMembers().size() < 2
+        if (channel.getMembers().size() < 2
+                && !event.getMember().getUser().equals(event.getJDA().getSelfUser())) {
+            if (scheduledTimeouts.size() == amount) {
+                amount += AMOUNT_TO_ADD;
+                voiceTimeoutManager.setCorePoolSize(amount);
+            }
+            scheduleTimer(event.getGuild());
+        }
+    }
+
+    @Override
+    public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
+        VoiceChannel channel = event.getChannelLeft();
+        if (channel.getMembers().size() < 2
                 && !event.getMember().getUser().equals(event.getJDA().getSelfUser())) {
             if (scheduledTimeouts.size() == amount) {
                 amount += AMOUNT_TO_ADD;
@@ -256,7 +270,7 @@ public class EventListener extends ListenerAdapter {
      * @param id the server id
      * @throws NullPointerException in case the server id specified isn't on the HashMap
      */
-    private void stopTimer(String id) throws NullPointerException {
+    private void cancelTimer(String id) throws NullPointerException {
         ScheduledFuture<?> timer = scheduledTimeouts.get(id);
         if (timer != null)
             timer.cancel(true);
