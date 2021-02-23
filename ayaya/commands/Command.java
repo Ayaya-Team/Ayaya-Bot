@@ -6,14 +6,16 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -45,6 +47,9 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
             Permission.MESSAGE_ATTACH_FILES, Permission.MESSAGE_HISTORY,
             Permission.MESSAGE_MENTION_EVERYONE
     };
+    protected static final List<Message.MentionType> ALLOWED_MENTIONS = Arrays.asList(
+            Message.MentionType.CHANNEL, Message.MentionType.EMOTE, Message.MentionType.USER
+    );
 
     private String link;
     protected int cooldownTime;

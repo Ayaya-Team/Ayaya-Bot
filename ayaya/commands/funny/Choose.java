@@ -45,9 +45,10 @@ public class Choose extends Command {
         int amount = options.length;
         Random rng = new Random();
         int num = rng.nextInt(amount);
-        event.reply(
-                "Hmmm... I choose " + options[num].trim() + "."
-        );
+        event.getChannel()
+                .sendMessage("Hmmm... I choose " + options[num].trim() + ".")
+                .allowedMentions(ALLOWED_MENTIONS).queue();
+
 
     }
 
