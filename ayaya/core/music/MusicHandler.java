@@ -1,11 +1,9 @@
 package ayaya.core.music;
 
 import ayaya.core.enums.TrustedHosts;
-import ayaya.core.exceptions.music.NoAudioMatchingException;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -24,9 +22,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MusicHandler {
 
     private static final String HTTP = "http://";
-    private static final String HTTPS = "https://";
-    private static final String SOUNDCLOUD_SEARCH = "scsearch:";
-    private static final String YOUTUBE_SEARCH = "ytsearch:";
+    static final String HTTPS = "https://";
+    static final String SOUNDCLOUD_SEARCH = "scsearch:";
+    static final String YOUTUBE_SEARCH = "ytsearch:";
 
     private final AudioPlayerManager player;
     private final Map<String, GuildMusicManager> musicManagers;
@@ -116,7 +114,7 @@ public class MusicHandler {
                         try {
                             TrustedHosts.valueOf(url.getHost());
                             player.loadItemOrdered(musicManager, trackUrl,
-                                    new PlayHandler(trackUrl, channel, musicManager));
+                                    new PlayHandler(trackUrl, channel, musicManager, player));
                         } catch (IllegalArgumentException e) {
                             channel.sendMessage("The url points to a non trusted host."
                                     + " I only accept youtube and soundcloud urls").queue();
@@ -125,7 +123,8 @@ public class MusicHandler {
                         channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                     }
                 else {
-                    playFromQuery(channel, trackUrl, musicManager);
+                    player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
+                            new PlayHandler(YOUTUBE_SEARCH, trackUrl, channel, musicManager, player));
                 }
             }
         } else {
@@ -153,35 +152,6 @@ public class MusicHandler {
         }
     }
 
-    private void playFromQuery(final TextChannel channel, final String trackUrl, final GuildMusicManager musicManager) {
-        try {
-            if (!trackUrl.startsWith(YOUTUBE_SEARCH) && !trackUrl.startsWith(SOUNDCLOUD_SEARCH))
-                player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
-                    new PlayHandler(trackUrl, channel, musicManager));
-            else
-                player.loadItemOrdered(musicManager, trackUrl, new PlayHandler(trackUrl, channel, musicManager));
-        } catch (FriendlyException e) {
-            e.printStackTrace();
-            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
-                channel.sendMessage(
-                        "The search for the provided query failed. "
-                                + "Try providing a url or try a different search query."
-                                + "\nIf the problem persists, "
-                                + "it's likely that youtube and soundcloud are unavailable for me at the moment."
-                ).queue();
-            else
-                playFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
-        } catch (NoAudioMatchingException e) {
-            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
-                channel.sendMessage(
-                        "The search for the provided query returned no results."
-                                + "Try providing a url or try a different search query."
-                ).queue();
-            else
-                playFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
-        }
-    }
-
     public void queue(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
         if (!trackUrl.isEmpty()) {
@@ -193,7 +163,7 @@ public class MusicHandler {
                     try {
                         TrustedHosts.valueOf(url.getHost());
                         player.loadItemOrdered(musicManager, trackUrl,
-                                new QueueHandler(trackUrl, channel, musicManager));
+                                new QueueHandler(trackUrl, channel, musicManager, player));
                     } catch (IllegalArgumentException e) {
                         channel.sendMessage("The url points to a non trusted host."
                                 + " I only accept youtube and soundcloud urls").queue();
@@ -202,41 +172,13 @@ public class MusicHandler {
                     channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                 }
             else {
-                queueFromQuery(channel, trackUrl, musicManager);
+                player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
+                        new QueueHandler(YOUTUBE_SEARCH, trackUrl, channel, musicManager, player));
             }
         } else
             channel.sendMessage(
                     "<:AyaWhat:362990028915474432> You didn't say anything about the track you wanted to queue."
             ).queue();
-    }
-
-    private void queueFromQuery(final TextChannel channel, final String trackUrl, final GuildMusicManager musicManager) {
-        try {
-            if (!trackUrl.startsWith(YOUTUBE_SEARCH) && !trackUrl.startsWith(SOUNDCLOUD_SEARCH))
-                player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
-                        new PlayHandler(trackUrl, channel, musicManager));
-            else
-                player.loadItemOrdered(musicManager, trackUrl, new QueueHandler(trackUrl, channel, musicManager));
-        } catch (FriendlyException e) {
-            e.printStackTrace();
-            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
-                channel.sendMessage(
-                        "The search for the provided query failed. "
-                                + "Try providing a url or try a different search query."
-                                + "\nIf the problem persists, "
-                                + "it's likely that youtube and soundcloud are unavailable for me at the moment."
-                ).queue();
-            else
-                queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
-        } catch (NoAudioMatchingException e) {
-            if (trackUrl.startsWith(SOUNDCLOUD_SEARCH))
-                channel.sendMessage(
-                        "The search for the provided query returned no results."
-                                + "Try providing a url or try a different search query."
-                ).queue();
-            else
-                queueFromQuery(channel, SOUNDCLOUD_SEARCH + trackUrl, musicManager);
-        }
     }
 
     /**

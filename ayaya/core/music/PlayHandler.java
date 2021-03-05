@@ -1,7 +1,7 @@
 package ayaya.core.music;
 
-import ayaya.core.exceptions.music.NoAudioMatchingException;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -9,19 +9,36 @@ import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.List;
 
+import static ayaya.core.music.MusicHandler.*;
+
 public class PlayHandler implements AudioLoadResultHandler {
 
-    private static final String HTTPS = "https://";
-
+    private String searchMode;
     private String url;
     private TextChannel channel;
     private GuildMusicManager guildMusicManager;
+    private AudioPlayerManager audioPlayerManager;
 
-    PlayHandler(String url, TextChannel channel, GuildMusicManager guildMusicManager) {
-
+    PlayHandler(
+            String url, TextChannel channel, GuildMusicManager guildMusicManager, AudioPlayerManager audioPlayerManager
+    ) {
+        this.searchMode = "";
         this.url = url;
         this.channel = channel;
         this.guildMusicManager = guildMusicManager;
+        this.audioPlayerManager = audioPlayerManager;
+    }
+
+    PlayHandler(
+            String searchMode, String url, TextChannel channel,
+            GuildMusicManager guildMusicManager, AudioPlayerManager audioPlayerManager
+    ) {
+
+        this.searchMode = searchMode;
+        this.url = url;
+        this.channel = channel;
+        this.guildMusicManager = guildMusicManager;
+        this.audioPlayerManager = audioPlayerManager;
 
     }
 
@@ -48,7 +65,7 @@ public class PlayHandler implements AudioLoadResultHandler {
         List<AudioTrack> tracks = playlist.getTracks();
         if (playlist.isSearchResult()) {
             if (tracks.isEmpty())
-                throw new NoAudioMatchingException("The provided query did not return any results.");
+                searchWithNoAudioMatches();
             else
                 trackLoaded(tracks.get(0));
         } else {
@@ -103,7 +120,7 @@ public class PlayHandler implements AudioLoadResultHandler {
         if (url.startsWith(HTTPS)) {
             channel.sendMessage("I didn't find anything for that url.").queue();
         } else {
-            throw new NoAudioMatchingException("The provided query did not return any results.");
+            searchWithNoAudioMatches();
         }
     }
 
@@ -113,8 +130,27 @@ public class PlayHandler implements AudioLoadResultHandler {
             channel.sendMessage("I couldn't queue this track due to an exception."
                     + "Try another url or try a search query.").queue();
             exception.printStackTrace();
-        } else
-            throw exception;
+        } else if (searchMode.equals(SOUNDCLOUD_SEARCH))
+            channel.sendMessage(
+                    "The search for the provided query failed. "
+                            + "Try providing a url or try a different search query."
+                            + "\nIf the problem persists, "
+                            + "it's likely that youtube and soundcloud are unavailable for me at the moment."
+            ).queue();
+        else
+            audioPlayerManager.loadItemOrdered(guildMusicManager, SOUNDCLOUD_SEARCH + url,
+                    new PlayHandler(SOUNDCLOUD_SEARCH, url, channel, guildMusicManager, audioPlayerManager));
+    }
+
+    private void searchWithNoAudioMatches() {
+        if (searchMode.equals(YOUTUBE_SEARCH))
+            audioPlayerManager.loadItemOrdered(guildMusicManager, SOUNDCLOUD_SEARCH + url,
+                    new PlayHandler(SOUNDCLOUD_SEARCH, url, channel, guildMusicManager, audioPlayerManager));
+        else if (searchMode.equals(SOUNDCLOUD_SEARCH))
+            channel.sendMessage(
+                    "The search for the provided query returned no results."
+                            + "Try providing a url or try a different search query."
+            ).queue();
     }
 
 }
