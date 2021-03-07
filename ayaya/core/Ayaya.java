@@ -53,11 +53,12 @@ public class Ayaya {
     private static ThreadPoolExecutor threads;
     private static String prefix = "";
     private static String token = "";
-    private static String dservicesToken = "";
-    private static String botsOnDiscordToken = "";
+    private static String dsToken = "";
+    private static String bodToken = "";
     private static String dboatsToken = "";
     private static String dbotsToken = "";
     private static String dbotToken = "";
+    private static String delToken = "";
     private static String dblToken = "";
     private static String owner = "";
     private static String[] coOwners;
@@ -251,15 +252,17 @@ public class Ayaya {
 
         try {
             jdbc.open("jdbc:sqlite:data.db");
-            dservicesToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dservices';", 60)
+            dsToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dservices';", 60)
                     .getString("token");
-            botsOnDiscordToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'botsondiscord';", 60)
+            bodToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'botsondiscord';", 60)
                     .getString("token");
             dboatsToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dboats';", 60)
                     .getString("token");
             dbotsToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dbots';", 60)
                     .getString("token");
             dbotToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dbot';", 60)
+                    .getString("token");
+            delToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'del';", 60)
                     .getString("token");
             dblToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dbl';", 60)
                     .getString("token");
@@ -339,14 +342,14 @@ public class Ayaya {
      */
     private static void updateBotListsStats() {
 
-        if (!dblToken.isEmpty() || !dservicesToken.isEmpty() || !dboatsToken.isEmpty()) {
+        if (!dblToken.isEmpty() || !dsToken.isEmpty() || !dboatsToken.isEmpty()) {
             JSONObject json;
             while (ayaya.getPresence().getActivity() != null
                     && !ayaya.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
 
                 try {
                     TimeUnit.MINUTES.sleep(30);
-                    if (!dservicesToken.isEmpty()) {
+                    if (!dsToken.isEmpty()) {
                         json = new JSONObject()
                                 .put("servers", ayaya.getGuilds().size())
                                 .put("shards", 1);
@@ -354,10 +357,23 @@ public class Ayaya {
                                 HTTP.postJSON(
                                         "https://api.discordservices.net/bot/"
                                                 + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", dservicesToken
+                                        "Authorization", dsToken
                                 )
-                        ) System.out.println("Stats successfully posted to discordservices.net.");
-                        else System.out.println("Failed to post the stats to discordservices.net.");
+                        ) System.out.println("Stats successfully posted to Discord Services.");
+                        else System.out.println("Failed to post the stats to Discord Services.");
+                    }
+
+                    if (!bodToken.isEmpty()) {
+                        json = new JSONObject()
+                                .put("guildCount", ayaya.getGuilds().size());
+                        if (
+                                HTTP.postJSON(
+                                        "https://bots.ondiscord.xyz/bot-api/bots/"
+                                                + ayaya.getSelfUser().getId() + "/guilds", json,
+                                        "Authorization", bodToken
+                                )
+                        ) System.out.println("Stats successfully posted to Bots on Discord.");
+                        else System.out.println("Failed to post the stats to Bots on Discord.");
                     }
 
                     if (!dboatsToken.isEmpty()) {
@@ -369,8 +385,8 @@ public class Ayaya {
                                                 + ayaya.getSelfUser().getId(), json,
                                         "Authorization", dboatsToken
                                 )
-                        ) System.out.println("Stats successfully posted to discord.boats.");
-                        else System.out.println("Failed to post the stats to discord.boats.");
+                        ) System.out.println("Stats successfully posted to Discord Boats.");
+                        else System.out.println("Failed to post the stats to Discord Boats.");
                     }
 
                     if (!dbotsToken.isEmpty()) {
@@ -385,6 +401,20 @@ public class Ayaya {
                                 )
                         ) System.out.println("Stats successfully posted to discord.bots.gg.");
                         else System.out.println("Failed to post the stats to discord.bots.gg.");
+                    }
+
+                    if (!delToken.isEmpty()) {
+                        json = new JSONObject()
+                                .put("guildCount", ayaya.getGuilds().size())
+                                .put("shardCount", 1);
+                        if (
+                                HTTP.postJSON(
+                                        "https://api.discordextremelist.xyz/v2/bot/"
+                                                + ayaya.getSelfUser().getId() + "/stats", json,
+                                        "Authorization", dbotToken
+                                )
+                        ) System.out.println("Stats successfully posted to Discord Extreme List.");
+                        else System.out.println("Failed to post the stats to Discord Extreme List.");
                     }
 
                     if (!dbotToken.isEmpty()) {
@@ -411,18 +441,6 @@ public class Ayaya {
                                 )
                         ) System.out.println("Stats successfully posted to top.gg.");
                         else System.out.println("Failed to post the stats to top.gg.");
-                    }
-                    if (!botsOnDiscordToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("guildCount", ayaya.getGuilds().size());
-                        if (
-                                HTTP.postJSON(
-                                        "https://bots.ondiscord.xyz/bot-api/bots/"
-                                                + ayaya.getSelfUser().getId() + "/guilds", json,
-                                        "Authorization", botsOnDiscordToken
-                                )
-                        ) System.out.println("Stats successfully posted to Bots on Discord.");
-                        else System.out.println("Failed to post the stats to Bots on Discord.");
                     }
                 } catch (InterruptedException e) {
                     //Retry.

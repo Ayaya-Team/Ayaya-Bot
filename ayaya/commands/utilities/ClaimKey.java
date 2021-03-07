@@ -21,7 +21,7 @@ public class ClaimKey extends Command {
 
         this.name = "claimkey";
         this.help = "If you have pledged 2 dollars or more on my patreon page, " +
-                "ask for your patreon key to my developer and use this command to claim the key so you can be whitelisted.";
+                "ask my developer for your patreon key and use this command to claim it in order to be whitelisted.";
         this.arguments = "{prefix}claimkey <key>";
         this.category = CommandCategories.UTILITIES.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};

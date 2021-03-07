@@ -16,7 +16,8 @@ public class Leave extends MusicCommand {
     public Leave() {
 
         this.name = "leave";
-        this.help = "Once all the musics are over you can tell me to leave the channel.";
+        this.help = "Once all the songs are over, you can tell me to leave the channel.\n" +
+                "Please check if the queue is empty beforehand.";
         this.arguments = "{prefix}leave";
         this.category = CommandCategories.MUSIC.asCategory();
         this.aliases = new String[]{"disconnect"};

@@ -104,6 +104,7 @@ public class MusicHandler {
 
     public void play(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
+        TrackScheduler trackScheduler = musicManager.getScheduler();
         if (!trackUrl.isEmpty()) {
             if (trackUrl.startsWith(HTTP))
                 channel.sendMessage("For security reasons, http urls aren't allowed. Try a https url instead.").queue();
@@ -126,20 +127,16 @@ public class MusicHandler {
                     player.loadItemOrdered(musicManager, YOUTUBE_SEARCH + trackUrl,
                             new PlayHandler(YOUTUBE_SEARCH, trackUrl, channel, musicManager, player));
                 }
+                if (trackScheduler.getCurrentTrack() != null)
+                    resume(channel);
             }
-        } else {
-            TrackScheduler trackScheduler = musicManager.getScheduler();
-            if (trackScheduler.getTrackAmount() > 0) {
-                if (!trackScheduler.musicPaused()) {
-                    channel.sendMessage(
-                            "Already playing `" + trackScheduler.getCurrentTrack().getInfo().title + "`."
-                    ).queue();
-                } else {
+        } else if (trackScheduler.getTrackAmount() > 0) {
+            if (trackScheduler.musicPaused()) {
+                if (trackScheduler.getCurrentTrack() != null)
+                    resume(channel);
+                else {
                     AudioTrack track;
-                    if ((track = trackScheduler.getCurrentTrack()) != null)
-                        resume(channel);
-                    else
-                        musicManager.getPlayer().playTrack((track = trackScheduler.getNextTrack()));
+                    musicManager.getPlayer().playTrack((track = trackScheduler.getNextTrack()));
                     String playingTrackTitle = track.getInfo().title;
                     playingTrackTitle =
                             (playingTrackTitle == null || playingTrackTitle.isEmpty()) ? "Undefined" : playingTrackTitle;
@@ -147,9 +144,13 @@ public class MusicHandler {
                             "Now playing `" + playingTrackTitle + "`."
                     ).queue();
                 }
+            } else {
+                channel.sendMessage(
+                        "Already playing `" + trackScheduler.getCurrentTrack().getInfo().title + "`."
+                ).queue();
             }
-            else channel.sendMessage("There are no tracks to play right now.").queue();
         }
+        else channel.sendMessage("There are no tracks to play right now.").queue();
     }
 
     public void queue(final TextChannel channel, final String trackUrl) {

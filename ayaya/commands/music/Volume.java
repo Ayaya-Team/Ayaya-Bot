@@ -11,7 +11,7 @@ public class Volume extends MusicCommand {
 
     public Volume() {
         this.name = "volume";
-        this.help = "Check the current volume or change it.";
+        this.help = "Checks the current volume or changes it.";
         this.arguments = "{prefix}volume <integer>\nRun the command without arguments to check the current volume." +
                 " The volume is always a number from 1 to 100.";
         this.category = CommandCategories.MUSIC.asCategory();

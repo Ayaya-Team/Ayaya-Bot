@@ -17,7 +17,7 @@ public class Resume extends MusicCommand {
     public Resume() {
 
         this.name = "resume";
-        this.help = "For when your music break is over.";
+        this.help = "Resumes the current music if it is paused.";
         this.arguments = "{prefix}resume";
         this.aliases = new String[]{"resume"};
         this.category = CommandCategories.MUSIC.asCategory();

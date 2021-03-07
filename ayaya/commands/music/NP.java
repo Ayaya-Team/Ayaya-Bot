@@ -18,7 +18,7 @@ public class NP extends MusicCommand {
     public NP() {
 
         this.name = "np";
-        this.help = "Check the music that is currently playing.";
+        this.help = "Displays information on the current song.";
         this.arguments = "{prefix}np";
         this.category = CommandCategories.MUSIC.asCategory();
         this.aliases = new String[]{"nowplaying"};

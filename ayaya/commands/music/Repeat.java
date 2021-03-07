@@ -16,7 +16,7 @@ public class Repeat extends MusicCommand {
     public Repeat() {
 
         this.name = "repeat";
-        this.help = "I can repeat the current queue if you want.";
+        this.help = "I can repeat the queue if you want.";
         this.arguments = "{prefix}repeat";
         this.category = CommandCategories.MUSIC.asCategory();
         this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};

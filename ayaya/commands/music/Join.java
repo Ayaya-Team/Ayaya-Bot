@@ -18,7 +18,7 @@ public class Join extends MusicCommand {
     public Join() {
 
         this.name = "join";
-        this.help = "Have me to join the voice channel you're in.";
+        this.help = "Makes me join the voice channel you're in.";
         this.arguments = "{prefix}join";
         this.category = CommandCategories.MUSIC.asCategory();
         this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
@@ -36,7 +36,9 @@ public class Join extends MusicCommand {
             else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
                 event.reply("I'm already connected to your channel.");
             } else {
-                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
+                event.reply(
+                        "I only listen to the music commands of who is in the same voice channel as me in the server."
+                );
             }
         } catch (InsufficientPermissionException e) {
             event.replyError("Could not connect to the voice channel because it's already full.");

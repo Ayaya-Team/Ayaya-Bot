@@ -33,7 +33,8 @@ public class CheckColor extends Command {
     public CheckColor() {
         this.name = "color";
         this.help = "This command allows you to check for a color and its name through its code.";
-        this.arguments = "{prefix}color <hex/rgb> <color code>";
+        this.arguments = "{prefix}color hex <color code>\n" +
+                "{prefix}color rgb <color code>";
         this.category = CommandCategories.UTILITIES.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
     }
