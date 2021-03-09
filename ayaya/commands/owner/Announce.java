@@ -3,7 +3,6 @@ package ayaya.commands.owner;
 import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -28,8 +27,10 @@ public class Announce extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String message = event.getArgs();
-        if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+        if (message.isEmpty()) {
             event.reply("<:AyaWhat:362990028915474432> You didn't tell me what you wanted to announce.");
+            return;
+        }
         TextChannel channel;
         for (Guild guild : event.getJDA().getGuilds()) {
             channel = getNewsChannel(guild);

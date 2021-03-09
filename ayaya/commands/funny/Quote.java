@@ -5,10 +5,7 @@ import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 
 import java.awt.*;
 import java.time.OffsetDateTime;
@@ -23,13 +20,19 @@ import java.util.regex.Matcher;
  */
 public class Quote extends Command {
 
+    private static final int MESSAGE_LIMIT = 200;
+
     public Quote() {
 
         this.name = "quote";
-        this.help = "With this command you can get any quote from anywhere, but make sure I have the required perms to get it also.";
+        this.help = "With this command you can get any quote from anywhere," +
+                " but make sure I have the required perms to get it as well." +
+                " This command searches through the last **200 messages** from the desired channel.";
         this.arguments = "`{prefix}quote <channel id> <message id>` or `{prefix}quote <channel id> <message content>`\n\n"
-                + "The channel id is only needed when trying to quote messages from a different channel than the one where this command is used." +
-                " The message content also can only be part of the content of a message, but you can put the whole content for a more accurate search.";
+                + "The channel id is only needed when trying to quote messages from a different channel "
+                + "that isn't the one where this command is used."
+                + "\nThe message content can be part of the content to quote or the whole content, "
+                + "but the more content in the search, the more accurate it will be.";
         this.category = CommandCategories.FUNNY.asCategory();
         this.isGuildOnly = true;
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
@@ -146,11 +149,14 @@ public class Quote extends Command {
      */
     private Message getMessageByID(TextChannel channel, String id) {
         Message quote = null;
+        int count = 0;
         for (Message m : channel.getIterableHistory()) {
             if (m.getId().equals(id)) {
                 quote = m;
                 break;
             }
+            if (++count == MESSAGE_LIMIT)
+                break;
         }
         return quote;
     }
@@ -166,11 +172,14 @@ public class Quote extends Command {
      */
     private Message getMessageByContent(TextChannel channel, String content, String idToIgnore) {
         Message quote = null;
+        int count = 0;
         for (Message m : channel.getIterableHistory()) {
             if (!m.getId().equals(idToIgnore) && m.getContentRaw().contains(content)) {
                 quote = m;
                 break;
             }
+            if (++count == MESSAGE_LIMIT)
+                break;
         }
         return quote;
     }

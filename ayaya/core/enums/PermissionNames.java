@@ -15,7 +15,7 @@ public enum PermissionNames {
     MANAGE_SERVER("manage_server", "Manage Server"),
     MESSAGE_ADD_REACTION("reactions", "Add Reactions"),
     VIEW_AUDIT_LOGS("audit_logs", "View Audit Logs"),
-    PRIORITY_SPEAKER("priority", "Priority Speaker"),
+    PRIORITY_SPEAKER("priority_speaker", "Priority Speaker"),
 
     // Applicable to all channel types
     VIEW_CHANNEL("read", "Read Text Channels & See Voice Channels"),
@@ -29,6 +29,7 @@ public enum PermissionNames {
     MESSAGE_HISTORY("history", "Read History"),
     MENTIONS("mentions", "Mention @everyone, @here and All Roles"),
     MESSAGE_EXT_EMOJI("external_emoji", "Use External Emojis"),
+    USE_SLASH_COMMANDS("slash_commands", "Use Slash Commands"),
 
     // Voice Permissions
     VOICE_CONNECT("connect", "Connect"),
