@@ -123,7 +123,7 @@ public class MusicHandler {
                                     new PlayHandler(trackUrl, channel, musicManager, player));
                         else
                             channel.sendMessage("The url points to a non trusted host."
-                                    + " I only accept youtube and soundcloud urls").queue();
+                                    + " I only accept youtube, soundcloud, vimeo or twitch urls.").queue();
                     } catch (MalformedURLException e) {
                         channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                     }
@@ -171,14 +171,12 @@ public class MusicHandler {
             else if (trackUrl.startsWith(HTTPS))
                 try {
                     URL url = new URL(trackUrl);
-                    try {
-                        TrustedHosts.valueOf(url.getHost());
+                    if (TrustedHosts.hostnameTrusted(url.getHost()))
                         player.loadItemOrdered(musicManager, trackUrl,
                                 new QueueHandler(trackUrl, channel, musicManager, player));
-                    } catch (IllegalArgumentException e) {
+                    else
                         channel.sendMessage("The url points to a non trusted host."
-                                + " I only accept youtube and soundcloud urls").queue();
-                    }
+                                + " I only accept youtube, soundcloud, vimeo or twitch urls").queue();
                 } catch (MalformedURLException e) {
                     channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                 }

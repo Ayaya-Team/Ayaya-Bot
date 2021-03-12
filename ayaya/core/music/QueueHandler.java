@@ -76,9 +76,9 @@ public class QueueHandler implements AudioLoadResultHandler {
                 if (!guildMusicManager.getScheduler().queue(track)) {
                     if (firstTrack == null)
                         channel.sendMessage(
-                                "I couldn't queue any tracks from the playlist "
+                                "I couldn't queue any tracks from the playlist `"
                                         + playlistName
-                                        + " because the queue is full."
+                                        + "` because the queue is full."
                         ).queue();
 
                     else {
@@ -105,7 +105,7 @@ public class QueueHandler implements AudioLoadResultHandler {
                 trackTitle = (trackTitle == null || trackTitle.isEmpty()) ? "Unknown" : trackTitle;
                 channel.sendMessage(
                         "Finished queueing all the tracks from `" + playlistName + "`."
-                                + (queueOnly ? "" : "\nThe first track to play is " + trackTitle + "`.")
+                                + (queueOnly ? "" : "\nThe first track to play is `" + trackTitle + "`.")
                 ).queue();
             }
         }
