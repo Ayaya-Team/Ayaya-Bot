@@ -411,7 +411,7 @@ public class Ayaya {
                                 HTTP.postJSON(
                                         "https://api.discordextremelist.xyz/v2/bot/"
                                                 + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", dbotToken
+                                        "Authorization", delToken
                                 )
                         ) System.out.println("Stats successfully posted to Discord Extreme List.");
                         else System.out.println("Failed to post the stats to Discord Extreme List.");

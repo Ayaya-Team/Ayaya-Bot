@@ -102,6 +102,12 @@ public class MusicHandler {
         return false;
     }
 
+    /**
+     * Queues and plays a certain track given it's url or search query.
+     *
+     * @param channel  the channel where the command was executed
+     * @param trackUrl the url or search query for the track
+     */
     public void play(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
         TrackScheduler trackScheduler = musicManager.getScheduler();
@@ -112,14 +118,12 @@ public class MusicHandler {
                 if (trackUrl.startsWith(HTTPS))
                     try {
                         URL url = new URL(trackUrl);
-                        try {
-                            TrustedHosts.valueOf(url.getHost());
+                        if (TrustedHosts.hostnameTrusted(url.getHost()))
                             player.loadItemOrdered(musicManager, trackUrl,
                                     new PlayHandler(trackUrl, channel, musicManager, player));
-                        } catch (IllegalArgumentException e) {
+                        else
                             channel.sendMessage("The url points to a non trusted host."
                                     + " I only accept youtube and soundcloud urls").queue();
-                        }
                     } catch (MalformedURLException e) {
                         channel.sendMessage("The provided url isn't valid. Please try another url.").queue();
                     }
@@ -153,6 +157,12 @@ public class MusicHandler {
         else channel.sendMessage("There are no tracks to play right now.").queue();
     }
 
+    /**
+     * Queues a certain track given it's url or search query.
+     *
+     * @param channel  the channel where the command was executed
+     * @param trackUrl the url or search query for the track
+     */
     public void queue(final TextChannel channel, final String trackUrl) {
         GuildMusicManager musicManager = getGuildMusicManager(channel.getGuild());
         if (!trackUrl.isEmpty()) {
@@ -206,10 +216,22 @@ public class MusicHandler {
 
     }
 
+    /**
+     * Gets an iterator of audio tracks for a server.
+     *
+     * @param guild the server
+     * @return track iterator
+     */
     public Iterator<AudioTrack> getTrackIterator(final Guild guild) {
         return getGuildMusicManager(guild).getScheduler().getTrackIterator();
     }
 
+    /**
+     * Gets the amount of tracks in a queue for a certain server.
+     *
+     * @param guild the server
+     * @return track amount
+     */
     public int getTrackAmount(final Guild guild) {
         return getGuildMusicManager(guild).getScheduler().getTrackAmount();
     }
@@ -217,7 +239,7 @@ public class MusicHandler {
     /**
      * Pauses the music that is currently playing.
      *
-     * @param channel the channel where the command was sent.
+     * @param channel the channel where the command was sent
      * @return if the music has been paused or not
      */
     public boolean pause(TextChannel channel) {
@@ -230,9 +252,9 @@ public class MusicHandler {
     }
 
     /**
-     * Checks wether the music currently playing is paused or not.
+     * Checks wether the current music is paused or not in a server.
      *
-     * @param guild the guild where the command was sent.
+     * @param guild the server
      * @return true if the music is paused, false if not
      */
     public boolean musicPaused(Guild guild) {
@@ -240,9 +262,9 @@ public class MusicHandler {
     }
 
     /**
-     * Resumes the currently playing music.
+     * Resumes the paused music.
      *
-     * @param channel the channel where the command was sent
+     * @param channel the text channel where the command was sent
      * @return if the music was resumed or not
      */
     public boolean resume(TextChannel channel) {
@@ -255,9 +277,9 @@ public class MusicHandler {
     }
 
     /**
-     * Enables or disables the repeat mode of the queue.
+     * Enables or disables the repeat mode of the queue in a server.
      *
-     * @param guild the guild where the command was sent
+     * @param guild the server
      * @return the new repeat boolean value
      */
     public boolean repeat(Guild guild) {
@@ -265,23 +287,41 @@ public class MusicHandler {
     }
 
     /**
-     * Checks if the repeat mode is enabled or not.
+     * Checks if the repeat mode is enabled in a server.
      *
-     * @param guild the guild where the command was sent
+     * @param guild the server
      * @return true if the queue is in repeat mode, false if not
      */
     public boolean isRepeating(Guild guild) {
         return getGuildMusicManager(guild).getScheduler().isRepeating();
     }
 
+    /**
+     * Checks if there is no music being played in a server.
+     *
+     * @param guild the server
+     * @return true if there is no music being played, false on the contrary
+     */
     public boolean noMusicPlaying(Guild guild) {
         return getGuildMusicManager(guild).getScheduler().noMusicPlaying();
     }
 
+    /**
+     * Gets the track that is currently being played or paused in a server.
+     *
+     * @param guild the server
+     * @return possibly null track
+     */
     public AudioTrack getCurrentTrack(Guild guild) {
         return getGuildMusicManager(guild).getScheduler().getCurrentTrack();
     }
 
+    /**
+     * Stops the music being played in the specified server and clears the queue.
+     *
+     * @param guild the server
+     * @return true if the music was stopped, false on the contrary
+     */
     public boolean stopMusic(Guild guild) {
         TrackScheduler scheduler = getGuildMusicManager(guild).getScheduler();
         if (!scheduler.noMusicPlaying() || scheduler.getTrackAmount() != 0) {
@@ -292,9 +332,9 @@ public class MusicHandler {
     }
 
     /**
-     * Skips the current music.
+     * Skips the current music in a server.
      *
-     * @param guild the guild where the command was sent
+     * @param guild the server
      * @return true if a new track started playing, false if not
      */
     public boolean skip(Guild guild) {
@@ -302,9 +342,9 @@ public class MusicHandler {
     }
 
     /**
-     * Sets the volume of the player.
+     * Gets the volume of the player in a server.
      *
-     * @param guild  the guild of the player
+     * @param guild  the server
      * @return player volume
      */
     public int getVolume(Guild guild) {
@@ -312,9 +352,9 @@ public class MusicHandler {
     }
 
     /**
-     * Sets the volume of the player.
+     * Sets the volume of the player in a server.
      *
-     * @param guild  the guild of the player
+     * @param guild  the server
      * @param volume the volume to set
      */
     public void setVolume(Guild guild, int volume) {
@@ -322,9 +362,9 @@ public class MusicHandler {
     }
 
     /**
-     * Seeks x seconds ahead or back (depending on the signal of the amount requested).
+     * Seeks x seconds ahead or back (depending on the signal of the amount requested) for the current track in a server.
      *
-     * @param guild   the guild associated with the player
+     * @param guild   the server
      * @param seconds the amount of seconds
      * @return true if the operation was successful, false on the contrary.
      */

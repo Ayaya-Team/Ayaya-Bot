@@ -23,7 +23,7 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
 
     @Override
     public void onCompletedCommand(CommandEvent event, Command command) {
-        if (!(command instanceof Stats))
+        if (!(command instanceof Stats) && !(command.isOwnerCommand()))
             commandsCounter++;
     }
 

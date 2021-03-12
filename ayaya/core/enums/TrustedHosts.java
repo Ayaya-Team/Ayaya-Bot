@@ -19,4 +19,18 @@ public enum TrustedHosts {
         return hostname;
     }
 
+    /**
+     * Checks if a hostname is in one of the enums.
+     *
+     * @param hostname the hostname to compare with existent ones
+     * @return true if the hostname is recognized, false on the contrary
+     */
+    public static boolean hostnameTrusted(String hostname) {
+        for (TrustedHosts th: TrustedHosts.values()) {
+            if (th.hostname.equals(hostname))
+                return true;
+        }
+        return false;
+    }
+
 }
