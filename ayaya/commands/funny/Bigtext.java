@@ -72,15 +72,15 @@ public class Bigtext extends Command {
      */
     private String getBigText(String args) {
         StringBuilder big_text = new StringBuilder();
-        char c;
+        String c;
         SQLController jdbc = new SQLController();
         int i = 0;
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
             ResultSet result;
             do {
-                c = args.charAt(i);
-                result = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name='" + c + "';", 5);
+                c = String.valueOf(args.charAt(i));
+                result = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name='" + c.toLowerCase() + "';", 5);
                 big_text.append(result.next() ? result.getString("emoji") : c)
                         .append(" ");
                 i++;

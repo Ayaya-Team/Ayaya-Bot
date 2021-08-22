@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -120,13 +121,13 @@ public class EventListener extends ListenerAdapter {
                             + owner.getUser().getName() + "#"
                             + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-            ).queue();
+            ).allowedMentions(Collections.emptyList()).queue();
         }, e -> {
             Objects.requireNonNull(event.getJDA().getTextChannelById(BotData.getConsoleID())).sendMessage(
                     "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by " +
                             "an unknown person at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-            ).queue();
+            ).allowedMentions(Collections.emptyList()).queue();
         });
 
     }
@@ -142,13 +143,13 @@ public class EventListener extends ListenerAdapter {
                             + owner.getUser().getName() + "#"
                             + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-            ).queue();
+            ).allowedMentions(Collections.emptyList()).queue();
         }, e -> {
             Objects.requireNonNull(event.getJDA().getTextChannelById(BotData.getConsoleID())).sendMessage(
                     "I just left the server " + guild.getName() + " `" + guild.getId() + "`, " +
                             "at `"
                             + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-            ).queue();
+            ).allowedMentions(Collections.emptyList()).queue();
         });
 
     }

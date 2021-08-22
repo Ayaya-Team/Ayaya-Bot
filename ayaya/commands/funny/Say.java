@@ -29,6 +29,7 @@ public class Say extends Command {
     );
     private static final Pattern TEXT = Pattern.compile(":");
     private static final Pattern EMOTE = Pattern.compile("(([\\S&&[^:]]){2,}:)+?");
+    private static final Pattern SNOWFLAKE = Pattern.compile("(([\\p{Digit}])+>){1}?");
 
     public Say() {
 
@@ -58,7 +59,15 @@ public class Say extends Command {
             matcher.usePattern(EMOTE);
             if (matcher.find()) {
                 String groupString = matcher.group();
-                //System.out.println(groupString);
+                int start = matcher.start();
+                if (start > 1 && message.charAt(start - 2) == '<') {
+                    matcher.usePattern(SNOWFLAKE);
+                    if (matcher.find()) {
+                        matcher.usePattern(TEXT);
+                        continue;
+                    }
+                }
+
                 List<Emote> emotes = jda.getEmotesByName(groupString.substring(0, groupString.length() - 1), false);
                 if (!emotes.isEmpty()) {
                     newMessage = newMessage.replace(":" + groupString, emotes.get(0).getAsMention());
