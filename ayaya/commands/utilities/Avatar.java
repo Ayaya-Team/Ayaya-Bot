@@ -24,11 +24,13 @@ public class Avatar extends Command {
 
     private static final String JPG = ".jpg";
     private static final String PNG = ".png";
+    private static final String WEBP = ".webp";
+    private static final String GIF = ".gif";
 
     public Avatar() {
 
         this.name = "avatar";
-        this.help = "A command to an image and it's link of the avatar of someone. It works with yours too!";
+        this.help = "A command to show an image and it's link of the avatar of someone. It works with yours too!";
         this.arguments = "{prefix}avatar <mention, name/nickname or id>\n\nIf you don't mention anyone, I will just get your avatar.";
         this.category = UTILITIES.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
@@ -109,20 +111,71 @@ public class Avatar extends Command {
      */
     private void displayAvatar(CommandEvent event, EmbedBuilder avatarEmbed, User user) {
         String urls[] = Utils.getAvatarUrls(user, MIN_SIZE, MAX_SIZE);
-        String url = urls[0];
-        String displayUrl = urls[1];
-        if (url.contains(PNG))
-            avatarEmbed.setDescription(
-                    "[PNG](" + url + ") | [JPG](" + url.replace(PNG, JPG) + ")"
-            );
-        else
-            avatarEmbed.setDescription("[GIF](" + url + ")");
+        String originalURl = urls[0];
+        String url = urls[1];
+        String displayUrl = urls[2];
+
+        String originalJPG, originalPNG, originalWEBP, originalGIF;
+        String jpg, png, webp, gif;
+        if (url.contains(JPG)) {
+            jpg = url;
+            png = url.replace(JPG, PNG);
+            webp = url.replace(JPG, WEBP);
+            gif = "";
+
+            originalJPG = originalURl;
+            originalPNG = originalURl.replace(JPG, PNG);
+            originalWEBP = originalURl.replace(JPG, WEBP);
+            originalGIF = "";
+        }
+        else if (url.contains(PNG)) {
+            jpg = url.replace(PNG, JPG);
+            png = url;
+            webp = url.replace(PNG, WEBP);
+            gif = "";
+
+            originalJPG = originalURl.replace(PNG, JPG);
+            originalPNG = originalURl;
+            originalWEBP = originalURl.replace(PNG, WEBP);
+            originalGIF = "";
+        }
+        else if (url.contains(WEBP)) {
+            jpg = url.replace(WEBP, JPG);
+            png = url.replace(WEBP, PNG);
+            webp = url;
+            gif = "";
+
+            originalJPG = originalURl.replace(WEBP, JPG);
+            originalPNG = originalURl.replace(WEBP, PNG);
+            originalWEBP = originalURl;
+            originalGIF = "";
+        }
+        else {
+            jpg = url.replace(GIF, JPG);
+            png = url.replace(GIF, PNG);
+            webp = url.replace(GIF, WEBP);
+            gif = url;
+
+            originalJPG = originalURl.replace(GIF, JPG);
+            originalPNG = originalURl.replace(GIF, PNG);
+            originalWEBP = originalURl.replace(GIF, WEBP);
+            originalGIF = originalURl;
+        }
+
+        avatarEmbed.setDescription(
+                "**Original:** " + (originalGIF.isEmpty() ? "" : "[GIF](" + originalGIF + ") | ")
+                        + "[PNG](" + originalPNG + ") | [JPG](" + originalJPG + ") | [WEBP](" + originalWEBP + ")" +
+                "\n**2048px:** " + (gif.isEmpty() ? "" : "[GIF](" + gif + ") | ")
+                        + "[PNG](" + png + ") | [JPG](" + jpg + ") | [WEBP](" + webp + ")"
+        );
         avatarEmbed.setImage(displayUrl);
+
         try {
             avatarEmbed.setColor(event.getMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
             avatarEmbed.setColor(Color.decode("#155FA0"));
         }
+
         avatarEmbed.setFooter("Requested by " + event.getAuthor().getName(), event.getAuthor().getEffectiveAvatarUrl());
         event.reply(avatarEmbed.build());
     }

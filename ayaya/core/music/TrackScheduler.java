@@ -90,7 +90,6 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     boolean startFirst() {
-        System.out.println(queue.get(0));
         return !queue.isEmpty() && player.startTrack(this.removeFirstTrack(), true);
     }
 
@@ -200,20 +199,19 @@ public class TrackScheduler extends AudioEventAdapter {
     void shuffle() {
 
         int currentQueueSize = queue.size();
-        int[] indexes = new int[currentQueueSize];
+        List<Integer> indexes = new ArrayList<>();
         Random rng = new Random();
 
-        for (int i = 0; i < currentQueueSize; i++)
-            indexes[i] = rng.nextInt(currentQueueSize);
+        while (indexes.size() < currentQueueSize) {
+            int x = rng.nextInt(currentQueueSize);
+            if (!indexes.contains(x))
+                indexes.add(x);
+        }
 
-        List<AudioTrack> currentQueue = new ArrayList<>();
-
+        List<AudioTrack> newQueue = Collections.synchronizedList(new LinkedList<>());
         synchronized (this) {
-            currentQueue.addAll(queue);
-
-            List<AudioTrack> newQueue = Collections.synchronizedList(new LinkedList<>());
-            for (int i = 0; i < currentQueueSize; i++)
-                newQueue.add(currentQueue.get(indexes[i]));
+            while (!indexes.isEmpty())
+                newQueue.add(queue.get(indexes.remove(0)));
 
             queue = newQueue;
         }

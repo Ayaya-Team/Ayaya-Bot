@@ -82,34 +82,6 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
     }
 
     /**
-     * Retrieves the necessary information about the bot's current prefix,
-     * the channel used as console and the id of the bot's owner.
-     */
-    /*private void getData() {
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            prefix = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'prefix';", 5)
-                    .getString("value");
-            console = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'console';", 5)
-                    .getString("value");
-            owner = jdbc.sqlSelect("SELECT * FROM owners WHERE person LIKE 'owner';", 5)
-                    .getString("discord_id");
-        } catch (SQLException e) {
-            System.out.println("A problem occurred while trying to get necessary information for the error handler! Unable to report the error to the discord console...");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    }*/
-
-    /**
      * Returns the counter of total commands received.
      *
      * @return commands counter

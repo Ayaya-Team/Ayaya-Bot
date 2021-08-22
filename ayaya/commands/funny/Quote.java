@@ -84,7 +84,8 @@ public class Quote extends Command {
                 return;
             }
             quote = getMessageByContent(
-                    channel, message.substring(channelID.length()).trim(), event.getMessage().getId()
+                    channel, message.substring(channelID.length()).trim(),
+                    event.getMessage().getId(), event.getClient().getPrefix()
             );
         } else if (channel != null) {
             if (!event.getSelfMember().hasPermission(channel, Permission.MESSAGE_HISTORY)) {
@@ -164,17 +165,24 @@ public class Quote extends Command {
     /**
      * Fetches a message that contains the given content
      *
-     * @param channel    the channel to check at
-     * @param content    the content that the message must contain
-     * @param idToIgnore the id of the message to ignore,
-     *                   ideally this should be the message that triggered this command
+     * @param channel        the channel to check at
+     * @param content        the content that the message must contain
+     * @param idToIgnore     the id of the message to ignore,
+     *                       ideally this should be the message that triggered this command
+     * @param prefixToIgnore the prefix of the message content to ingnore,
+     *                       ideally this should be the prefix of the bot
      * @return the message
      */
-    private Message getMessageByContent(TextChannel channel, String content, String idToIgnore) {
+    private Message getMessageByContent(TextChannel channel, String content, String idToIgnore, String prefixToIgnore)
+    {
         Message quote = null;
         int count = 0;
         for (Message m : channel.getIterableHistory()) {
-            if (!m.getId().equals(idToIgnore) && m.getContentRaw().contains(content)) {
+            String messageContent = m.getContentRaw();
+            if (!m.getId().equals(idToIgnore)
+                    && !messageContent.startsWith(prefixToIgnore)
+                    && messageContent.contains(content))
+            {
                 quote = m;
                 break;
             }

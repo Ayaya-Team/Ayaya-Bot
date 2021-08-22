@@ -8,19 +8,15 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
-/**
- * Class of the skip command.
- */
-public class Skip extends MusicCommand {
+public class Previous extends MusicCommand {
 
-    public Skip() {
-
-        this.name = "skip";
-        this.help = "Skips the current track.";
-        this.arguments = "{prefix}skip";
+    public Previous() {
+        this.name = "previous";
+        this.help = "Goes back to the previous track.";
+        this.arguments = "{prefix}previous";
         this.category = CommandCategories.MUSIC.asCategory();
-        this.botPerms = new Permission[]{Permission.VOICE_CONNECT,Permission.MESSAGE_WRITE};
-
+        this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
+        this.isPremium = true;
     }
 
     @Override
@@ -32,9 +28,9 @@ public class Skip extends MusicCommand {
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            if (musicHandler.skipMusic(guild))
-                event.reply("Skipped to the next track.");
-            else event.reply("There aren't any more tracks to skip.");
+            if (musicHandler.previousMusic(guild))
+                event.reply("Rewinded to the previous track.");
+            else event.reply("There aren't any previous tracks.");
         } else {
             event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         }
