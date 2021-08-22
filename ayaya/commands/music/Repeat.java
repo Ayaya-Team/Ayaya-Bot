@@ -29,19 +29,17 @@ public class Repeat extends MusicCommand {
 
         Guild guild = event.getGuild();
         try {
+            GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
             if (musicHandler.connect(guild, voiceChannel))
-                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`."
+                        + (musicHandler.repeatQueue(guild) ? "\nRepeat mode on." : "\nRepeat mode off."));
+            else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                event.reply(musicHandler.repeatQueue(guild) ? "Repeat mode on." : "Repeat mode off.");
+            } else
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         } catch (InsufficientPermissionException e) {
             event.replyError("Could not connect to the voice channel because it's already full.");
         }
-        GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState != null && voiceChannel == voiceState.getChannel()) {
-            if (musicHandler.repeat(guild))
-                event.reply("Repeat mode on.");
-            else
-                event.reply("Repeat mode off.");
-        } else
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
 
     }
 

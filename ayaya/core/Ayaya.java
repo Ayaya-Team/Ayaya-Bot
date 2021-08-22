@@ -208,6 +208,7 @@ public class Ayaya {
             ayaya = JDABuilder.create(token, intents)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS)
                     .enableCache(CacheFlag.ROLE_TAGS)
+                    .disableCache(CacheFlag.ONLINE_STATUS)
                     .addEventListeners(client, new EventWaiter(), new EventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)
@@ -342,7 +343,8 @@ public class Ayaya {
      */
     private static void updateBotListsStats() {
 
-        if (!dblToken.isEmpty() || !dsToken.isEmpty() || !dboatsToken.isEmpty()) {
+        if (!dblToken.isEmpty() || !dsToken.isEmpty() || !dboatsToken.isEmpty()
+                || !dbotsToken.isEmpty() || !delToken.isEmpty() || !dbotToken.isEmpty() || !bodToken.isEmpty()) {
             JSONObject json;
             while (ayaya.getPresence().getActivity() != null
                     && !ayaya.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {

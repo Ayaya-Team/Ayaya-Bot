@@ -40,9 +40,7 @@ public class Say extends Command {
             return;
         }
         RestAction.setDefaultFailure(ErrorResponseException.ignore(EnumSet.of(ErrorResponse.UNKNOWN_MESSAGE)));
-        if (message.contains(ARROBA)) {
-            message = message.replaceAll(ARROBA, "");
-        } else if (event.getChannelType().isGuild() && event.getGuild() != null
+        if (!message.contains(ARROBA) && event.getChannelType().isGuild() && event.getGuild() != null
                 && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE))
             event.getMessage().delete().queue();
         message = "From " + event.getAuthor().getAsTag()
@@ -51,7 +49,7 @@ public class Say extends Command {
             event.replyError("The input message must have less than 1900 characters in it.");
             return;
         }
-        event.reply(message);
+        event.getChannel().sendMessage(message).allowedMentions(ALLOWED_MENTIONS).queue();
 
     }
 

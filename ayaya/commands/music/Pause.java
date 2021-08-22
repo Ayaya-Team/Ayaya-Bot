@@ -5,7 +5,6 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
@@ -28,18 +27,16 @@ public class Pause extends MusicCommand {
     @Override
     protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         try {
             if (musicHandler.connect(guild, voiceChannel)) {
-                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
-                musicHandler.pause(textChannel);
-                event.reply("There is no track in the queue to pause.");
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName()
+                        + "`.\nThere is no track in the queue to pause.");
             } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
-                if (musicHandler.getTrackAmount(guild) == 0)
+                if (musicHandler.getMusicAmount(guild) == 0)
                     event.reply("There is no track in the queue to pause.");
-                else if (musicHandler.pause(textChannel))
+                else if (musicHandler.pauseQueue(guild))
                     event.reply("The music was paused.");
                 else
                     event.reply("The music is already paused.");

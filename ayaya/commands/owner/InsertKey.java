@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.sql.*;
-import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -60,11 +59,12 @@ public class InsertKey extends Command {
             connection = DriverManager.getConnection("jdbc:sqlite:data.db");
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(5);
-            console = statement.executeQuery("SELECT * FROM settings WHERE option = 'console';")
+            console = statement.executeQuery("SELECT * FROM settings WHERE option='console';")
                     .getString("value");
         } catch (SQLException e) {
             System.out.println(
-                    "A problem occurred while trying to get necessary information for the error handler! Unable to report the error to the discord console..."
+                    "A problem occurred while trying to get necessary information for the error handler!" +
+                            " Unable to report the error to the discord console..."
             );
             System.err.println(e.getMessage());
             e.printStackTrace();

@@ -126,7 +126,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
                     } else if (!event.getSelfMember().hasPermission(event.getTextChannel(), p)) {
 
-                        if (p != Permission.MESSAGE_WRITE)
+                        if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
                             event.replyError("I need the permission **" + p.getName() + "** to execute this command in this channel.");
                         return;
 
@@ -134,11 +134,25 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
                 } else {
 
-                    if(!event.getSelfMember().hasPermission(p)) {
+                    if (p.isChannel()) {
 
-                        if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
-                            event.replyError("I need the permission **" + p.getName() + "** to execute this command.");
-                        return;
+                        if (!event.getSelfMember().hasPermission(event.getTextChannel(), p)) {
+
+                            if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                                event.replyError("I need the permission **" + p.getName() + "** in this channel to use this command.");
+                            return;
+
+                        }
+
+                    } else {
+
+                        if(!event.getSelfMember().hasPermission(p)) {
+
+                            if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                                event.replyError("I need the permission **" + p.getName() + "** to execute this command.");
+                            return;
+
+                        }
 
                     }
 
@@ -152,7 +166,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
                     if (!event.getMember().hasPermission(event.getTextChannel(), p)) {
 
-                        event.replyError("You need the permission **" + p.getName() + "** in this channel to use this command.");
+                        if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                            event.replyError("You need the permission **" + p.getName() + "** in this channel to use this command.");
                         return;
 
                     }
@@ -161,7 +176,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
                     if (!event.getMember().hasPermission(p)) {
 
-                        event.replyError("You need the permission **" + p.getName() + "** to use this command.");
+                        if (event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                            event.replyError("You need the permission **" + p.getName() + "** to use this command.");
                         return;
 
                     }
@@ -259,7 +275,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open("jdbc:sqlite:data.db");
-            ResultSet result = jdbc.sqlSelect("SELECT * FROM blacklist WHERE user_id = '" + id + "';", 5);
+            ResultSet result = jdbc.sqlSelect("SELECT * FROM blacklist WHERE user_id='" + id + "';", 5);
             blocked = result.next();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -303,7 +319,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         try {
             jdbc.open("jdbc:sqlite:data.db");
             ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = " + id + ";", 5);
+                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id='" + id + "';", 5);
             if (resultSet.next()) {
                 String result = resultSet.getString("expiration_date");
                 if (result.equals(INFINITE))
@@ -315,7 +331,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                     if (compare < 0) {
                         Serializable[] o = {id};
                         jdbc.sqlInsertUpdateOrDelete(
-                                "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
+                                "DELETE FROM patreon_whitelist WHERE user_id='?';", o, 5
                         );
                     } else answer = result;
                 }
@@ -360,7 +376,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open("jdbc:sqlite:data.db");
-            link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
+            link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE option='donate';", 5)
                     .getString("value");
         } catch (SQLException e) {
             System.out.println(

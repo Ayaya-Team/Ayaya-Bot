@@ -34,9 +34,9 @@ public class Play extends MusicCommand {
         try {
             if (musicHandler.connect(guild, voiceChannel)) {
                 event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
-                musicHandler.play(textChannel, url);
+                musicHandler.queueAndPlay(textChannel, url, true);
             } else if (voiceState != null && voiceState.getChannel() == voiceChannel) {
-                musicHandler.play(textChannel, url);
+                musicHandler.queueAndPlay(textChannel, url, true);
             } else {
                 event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }

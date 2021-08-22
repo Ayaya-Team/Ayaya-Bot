@@ -42,10 +42,12 @@ public class Channelinfo extends Command {
         if (event.getMessage().getMentionedChannels().size() > 0)
             channel = event.getMessage().getMentionedChannels().get(0);
         else if (!name.isEmpty()) {
-            List<TextChannel> text_channels = event.getGuild().getTextChannelsByName(name, false);
-            List<VoiceChannel> voice_channels = event.getGuild().getVoiceChannelsByName(name, false);
-            if (text_channels.size() > 0) channel = text_channels.get(0);
-            else if (voice_channels.size() > 0) channel = voice_channels.get(0);
+            List<TextChannel> textChannels = event.getGuild().getTextChannelsByName(name, false);
+            List<VoiceChannel> voiceChannels = event.getGuild().getVoiceChannelsByName(name, false);
+            List<StoreChannel> storeChannels = event.getGuild().getStoreChannelsByName(name, false);
+            if (!textChannels.isEmpty()) channel = textChannels.get(0);
+            else if (!voiceChannels.isEmpty()) channel = voiceChannels.get(0);
+            else if (!storeChannels.isEmpty()) channel = storeChannels.get(0);
             else {
                 event.replyError("I can't find a channel with that name. Make sure you wrote it correctly.");
                 return;
@@ -80,7 +82,7 @@ public class Channelinfo extends Command {
             channelinfo_embed.addField("Type", type, true);
             channelinfo_embed.addField("Category", categoryName, true);
             channelinfo_embed.addField("NSFW", nsfw, true);
-        } else {
+        } else if (channel instanceof VoiceChannel) {
             VoiceChannel voiceChannel = (VoiceChannel) channel;
             int bitrate = voiceChannel.getBitrate() / 1000;
             channelinfo_embed.addField("Channel ID", channel.getId(), true);
@@ -88,6 +90,9 @@ public class Channelinfo extends Command {
             channelinfo_embed.addField("Category", categoryName, true);
             channelinfo_embed.addField("Bitrate", bitrate + " kbps", true);
             channelinfo_embed.addField("User Limit", String.valueOf(voiceChannel.getUserLimit()), true);
+        } else {
+            channelinfo_embed.addField("Type", type, true);
+            channelinfo_embed.addField("Category", categoryName, true);
         }
         channelinfo_embed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",

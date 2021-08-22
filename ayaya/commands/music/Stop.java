@@ -27,7 +27,7 @@ public class Stop extends MusicCommand {
 
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState == null || !voiceState.inVoiceChannel() || musicHandler.noMusicPlaying(guild)) {
+        if (voiceState == null || !voiceState.inVoiceChannel() || musicHandler.getCurrentMusic(guild) == null) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {
             if (musicHandler.stopMusic(guild))

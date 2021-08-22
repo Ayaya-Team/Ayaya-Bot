@@ -30,21 +30,21 @@ public class NP extends MusicCommand {
     protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
         Guild guild = event.getGuild();
-        int trackAmount = musicHandler.getTrackAmount(guild);
+        int trackAmount = musicHandler.getMusicAmount(guild);
         String message;
         if (trackAmount == 0)
             message = "There are no tracks in the queue right now.";
-        else if (musicHandler.noMusicPlaying(guild))
+        else if (musicHandler.getCurrentMusic(guild) == null)
             message = "No music is being played, but there are musics queued.";
         else {
-            AudioTrack track = musicHandler.getCurrentTrack(guild);
+            AudioTrack track = musicHandler.getCurrentMusic(guild);
             String trackName = track.getInfo().title;
             long time = track.getDuration() / 1000;
             long current = track.getPosition() / 1000;
             if (trackName == null)
                 trackName = "Undefined";
             String bar = Utils.printBar(current, time, BAR_LENGTH);
-            if (musicHandler.musicPaused(guild))
+            if (musicHandler.getCurrentMusic(guild) == null || musicHandler.queueIsPaused(guild))
                 message = String.format(
                         "Current track to play is `%s`\n\n**%02d:%02d / %02d:%02d** ー %s",
                         trackName, current/60, current%60, time/60, time%60, bar
@@ -58,7 +58,7 @@ public class NP extends MusicCommand {
         EmbedBuilder npEmbed = new EmbedBuilder()
                 .setAuthor("Now Playing", null, event.getSelfUser().getAvatarUrl())
                 .setDescription(message);
-        if (musicHandler.isRepeating(event.getGuild()))
+        if (musicHandler.queueIsRepeating(event.getGuild()))
             npEmbed.setFooter(
                     "Repeat mode on | " + trackAmount + " tracks queued", null
             );

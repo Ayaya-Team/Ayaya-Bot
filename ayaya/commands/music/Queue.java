@@ -63,42 +63,46 @@ public class Queue extends MusicCommand {
     }
 
     private Iterator<AudioTrack> queueOrShowList(TextChannel textChannel, String url) {
-        if (url.isEmpty()) return musicHandler.getTrackIterator(textChannel.getGuild());
+        if (url.isEmpty()) return musicHandler.getMusicIterator(textChannel.getGuild());
         else {
-            musicHandler.queue(textChannel, url);
+            musicHandler.queueAndPlay(textChannel, url, false);
             return null;
         }
     }
 
     private void printTrackList(CommandEvent event, Iterator<AudioTrack> iterator) {
-        if (!iterator.hasNext()) {
+        AudioTrack current = musicHandler.getCurrentMusic(event.getGuild());
+        if (current == null) {
             event.reply("There are no tracks in the queue right now.");
         } else {
             Guild guild = event.getGuild();
             StringBuilder queueList = new StringBuilder();
-            int i = 0;
-            String trackTitle;
+            String trackTitle = current.getInfo().title;
+            trackTitle = (trackTitle != null && !trackTitle.isEmpty()) ? trackTitle : "Undefined";
 
-            do {
+            queueList.append(
+                    (musicHandler.getCurrentMusic(guild) == null || musicHandler.queueIsPaused(guild))
+                            ? "Next music: `" : "Now playing: `"
+            ).append(trackTitle).append("`\n");
+
+            int i = 1;
+            while (iterator.hasNext()) {
                 AudioTrack track = iterator.next();
-                if (i == 0)
-                    queueList.append((musicHandler.musicPaused(guild)) ? "Next music: `" : "Now playing: `");
-                else
-                    queueList.append(i).append(": `");
+                queueList.append(i).append(": `");
                 trackTitle = track.getInfo().title;
                 queueList.append((trackTitle != null && !trackTitle.isEmpty()) ? track.getInfo().title : "Undefined")
                         .append("`\n");
                 if (i == 10) {
-                    queueList.append("And ").append(musicHandler.getTrackAmount(guild) - 11).append(" more tracks.");
+                    queueList.append("And ").append(musicHandler.getMusicAmount(guild) - 11).append(" more tracks.");
                     break;
                 }
                 i++;
-            } while (iterator.hasNext());
+            }
 
             EmbedBuilder queueEmbed = new EmbedBuilder()
                     .setAuthor("Queue", null, event.getSelfUser().getAvatarUrl())
                     .setDescription(queueList.toString())
-                    .setFooter((musicHandler.isRepeating(guild)) ? "Repeat mode on" : "Repeat mode off", null);
+                    .setFooter((musicHandler.queueIsRepeating(guild)) ? "Repeat mode on" : "Repeat mode off", null);
             try {
                 queueEmbed.setColor(guild.getSelfMember().getColor());
             } catch (NullPointerException e) {

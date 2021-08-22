@@ -77,7 +77,7 @@ public class ClaimKey extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open("jdbc:sqlite:data.db");
-            ResultSet result = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key = '" + key + "';", 5);
+            ResultSet result = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key='" + key + "';", 5);
             premium = result.next();
         } catch (SQLException e) {
             event.replyError("There was a problem while checking wether you are or aren't a premium. If this error persists, try again later.");
@@ -108,7 +108,7 @@ public class ClaimKey extends Command {
         SQLController jdbc = new SQLController();
         assign: try {
             jdbc.open("jdbc:sqlite:data.db");
-            int duration = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key LIKE '" + key + "';", 5)
+            int duration = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key='" + key + "';", 5)
                     .getInt("duration");
             String date = getPremiumExpirationDate(event);
             if (date != null) {
@@ -126,7 +126,7 @@ public class ClaimKey extends Command {
                     o, 5
             );
             o = new Serializable[]{key};
-            jdbc.sqlInsertUpdateOrDelete("DELETE FROM patreon_keys WHERE key = ?;", o, 5);
+            jdbc.sqlInsertUpdateOrDelete("DELETE FROM patreon_keys WHERE key='?';", o, 5);
             fine = true;
         } catch (SQLException e) {
             event.replyError("There was a problem while assigning you the premium key. If this error persists, try again later.");

@@ -6,7 +6,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
@@ -35,7 +34,6 @@ public class Dequeue extends MusicCommand {
         }
         String[] args = event.getArgs().split(" ");
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         int trackNumber;
         try {
@@ -50,19 +48,21 @@ public class Dequeue extends MusicCommand {
         try {
             if ((voiceState == null || !voiceState.inVoiceChannel()) && musicHandler.connect(guild, voiceChannel))
             {
-                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
-                event.reply("The queue is already empty.");
-            } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
-                try {
-                    AudioTrack track = musicHandler.dequeue(textChannel, trackNumber);
-                    String track_title = track.getInfo().title;
-                    if (track_title == null || track_title.isEmpty())
-                        track_title = "Undefined";
-                    event.reply("The track `" + track_title + "` was removed from the queue.");
-                } catch (IndexOutOfBoundsException e) {
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName()
+                        + "`.\nThe queue is already empty.");
+            }
+            else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                AudioTrack track = musicHandler.dequeueMusic(guild, trackNumber);
+                if (track == null) {
                     event.replyError("The track number " + trackNumber + " wasn't found in the queue.");
+                    return;
                 }
-            } else {
+                String track_title = track.getInfo().title;
+                if (track_title == null || track_title.isEmpty())
+                    track_title = "Undefined";
+                event.reply("The track `" + track_title + "` was removed from the queue.");
+            }
+            else {
                 event.reply("I only listen to the music commands of who is in the same voice channel as me.");
             }
         } catch (InsufficientPermissionException e) {

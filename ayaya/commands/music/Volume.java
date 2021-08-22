@@ -25,7 +25,7 @@ public class Volume extends MusicCommand {
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         if (event.getArgs().isEmpty()) {
-            int volume = musicHandler.getVolume(guild);
+            int volume = musicHandler.getMusicVolume(guild);
             event.reply("The current volume is " + volume + ".");
         } else if (
                 voiceState == null || !voiceState.inVoiceChannel() || voiceChannel == voiceState.getChannel()
@@ -38,7 +38,7 @@ public class Volume extends MusicCommand {
                 } catch (NumberFormatException e) {}
             }
             if (volume > 0 && volume < 101) {
-                musicHandler.setVolume(guild, volume);
+                musicHandler.setMusicVolume(guild, volume);
                 event.replySuccess("Volume successfully set to " + volume + ".");
             } else
                 event.replyError("The volume can only be a number from 1 to 100");

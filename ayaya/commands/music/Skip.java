@@ -32,7 +32,7 @@ public class Skip extends MusicCommand {
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            if (musicHandler.skip(guild))
+            if (musicHandler.skipMusic(guild))
                 event.reply("Skipped to the next track.");
             else event.reply("There's no more tracks to skip.");
         } else {

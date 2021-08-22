@@ -30,40 +30,43 @@ public class Seek extends MusicCommand {
         String message = event.getArgs();
         Guild guild = event.getGuild();
         try {
+            GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
             if (musicHandler.connect(guild, voiceChannel))
-                event.reply("Now connected to the voice channel `" + voiceChannel.getName() + "`.");
+                event.reply("Now connected to the voice channel `" + voiceChannel.getName()
+                        + "`.\nThere is no music being played right now.");
+            else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
+                if (musicHandler.getCurrentMusic(guild) == null) {
+                    event.reply("There is no music being played right now.");
+                    return;
+                }
+                if (message.isEmpty()) {
+                    event.reply(
+                            "<:AyaWhat:362990028915474432> You didn't tell me how many seconds I should skip or rewind." +
+                                    " Remember to put a negative value in case you want to rewind."
+                    );
+                    return;
+                }
+                long amount = amountInString(message);
+                if (amount == 0) {
+                    event.reply("Please use a value different than 0." +
+                            "\nBe careful with too big positive values and too small negative values" +
+                            " as they will trigger this response.");
+                    return;
+                }
+                if (musicHandler.seekInMusic(event.getGuild(), amount)) {
+                    if (amount < 0) event.replySuccess("Time rewinded.");
+                    else event.replySuccess("Time skipped.");
+                } else
+                    event.reply(
+                            "Could not perform this action due to either the track not being seekable or" +
+                                    " the amount not being a valid integer."
+                    );
+            } else
+                event.reply("I only listen to the music commands of who is in the same voice channel as me.");
         } catch (InsufficientPermissionException e) {
             event.replyError("Could not connect to the voice channel because it's already full.");
             return;
         }
-        GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (voiceState != null && voiceChannel == voiceState.getChannel()) {
-            if (musicHandler.noMusicPlaying(guild)) {
-                event.reply("There is no music being played right now.");
-                return;
-            }
-            if (message.isEmpty()) {
-                event.reply(
-                        "<:AyaWhat:362990028915474432> You didn't tell me how many seconds I should skip or rewind." +
-                                " Remember to put a negative value in case you want to rewind."
-                );
-                return;
-            }
-            long amount = amountInString(message);
-            if (amount == 0) {
-                event.reply("Please use a value different than 0.");
-                return;
-            }
-            if (musicHandler.seek(event.getGuild(), amount)) {
-                if (amount < 0) event.replySuccess("Time rewinded.");
-                else event.replySuccess("Time skipped.");
-            } else
-                event.reply(
-                        "Could not perform this action due to either the track not being seekable or" +
-                                " the amount not being a valid integer."
-                );
-        } else
-            event.reply("I only listen to the music commands of who is in the same voice channel as me.");
 
     }
 

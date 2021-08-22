@@ -34,13 +34,16 @@ public class EventListener extends ListenerAdapter {
     private static final String GREETING =
             "Welcome %s to the Aya's Office! For any help related with me, go to the #support channel. Hope you enjoy your stay here!";
     private static final String FAREWELL = "Goodbye %s, we will miss you.";
-    private static final int POOL_AMOUNT = 500;
-    private static final int AMOUNT_TO_ADD = 50;
+    private static final int POOL_AMOUNT_PER_CORE = 30;
+    private static final int INITIAL_AMOUNT = POOL_AMOUNT_PER_CORE * Runtime.getRuntime().availableProcessors();
+    private static final float GROWTH_RATE = 1.5f;
+    private static final float SHRINK_RATE = 1/3;
+    private static final float SHRINK_LEFTOVER = 2/3;
 
     private String prefix;
     private String console;
-    private String server;
-    private String greetings_farewells;
+    //private String server;
+    //private String greetings_farewells;
     private long messagesCounter;
     private ScheduledThreadPoolExecutor voiceTimeoutManager;
     private Map<String, ScheduledFuture<?>> scheduledTimeouts;
@@ -50,7 +53,7 @@ public class EventListener extends ListenerAdapter {
 
         fetchSettings();
         messagesCounter = 0;
-        amount = POOL_AMOUNT;
+        amount = INITIAL_AMOUNT;
         voiceTimeoutManager = new ScheduledThreadPoolExecutor(amount);
         scheduledTimeouts = new HashMap<>(amount);
 
@@ -113,20 +116,19 @@ public class EventListener extends ListenerAdapter {
 
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
         Guild guild = event.getGuild();
-        guild.retrieveOwner(true).queue(owner -> {
-            Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
-                    "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
-                            + owner.getUser().getName() + "#"
-                            + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
-                            + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-            ).queue();
-        }, e -> {
-            Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
-                    "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by " +
-                            "an unknown person at `"
-                            + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
-            ).queue();
-        });
+        guild.retrieveOwner(true).queue(
+                owner -> Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
+                        "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by `"
+                                + owner.getUser().getName() + "#"
+                                + owner.getUser().getDiscriminator() + "` `" + owner.getId() + "` at `"
+                                + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
+                ).queue(),
+                e -> Objects.requireNonNull(event.getJDA().getTextChannelById(console)).sendMessage(
+                        "I just joined the server " + guild.getName() + " `" + guild.getId() + "`, owned by " +
+                                "an unknown person at `"
+                                + time.format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm:ss")) + "`."
+                ).queue()
+        );
 
     }
 
@@ -190,26 +192,16 @@ public class EventListener extends ListenerAdapter {
     public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
         VoiceChannel channel = event.getChannelLeft();
         if (channel.getMembers().size() < 2
-                && !event.getMember().getUser().equals(event.getJDA().getSelfUser())) {
-            if (scheduledTimeouts.size() == amount) {
-                amount += AMOUNT_TO_ADD;
-                voiceTimeoutManager.setCorePoolSize(amount);
-            }
+                && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
             scheduleTimer(event.getGuild());
-        }
     }
 
     @Override
     public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
         VoiceChannel channel = event.getChannelLeft();
         if (channel.getMembers().size() < 2
-                && !event.getMember().getUser().equals(event.getJDA().getSelfUser())) {
-            if (scheduledTimeouts.size() == amount) {
-                amount += AMOUNT_TO_ADD;
-                voiceTimeoutManager.setCorePoolSize(amount);
-            }
+                && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
             scheduleTimer(event.getGuild());
-        }
     }
 
     /**
@@ -222,13 +214,13 @@ public class EventListener extends ListenerAdapter {
             jdbc.open("jdbc:sqlite:data.db");
             prefix = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'prefix';", 5)
                     .getString("value");
-            server = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'server';", 5)
-                    .getString("value");
+            //server = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'server';", 5)
+            //        .getString("value");
             console = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'console';", 5)
                     .getString("value");
-            greetings_farewells =
-                    jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'greetings/farewells';", 5)
-                            .getString("value");
+            //greetings_farewells =
+            //        jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'greetings/farewells';", 5)
+            //                .getString("value");
         } catch (SQLException e) {
             System.out.println("A problem occurred while trying to get necessary information to analyze this message!" +
                     " Skipping the proccess...");
@@ -262,6 +254,12 @@ public class EventListener extends ListenerAdapter {
     private void scheduleTimer(Guild guild) {
         scheduledTimeouts.put(guild.getId(),
                 voiceTimeoutManager.schedule(() -> voiceTimeoutLeave(guild), 1, TimeUnit.MINUTES));
+        synchronized (this) {
+            if (scheduledTimeouts.size() == amount) {
+                amount *= GROWTH_RATE;
+                voiceTimeoutManager.setCorePoolSize(amount);
+            }
+        }
     }
 
     /**
@@ -272,8 +270,16 @@ public class EventListener extends ListenerAdapter {
      */
     private void cancelTimer(String id) throws NullPointerException {
         ScheduledFuture<?> timer = scheduledTimeouts.get(id);
-        if (timer != null)
-            timer.cancel(true);
+        if (timer != null) {
+            timer.cancel(false);
+            synchronized (this) {
+                int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
+                if (amount != INITIAL_AMOUNT && scheduledTimeouts.size() == shrinkThreshold) {
+                    amount = Math.max(INITIAL_AMOUNT, shrinkThreshold);
+                    voiceTimeoutManager.setCorePoolSize(amount);
+                }
+            }
+        }
     }
 
     /**
