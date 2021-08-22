@@ -1,11 +1,13 @@
 package ayaya.commands.funny;
 
+import ayaya.core.BotData;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -56,9 +58,9 @@ public class Kawaii extends ayaya.commands.Command {
         SQLController jdbc = new SQLController();
         try
         {
-            jdbc.open("jdbc:sqlite:data.db");
-            url = jdbc.sqlSelect("SELECT * FROM "+name+" WHERE `gif id` LIKE '"+id+"';", 5)
-                    .getString("link");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM " + name + " WHERE gif_id=" + id + ";", 5);
+            url = rs.next() ? rs.getString("link") : "";
         }
         catch(SQLException e)
         {
@@ -93,16 +95,16 @@ public class Kawaii extends ayaya.commands.Command {
         SQLController jdbc = new SQLController();
         try
         {
-            jdbc.open("jdbc:sqlite:data.db");
-            amount = Integer.parseInt(
-                    jdbc.sqlSelect("SELECT * FROM sqlite_sequence WHERE name LIKE '"+name+"';", 5)
-                            .getString("seq")
-            );
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT last_value FROM " + name + "_gif_id_seq;", 5);
+            if (rs.next())
+                amount = rs.getInt(1);
         }
         catch(SQLException e)
         {
             System.out.println(
-                    "A problem occurred while trying to get necessary information for the "+name+" command! Aborting the read process...");
+                    "A problem occurred while trying to get necessary information for the " + name
+                            + " command! Aborting the read process...");
             System.err.println(e.getMessage());
             e.printStackTrace();
         }

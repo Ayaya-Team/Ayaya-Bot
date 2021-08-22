@@ -1,6 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -71,9 +72,9 @@ public class Premium extends Command {
         long days_left = 0;
         SQLController jdbc = new SQLController();
         try {
-            jdbc.open("jdbc:sqlite:data.db");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
             ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = " + id + ";", 5);
+                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id=" + id + ";", 5);
             if (resultSet.next()) {
                 String result = resultSet.getString("expiration_date");
                 if (result.equals(INFINITE))
@@ -85,7 +86,7 @@ public class Premium extends Command {
                     if (compare < 0) {
                         Serializable[] o = {id};
                         jdbc.sqlInsertUpdateOrDelete(
-                                "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
+                                "DELETE FROM patreon_whitelist WHERE user_id=?;", o, 5
                         );
                         days_left = 0;
                     } else if (compare == 0) {

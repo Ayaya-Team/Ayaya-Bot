@@ -1,13 +1,15 @@
 package ayaya.commands.utilities;
 
 import ayaya.commands.Command;
-import ayaya.core.utils.SQLController;
+import ayaya.core.BotData;
 import ayaya.core.enums.CommandCategories;
+import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
 import java.io.Serializable;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -76,8 +78,8 @@ public class ClaimKey extends Command {
         boolean premium = false;
         SQLController jdbc = new SQLController();
         try {
-            jdbc.open("jdbc:sqlite:data.db");
-            ResultSet result = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key='" + key + "';", 5);
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet result = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key = '" + key + "';", 5);
             premium = result.next();
         } catch (SQLException e) {
             event.replyError("There was a problem while checking wether you are or aren't a premium. If this error persists, try again later.");
@@ -107,8 +109,8 @@ public class ClaimKey extends Command {
         boolean fine = false;
         SQLController jdbc = new SQLController();
         assign: try {
-            jdbc.open("jdbc:sqlite:data.db");
-            int duration = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key='" + key + "';", 5)
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            int duration = jdbc.sqlSelectNext("SELECT * FROM patreon_keys WHERE key = '" + key + "';", 5)
                     .getInt("duration");
             String date = getPremiumExpirationDate(event);
             if (date != null) {
@@ -126,7 +128,7 @@ public class ClaimKey extends Command {
                     o, 5
             );
             o = new Serializable[]{key};
-            jdbc.sqlInsertUpdateOrDelete("DELETE FROM patreon_keys WHERE key='?';", o, 5);
+            jdbc.sqlInsertUpdateOrDelete("DELETE FROM patreon_keys WHERE key = '?';", o, 5);
             fine = true;
         } catch (SQLException e) {
             event.replyError("There was a problem while assigning you the premium key. If this error persists, try again later.");

@@ -1,6 +1,7 @@
 package ayaya.commands.owner;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
@@ -34,7 +35,7 @@ public class InsertKey extends Command {
         int duration = Integer.parseInt(event.getArgs());
         String key = generateKey();
         if (storeKey(key, duration)) {
-            TextChannel consoleChannel = event.getJDA().getTextChannelById(getConsoleID());
+            TextChannel consoleChannel = event.getJDA().getTextChannelById(BotData.getConsoleID());
             if (consoleChannel != null)
                 consoleChannel.sendMessage("The new key is `" + key + "`.").queue();
             else {
@@ -43,41 +44,6 @@ public class InsertKey extends Command {
             }
         } else
             event.replyError("There was a problem when trying to store the key. If this occurs again, check my server console.");
-
-    }
-
-    /**
-     * Fetches the id of the console channel of the bot from the database.
-     *
-     * @return id
-     */
-    private String getConsoleID() {
-
-        String console = "";
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:sqlite:data.db");
-            Statement statement = connection.createStatement();
-            statement.setQueryTimeout(5);
-            console = statement.executeQuery("SELECT * FROM settings WHERE option='console';")
-                    .getString("value");
-        } catch (SQLException e) {
-            System.out.println(
-                    "A problem occurred while trying to get necessary information for the error handler!" +
-                            " Unable to report the error to the discord console..."
-            );
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        return console;
 
     }
 
@@ -110,7 +76,9 @@ public class InsertKey extends Command {
         boolean success = false;
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:data.db");
+            connection = DriverManager.getConnection(
+                    BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword()
+            );
             PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO patreon_keys(key,duration) VALUES(?, ?);"
             );

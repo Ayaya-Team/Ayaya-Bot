@@ -1,22 +1,19 @@
 package ayaya.commands.utilities;
 
 import ayaya.commands.Command;
-import ayaya.core.utils.SQLController;
+import ayaya.core.BotData;
 import ayaya.core.enums.CommandCategories;
+import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static ayaya.core.enums.ConvertionArrays.LENGHTH_UNITS;
-import static ayaya.core.enums.ConvertionArrays.SPEED_UNITS;
-import static ayaya.core.enums.ConvertionArrays.WEIGHT_UNITS;
-import static ayaya.core.enums.ConvertionArrays.TEMPERATURE_UNITS;
-import static ayaya.core.enums.ConvertionArrays.PRESSURE_UNITS;
-import static ayaya.core.enums.ConvertionArrays.INFORMATION_UNITS;
+import static ayaya.core.enums.ConvertionArrays.*;
 
 /**
  * Class of the convert command.
@@ -162,9 +159,10 @@ public class Convert extends Command {
         double rating = 0;
         SQLController jdbc = new SQLController();
         try {
-            jdbc.open("jdbc:sqlite:data.db");
-            rating = jdbc.sqlSelect("SELECT * FROM `converter` WHERE unit1 LIKE '" + unit1
-                    + "' AND unit2 LIKE '" + unit2 + "';", 5).getDouble("rating");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM converter WHERE unit1 = '" + unit1
+                    + "' AND unit2 = '" + unit2 + "';", 5);
+            rating = rs.next() ? rs.getDouble("rating") : 0;
         } catch (SQLException e) {
             System.out.println("A problem occurred while trying to get the convert rating.");
             System.err.println(e.getMessage());

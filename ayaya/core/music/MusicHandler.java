@@ -194,6 +194,10 @@ public class MusicHandler {
         return this.getGuildMusicManager(guild).getScheduler().skip();
     }
 
+    public boolean previousMusic(final Guild guild) {
+        return this.getGuildMusicManager(guild).getScheduler().previousTrack();
+    }
+
     public boolean stopMusic(final Guild guild) {
         TrackScheduler scheduler = this.getGuildMusicManager(guild).getScheduler();
         if (scheduler.getCurrentTrack() != null || scheduler.getTrackAmount() != 0) {
@@ -217,6 +221,25 @@ public class MusicHandler {
 
     public boolean moveMusic(final Guild guild, final int i, final int j) {
         return this.getGuildMusicManager(guild).getScheduler().move(i, j);
+    }
+
+    public void queueShuffle(final Guild guild) {
+        this.getGuildMusicManager(guild).getScheduler().shuffle();
+    }
+
+    public boolean move(final Guild guild, final VoiceChannel currentVoiceChannel, final VoiceChannel nextVoiceChannel)
+    {
+        TrackScheduler scheduler = this.getGuildMusicManager(guild).getScheduler();
+        scheduler.pause();
+        this.disconnect(guild);
+        if (this.connect(guild, nextVoiceChannel)) {
+            scheduler.unpause();
+            return true;
+        } else if (this.connect(guild, currentVoiceChannel))
+            scheduler.unpause();
+        else
+            scheduler.stopAndClear();
+        return false;
     }
 
 }

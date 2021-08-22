@@ -25,5 +25,4 @@ public class Pair<T, R> {
     public void setSecond(R second) {
         this.second = second;
     }
-
 }

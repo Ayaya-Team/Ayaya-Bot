@@ -1,6 +1,6 @@
 package ayaya.core.utils;
 
-import ayaya.core.exceptions.db.DBAlreadyConnectedException;
+import ayaya.core.exceptions.db.DBOperationNotSupportedException;
 import ayaya.core.exceptions.db.DBNotConnectedException;
 import ayaya.core.exceptions.general.UnsupportedTypeException;
 
@@ -36,9 +36,27 @@ public class SQLController {
      * @param url the url of the database
      * @throws SQLException when an sql error occurs
      */
-    public void open(String url) throws SQLException {
+    /*public void open(String url) throws SQLException {
         try {
             connection = DriverManager.getConnection(url);
+            connected = true;
+        } catch (SQLException e) {
+            connection = null;
+            throw e;
+        }
+    }*/
+
+    /**
+     * Opens a connection with a database.
+     *
+     * @param url  the url of the database
+     * @param user the database user
+     * @param pass the user password
+     * @throws SQLException when an sql error occurs
+     */
+    public void open(String url, String user, String pass) throws SQLException {
+        try {
+            connection = DriverManager.getConnection(url, user, pass);
             connected = true;
         } catch (SQLException e) {
             connection = null;
@@ -107,18 +125,33 @@ public class SQLController {
     }
 
     /**
+     * Performs a select request and retrieves a result set after moving the cursor to the first row if it exists.
+     *
+     * @param sql     the sql command
+     * @param timeout the query timeout
+     * @return a result set
+     * @throws SQLException            when an sql error occurs
+     * @throws DBNotConnectedException when there is no database connected to this controller
+     */
+    public ResultSet sqlSelectNext(String sql, int timeout) throws SQLException, DBNotConnectedException {
+        ResultSet result = this.sqlSelect(sql, timeout);
+        result.next();
+        return result;
+    }
+
+    /**
      * Performs a create request.
      *
      * @param sql     the sql command
      * @param timeout the query timeout
-     * @throws SQLException                when an sql error occurs
-     * @throws DBNotConnectedException     when there is no database connected to this controller
-     * @throws DBAlreadyConnectedException when the user attempts to create a new database while connected to another
+     * @throws SQLException                     when an sql error occurs
+     * @throws DBNotConnectedException          when there is no database connected to this controller
+     * @throws DBOperationNotSupportedException when the user attempts to create a new database
      */
     public void sqlCreate(String sql, int timeout) throws SQLException, DBNotConnectedException,
-            DBAlreadyConnectedException {
+            DBOperationNotSupportedException {
         if (connection == null) throw new DBNotConnectedException();
-        else if (sql.toLowerCase().contains(CREATE_DB)) throw new DBAlreadyConnectedException();
+        else if (sql.toLowerCase().contains(CREATE_DB)) throw new DBOperationNotSupportedException();
         if (resultSet != null && !resultSet.isClosed()) resultSet.close();
         if (statement != null && !statement.isClosed()) statement.close();
         statement = connection.createStatement();
@@ -148,8 +181,9 @@ public class SQLController {
      *
      * @param sql     the sql command
      * @param timeout the query timeout
-     * @throws SQLException            when an sql error occurs
-     * @throws DBNotConnectedException when there is no database connected to this controller
+     * @throws SQLException                     when an sql error occurs
+     * @throws DBNotConnectedException          when there is no database connected to this controller
+     * @throws DBOperationNotSupportedException when the user attempts to create a new database
      */
     public void sqlDrop(String sql, int timeout) throws SQLException, DBNotConnectedException {
         if (connection == null) throw new DBNotConnectedException();
@@ -158,7 +192,7 @@ public class SQLController {
         statement = connection.createStatement();
         if (timeout > 0) statement.setQueryTimeout(timeout);
         statement.executeUpdate(sql);
-        if (sql.toLowerCase().contains(DROP_DB)) this.close();
+        if (sql.toLowerCase().contains(DROP_DB)) throw new DBOperationNotSupportedException();
     }
 
     /**

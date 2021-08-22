@@ -1,11 +1,9 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
-import ayaya.core.utils.SQLController;
+import ayaya.core.BotData;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-
-import java.sql.SQLException;
 
 import static ayaya.core.enums.CommandCategories.INFORMATION;
 
@@ -14,7 +12,14 @@ import static ayaya.core.enums.CommandCategories.INFORMATION;
  */
 public class Donate extends Command {
 
-    private String link;
+    private static final String TEXT = "Hey, I hope you've had a nice experience with me so far." +
+            " Most of my features are free and new ones will keep coming in the future," +
+            " but hosting a discord bot will never be for free." +
+            " If you like the work of my developer and you have some extra money you may not need," +
+            " it would be nice if you could support me by pledging on patreon page." +
+            "\nIf you pledge, you'll receive a premium key you can use or give to another user." +
+            " When claimed, a premium key unlocks access to premium-only commands." +
+            " To claim a premium key you received, just do `%sclaimkey <key>`.\nMy patreon page is here: <%s>";
 
     public Donate() {
 
@@ -29,35 +34,10 @@ public class Donate extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        getData();
-        event.reply("If you are considering in supporting me, here is the link of my patreon page: <" + link +
-                ">\nIf you donate you can get yourself a premium key which allows you to use premium only commands. Every bit helps.");
+        //event.reply("If you are considering in supporting me, here is the link of my patreon page: <" + BotData.getPatreonLink() +
+        //        ">\nIf you donate you can get yourself a premium key which allows you to use premium only commands. Every bit helps.");
+        event.reply(String.format(TEXT, event.getClient().getPrefix(), BotData.getPatreonLink()));
 
-    }
-
-    /**
-     * Fetches the required data from the database to execute this command
-     */
-    private void getData() {
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
-                    .getString("value");
-        } catch (SQLException e) {
-            System.out.println(
-                    "A problem occurred while trying to get necessary information for the " + this.name
-                            + " command! Aborting the read process...");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
     }
 
 }

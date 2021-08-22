@@ -1,12 +1,14 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -17,9 +19,7 @@ import static ayaya.core.enums.CommandCategories.FUNNY;
  */
 public class AyayaCommand extends Command {
 
-    private static final String NULL = "NULL";
-
-    private String url, quote, footer_quote;
+    protected static final String NULL = "null";
 
     public AyayaCommand() {
 
@@ -35,13 +35,18 @@ public class AyayaCommand extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        int id = fetchData();
+        Random rand = new Random();
+        int id = rand.nextInt((getGifsAmount() & 0xff)) + 1;
+        String[] data = getData(id);
+        String url = data[0], quote = data[1], footer_quote = data[2];
         if (id == 19)
             event.reply(quote);
         else {
             EmbedBuilder ayaya_embed = new EmbedBuilder().setImage(url);
-            if (!quote.equals(NULL)) ayaya_embed.setDescription(quote);
-            if (!footer_quote.equals(NULL)) ayaya_embed.setFooter(footer_quote, null);
+            if (quote != null && !quote.isEmpty() && !quote.toLowerCase().equals(NULL))
+                ayaya_embed.setDescription(quote);
+            if (footer_quote != null && !footer_quote.isEmpty() && !footer_quote.toLowerCase().equals(NULL))
+                ayaya_embed.setFooter(footer_quote, null);
             try {
                 ayaya_embed.setColor(event.getGuild().getSelfMember().getColor());
             } catch (IllegalStateException | NullPointerException e) {
@@ -57,19 +62,18 @@ public class AyayaCommand extends Command {
      *
      * @return response's id
      */
-    private int fetchData() {
+    private String[] getData(int id) {
 
-        Random rand = new Random();
-        int id = rand.nextInt((getGifsAmount() & 0xff)) + 1;
+        String[] result = new String[3];
         SQLController jdbc = new SQLController();
         try {
-            jdbc.open("jdbc:sqlite:data.db");
-            url = jdbc.sqlSelect("SELECT * FROM ayaya WHERE `gif id` LIKE '" + id + "';", 5)
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            result[0] = jdbc.sqlSelectNext("SELECT * FROM ayaya WHERE gif_id=" + id + ";", 5)
                     .getString("link");
-            quote = jdbc.sqlSelect("SELECT * FROM `ayaya quotes` WHERE `quote id` LIKE '" + id + "';", 5)
+            result[1] = jdbc.sqlSelectNext("SELECT * FROM ayaya_quotes WHERE quote_id=" + id + ";", 5)
                     .getString("quote");
-            footer_quote = jdbc.sqlSelect(
-                    "SELECT * FROM `ayaya footer quotes` WHERE `quote id` LIKE '" + id + "';", 5)
+            result[2] = jdbc.sqlSelectNext(
+                    "SELECT * FROM ayaya_footer_quotes WHERE quote_id=" + id + ";", 5)
                     .getString("quote");
         } catch (SQLException e) {
             System.out.println(
@@ -84,7 +88,7 @@ public class AyayaCommand extends Command {
                 e.printStackTrace();
             }
         }
-        return id;
+        return result;
 
     }
 
@@ -93,21 +97,21 @@ public class AyayaCommand extends Command {
      *
      * @return gif amount
      */
-    protected int getGifsAmount() {
+    private int getGifsAmount() {
         int amount = 0;
         SQLController jdbc = new SQLController();
         try
         {
-            jdbc.open("jdbc:sqlite:data.db");
-            amount = Integer.parseInt(
-                    jdbc.sqlSelect("SELECT * FROM sqlite_sequence WHERE name LIKE '"+name+"';", 5)
-                            .getString("seq")
-            );
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT last_value FROM " + name + "_gif_id_seq;", 5);
+            if (rs.next())
+                amount = rs.getInt(1);
         }
         catch(SQLException e)
         {
             System.out.println(
-                    "A problem occurred while trying to get necessary information for the "+name+" command! Aborting the read process...");
+                    "A problem occurred while trying to get necessary information for the " + name
+                            + " command! Aborting the read process...");
             System.err.println(e.getMessage());
             e.printStackTrace();
         }

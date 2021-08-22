@@ -1,6 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -70,9 +71,9 @@ public class Changelog extends Command {
 
         try {
 
-            jdbc.open("jdbc:sqlite:data.db");
-            changelog = jdbc.sqlSelect("SELECT * FROM changelogs WHERE version LIKE '" + version +"';", 10)
-                    .getString("text");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM changelogs WHERE version='" + version + "';", 5);
+            changelog = rs.next() ? rs.getString("changes") : "The version " + version + " wasn't found.";
 
         } catch (SQLException e) {
 
@@ -110,11 +111,11 @@ public class Changelog extends Command {
 
         try {
 
-            jdbc.open("jdbc:sqlite:data.db");
-            String version = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'version';", 5)
-                    .getString("value");
-            changelog = jdbc.sqlSelect("SELECT * FROM changelogs WHERE version LIKE '" + version +"';", 5)
-                    .getString("text");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect(
+                    "SELECT * FROM changelogs WHERE version='" + BotData.getVersion() + "';", 5
+            );
+            changelog = rs.next() ? rs.getString("changes") : "";
 
         } catch (SQLException e) {
 
@@ -144,8 +145,8 @@ public class Changelog extends Command {
 
         try {
 
-            jdbc.open("jdbc:sqlite:data.db");
-            ResultSet result = jdbc.sqlSelect("SELECT version FROM changelogs;", 5);
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet result = jdbc.sqlSelect("SELECT version FROM changelogs;", 10);
             list.append("Versions: ");
             while (result.next()) {
                 list.append("`").append(result.getString("version")).append(APPEND);

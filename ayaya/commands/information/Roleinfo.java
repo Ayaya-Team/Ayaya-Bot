@@ -18,6 +18,8 @@ import static ayaya.core.enums.CommandCategories.INFORMATION;
  */
 public class Roleinfo extends Command {
 
+    private static final int FIELD_LIMIT = 1024;
+
     public Roleinfo() {
 
         this.name = "roleinfo";
@@ -53,11 +55,13 @@ public class Roleinfo extends Command {
             if (role.isMentionable()) mentionable = "Yes";
             StringBuilder perms_list = new StringBuilder();
             for (Permission permission : role.getPermissions()) {
-                perms_list.append(", `").append(permission.getName()).append("`");
+                String s = permission.getName();
+                if (perms_list.length() + s.length() + 4 > FIELD_LIMIT)
+                    break;
+                if (perms_list.length() == 0) perms_list.append('`').append(s).append('`');
+                else perms_list.append(", `").append(s).append("`");
             }
-            String permissions = perms_list.toString().replaceFirst(", ", "");
-            roleinfo_embed.setTitle(role.getName())
-                    .addField("ID", role.getId(), true);
+            String permissions = perms_list.toString();
             if (role.getColor() == null) {
                 roleinfo_embed.addField("Color", "None", true);
             } else {
@@ -67,9 +71,10 @@ public class Roleinfo extends Command {
                 )
                         .setColor(role.getColor());
             }
-            roleinfo_embed.addField("Is Bot Role", managed, true)
+            roleinfo_embed.setTitle(role.getName())
                     .addField("Displayed Separately", hoist, true)
                     .addField("Mentionable", mentionable, true)
+                    .addField("Is Bot Role", managed, true)
                     .addField(
                             "Created on",
                             String.format("%s, %02d/%02d/%02d at %02d:%02d:%02d",
@@ -79,7 +84,10 @@ public class Roleinfo extends Command {
                             false
                     )
                     .addField("Permissions", permissions, false)
-                    .setFooter("Requested by " + event.getAuthor().getName(), null);
+                    .setFooter(
+                            String.format("Requested by %s     Role ID: %s", event.getAuthor().getName(), role.getId()),
+                            null
+                    );
             event.reply(roleinfo_embed.build());
         } else {
             event.reply(":x: Tell me the role you want the info from!");

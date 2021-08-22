@@ -12,7 +12,7 @@ public enum OwnerCommands {
     ANNOUNCE("announce", new Announce()), BLACKLIST("blacklist", new Blacklist(new EventWaiter())),
     BLOCK("block", new Block()), CHANNELLIST("channellist", new Channellist()),
     INSERTKEY("insertkey", new InsertKey()), MESSAGE("message", new Message()),
-    MUSICSWITCH("mswitch", new MusicSwitch()),
+    MUSICSWITCH("mswitch", new MusicSwitch()), REFRESH("refresh", new Refresh()),
     SERVERLIST("serverlist", new Serverlist(new EventWaiter())), SHUTDOWN("shutdown", new Shutdown()),
     UNBLOCK("unblock", new Unblock());
 

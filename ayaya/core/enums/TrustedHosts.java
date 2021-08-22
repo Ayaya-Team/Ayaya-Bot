@@ -6,8 +6,9 @@ package ayaya.core.enums;
 public enum TrustedHosts {
 
     YOUTUBE("www.youtube.com"), YOUTU_BE("youtu.be"), YOUTUBE_MOBILE("m.youtube.com"),
-    SOUNDCLOUD("soundcloud.com"), SOUNDCLOUD_MOBILE("m.soundcloud.com"),
-    VIMEO("vimeo.com"), TWITCH("www.twitch.tv"), TWITCH_MOBILE("m.twitch.tv");
+    YOUTUBE_MUSIC("music.youtube.com"), SOUNDCLOUD("soundcloud.com"),
+    SOUNDCLOUD_MOBILE("m.soundcloud.com"), VIMEO("vimeo.com"),
+    TWITCH("www.twitch.tv"), TWITCH_MOBILE("m.twitch.tv");
 
     private String hostname;
 

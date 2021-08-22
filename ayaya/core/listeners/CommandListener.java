@@ -1,14 +1,13 @@
 package ayaya.core.listeners;
 
 import ayaya.commands.information.Stats;
-import ayaya.core.utils.SQLController;
+import ayaya.core.BotData;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 /**
@@ -16,10 +15,7 @@ import java.util.ArrayList;
  */
 public class CommandListener implements com.jagrosh.jdautilities.command.CommandListener {
 
-    private String prefix = "";
-    private String console = "";
-    private String owner = "";
-    private int commandsCounter = 0;
+    private long commandsCounter = 0;
 
     @Override
     public void onCompletedCommand(CommandEvent event, Command command) {
@@ -35,7 +31,6 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
     public void onCommandException(CommandEvent event, Command command, Throwable throwable) {
         int ids_amount = 2;
         String[] ids = new String[ids_amount];
-        getData();
         event.getChannel()
                 .sendMessage(":x: An error has occurred and has been reported to my developer. S-Sorry for this...")
                 .queue();
@@ -62,14 +57,14 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
         else final_second = String.valueOf(second);
         StringWriter writer = new StringWriter();
         throwable.printStackTrace(new PrintWriter(writer));
-        String warning = ":warning: <@!" + owner
+        String warning = ":warning: <@!" + BotData.getOwners().get(0)
                 + "> Something is wrong in the command `" + command.getName() + "`! Please, check this error and fix it!\nFull command: `"
-                + event.getMessage().getContentRaw().replace(prefix, "") + "`\nAuthor: "
+                + event.getMessage().getContentRaw().replace(event.getClient().getPrefix(), "") + "`\nAuthor: "
                 + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator() + " `"
                 + event.getAuthor().getId() + "`";
         String stackTrace = writer.toString();
         String moment = "`" + final_day + "/" + final_month + "/" + final_year + " " + final_hour + ":" + final_minute + ":" + final_second + "`";
-        TextChannel consoleChannel = event.getJDA().getTextChannelById(console);
+        TextChannel consoleChannel = event.getJDA().getTextChannelById(BotData.getConsoleID());
         if (consoleChannel != null) {
             consoleChannel.sendMessage(warning).queue();
             if (stackTrace.length() > 2000) {
@@ -90,7 +85,7 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
      * Retrieves the necessary information about the bot's current prefix,
      * the channel used as console and the id of the bot's owner.
      */
-    private void getData() {
+    /*private void getData() {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open("jdbc:sqlite:data.db");
@@ -112,14 +107,14 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
     /**
      * Returns the counter of total commands received.
      *
      * @return commands counter
      */
-    public int getCommandsCounter() {
+    public long getCommandsCounter() {
         return commandsCounter;
     }
 

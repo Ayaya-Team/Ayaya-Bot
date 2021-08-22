@@ -1,11 +1,11 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.Commands;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
-import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.commons.JDAUtilitiesInfo;
 import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
@@ -22,8 +21,6 @@ import java.time.OffsetDateTime;
  * Class of the stats command.
  */
 public class Stats extends Command {
-
-    private String version;
 
     public Stats() {
 
@@ -39,7 +36,6 @@ public class Stats extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        fetchData();
         String javaVersion = System.getProperty("java.version");
         LocalDateTime uptime = getUptime(event);
         EventListener eListener = null;
@@ -59,7 +55,7 @@ public class Stats extends Command {
                         "Versions",
                         String.format(
                                 "Ayaya: %s\nJava: %s\nJDA: %s\nJDA Utilities: %s\nLavaplayer: %s",
-                                version, javaVersion, JDAInfo.VERSION, JDAUtilitiesInfo.VERSION, PlayerLibrary.VERSION
+                                BotData.getVersion(), javaVersion, JDAInfo.VERSION, JDAUtilitiesInfo.VERSION, PlayerLibrary.VERSION
                         ),
                         false
                 )
@@ -111,31 +107,6 @@ public class Stats extends Command {
             stats_embed.setColor(Color.decode("#155FA0"));
         }
         event.reply(stats_embed.build());
-    }
-
-    /**
-     * Fetches the required data from the database to execute this command.
-     */
-    private void fetchData() {
-
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            version = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'version';", 10)
-                    .getString("value");
-        } catch (SQLException e) {
-            System.out.println("A problem occurred while trying to get necessary information for the " + this.name + " command! Aborting the read process...");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
     }
 
     /**

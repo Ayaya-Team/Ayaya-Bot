@@ -67,7 +67,6 @@ public class Channelinfo extends Command {
         if (categoryName == null) {
             categoryName = "None";
         }
-        channelinfo_embed.setTitle("#" + channel.getName());
         OffsetDateTime creationTime = channel.getTimeCreated();
         String creation_week_day = creationTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         if (channel instanceof TextChannel) {
@@ -75,24 +74,25 @@ public class Channelinfo extends Command {
             String nsfw = "No";
             if (textChannel.isNSFW()) nsfw = "Yes";
             String topic = textChannel.getTopic();
-            if (topic == null) topic = "None";
-            channelinfo_embed.setDescription("**Topic**: " + topic);
-            channelinfo_embed.addField("Mention", textChannel.getAsMention(), true);
-            channelinfo_embed.addField("Channel ID", channel.getId(), true);
-            channelinfo_embed.addField("Type", type, true);
-            channelinfo_embed.addField("Category", categoryName, true);
-            channelinfo_embed.addField("NSFW", nsfw, true);
+            channelinfo_embed.setTitle("#" + channel.getName());
+            if (topic != null)
+                channelinfo_embed.setDescription(topic);
+            channelinfo_embed.addField("Type", type, true)
+                    .addField("Mention", textChannel.getAsMention(), true)
+                    .addField("Category", categoryName, true)
+                    .addField("NSFW", nsfw, true);
         } else if (channel instanceof VoiceChannel) {
             VoiceChannel voiceChannel = (VoiceChannel) channel;
             int bitrate = voiceChannel.getBitrate() / 1000;
-            channelinfo_embed.addField("Channel ID", channel.getId(), true);
-            channelinfo_embed.addField("Type", type, true);
-            channelinfo_embed.addField("Category", categoryName, true);
-            channelinfo_embed.addField("Bitrate", bitrate + " kbps", true);
-            channelinfo_embed.addField("User Limit", String.valueOf(voiceChannel.getUserLimit()), true);
+            channelinfo_embed.setTitle(channel.getName())
+                    .addField("Type", type, true)
+                    .addField("Bitrate", bitrate + " kbps", true)
+                    .addField("User Limit", String.valueOf(voiceChannel.getUserLimit()), true)
+                    .addField("Category", categoryName, true);
         } else {
-            channelinfo_embed.addField("Type", type, true);
-            channelinfo_embed.addField("Category", categoryName, true);
+            channelinfo_embed.setTitle(channel.getName())
+                    .addField("Type", type, true)
+                    .addField("Category", categoryName, true);
         }
         channelinfo_embed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
@@ -100,7 +100,10 @@ public class Channelinfo extends Command {
                         Utils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
                         creationTime.getHour(), creationTime.getMinute(), creationTime.getSecond()),
                 false);
-        channelinfo_embed.setFooter("Requested by " + event.getAuthor().getName(), null);
+        channelinfo_embed.setFooter(
+                String.format("Requested by %s     Channel ID: %s", event.getAuthor().getName(), channel.getId()),
+                null
+        );
         try {
             channelinfo_embed.setColor(event.getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {

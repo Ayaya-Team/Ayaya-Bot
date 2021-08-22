@@ -8,13 +8,11 @@ import ayaya.commands.owner.Unload;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.Commands;
 import ayaya.core.enums.MusicCommands;
-import ayaya.core.exceptions.db.DBNotConnectedException;
 import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
 import ayaya.core.music.MusicHandler;
 import ayaya.core.utils.HTTP;
-import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -33,9 +31,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Main class of the bot.
@@ -49,74 +46,28 @@ public class Ayaya {
     private static final String SHUTDOWN_GAME = "Going to bed.";
     private static final int STATUS_AMOUNT = 7;
 
+    private static final int THREAD_AMOUNT_PER_CORE = 20;
+    public static final int INITIAL_AMOUNT = THREAD_AMOUNT_PER_CORE * Runtime.getRuntime().availableProcessors();
+
     private static JDA ayaya = null;
     private static ThreadPoolExecutor threads;
-    private static String prefix = "";
-    private static String token = "";
-    private static String dsToken = "";
-    private static String bodToken = "";
-    private static String dboatsToken = "";
-    private static String dbotsToken = "";
-    private static String dbotToken = "";
-    private static String delToken = "";
-    private static String dblToken = "";
-    private static String owner = "";
-    private static String[] coOwners;
-    private static final int idsAmount = 3;
-    private static int status = 1;
+    private static ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(
+            INITIAL_AMOUNT, new ThreadPoolExecutor.CallerRunsPolicy()
+    );
 
     public static void main(String[] args) {
-
-        coOwners = new String[idsAmount - 1];
-        fetchSettings();
-        CommandClient client = buildCommandClient();
-        startup(client);
-
-    }
-
-    /**
-     * Method to retrieve the settings configuration from the database and assign the values to the variables.
-     */
-    private static void fetchSettings() {
-
-        SQLController jdbc = new SQLController();
-
         try {
-
-            jdbc.open("jdbc:sqlite:data.db");
-            prefix = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'prefix';", 60)
-                    .getString("value");
-            token = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'token';", 60)
-                    .getString("value");
-            owner = jdbc.sqlSelect("SELECT * FROM owners WHERE person LIKE 'owner';", 60)
-                    .getString("discord_id");
-            for (int i = idsAmount - 1; i > 0; i--)
-                coOwners[i - 1] = jdbc.sqlSelect("SELECT * FROM owners WHERE id LIKE '" +
-                        (i + 1) + "';", 60).getString("discord_id");
-
-        } catch (SQLException e) {
-
-            System.out.println("A problem occurred while trying to get necessary information! Aborting the process...");
-            System.err.println(e.getMessage());
+            BotData.refreshJSONData();
+            BotData.refreshDBData();
+            CommandClient client = buildCommandClient();
+            startup(client);
+        } catch (IOException e) {
+            System.err.println("The configuration file wasn't found. Aborting...");
             e.printStackTrace();
-
-        } catch (DBNotConnectedException e) {
-
-            System.out.println("No database connected.");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-
-        } finally {
-
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
+        } catch (SQLException throwables) {
+            System.err.println("The database wasn't found or wasn't set up correctly. Aborting...");
+            throwables.printStackTrace();
         }
-
     }
 
     /**
@@ -126,10 +77,11 @@ public class Ayaya {
      */
     private static CommandClient buildCommandClient() {
 
+        List<String> owners = BotData.getOwners();
         CommandClientBuilder client = new CommandClientBuilder()
-                .setOwnerId(owner)
-                .setCoOwnerIds(coOwners)
-                .setPrefix(prefix)
+                .setOwnerId(owners.get(0))
+                .setCoOwnerIds(owners.subList(1, owners.size()).toArray(new String[owners.size()-1]))
+                .setPrefix(BotData.getPrefix())
                 .setHelpConsumer(null)
                 .setHelpWord(null)
                 .setEmojis("<:KawaiiThumbup:361601400079253515>", ":warning:", ":x:")
@@ -205,13 +157,13 @@ public class Ayaya {
 
         try {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
-            ayaya = JDABuilder.create(token, intents)
-                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS)
+            ayaya = JDABuilder.create(BotData.getToken(), intents)
+                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
                     .enableCache(CacheFlag.ROLE_TAGS)
-                    .disableCache(CacheFlag.ONLINE_STATUS)
                     .addEventListeners(client, new EventWaiter(), new EventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)
+                    .setEventPool(executor)
                     .build();
         } catch (LoginException e) {
             System.out.println("Error while trying to log in Discord. Probably the authentication failed. Shutting down...");
@@ -239,53 +191,8 @@ public class Ayaya {
         threads = new ThreadPoolExecutor(
                 3, 3, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<>());
         threads.execute(Ayaya::gameChanger);
-        getBotListsTokens();
+        //getBotListsTokens();
         threads.execute(Ayaya::updateBotListsStats);
-
-    }
-
-    /**
-     * Retrieves the Discord Bots List token to update the server count on the list website.
-     */
-    private static void getBotListsTokens() {
-
-        SQLController jdbc = new SQLController();
-
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            dsToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dservices';", 60)
-                    .getString("token");
-            bodToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'botsondiscord';", 60)
-                    .getString("token");
-            dboatsToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dboats';", 60)
-                    .getString("token");
-            dbotsToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dbots';", 60)
-                    .getString("token");
-            dbotToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dbot';", 60)
-                    .getString("token");
-            delToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'del';", 60)
-                    .getString("token");
-            dblToken = jdbc.sqlSelect("SELECT * FROM botlists WHERE list LIKE 'dbl';", 60)
-                    .getString("token");
-        } catch (SQLException e) {
-            System.out.println("A problem occurred while trying to get one or more of the bot list tokens.");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } catch (DBNotConnectedException e) {
-            System.out.println("No database connected.");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        } finally {
-
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-
-        }
 
     }
 
@@ -294,37 +201,13 @@ public class Ayaya {
      */
     private static void gameChanger() {
 
+        int status = 0;
         while (ayaya.getPresence().getActivity() != null
                 && !ayaya.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
 
-            String quote = "";
-            SQLController jdbc = new SQLController();
+            String quote = BotData.getStatusQuotes().get(status);
 
-            try {
-
-                jdbc.open("jdbc:sqlite:data.db");
-                quote = jdbc.sqlSelect("SELECT * FROM `status quotes` WHERE id LIKE '%" + status + "%';", 5)
-                        .getString("quote");
-
-            } catch (SQLException e) {
-                System.out.println("A problem occurred while trying to get the next status quote.");
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            } catch (DBNotConnectedException e) {
-                System.out.println("No database connected.");
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-                System.exit(1);
-            } finally {
-                try {
-                    jdbc.close();
-                } catch (SQLException e) {
-                    System.err.println(e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-
-            ayaya.getPresence().setActivity(Activity.playing(prefix + "help | " + quote));
+            ayaya.getPresence().setActivity(Activity.playing(BotData.getPrefix() + "help | " + quote));
             try {
                 TimeUnit.SECONDS.sleep(60);
             } catch (InterruptedException e) {
@@ -332,7 +215,7 @@ public class Ayaya {
             }
 
             status++;
-            if (status > STATUS_AMOUNT) status = 1;
+            if (status == STATUS_AMOUNT) status = 0;
 
         }
 
@@ -343,106 +226,42 @@ public class Ayaya {
      */
     private static void updateBotListsStats() {
 
-        if (!dblToken.isEmpty() || !dsToken.isEmpty() || !dboatsToken.isEmpty()
-                || !dbotsToken.isEmpty() || !delToken.isEmpty() || !dbotToken.isEmpty() || !bodToken.isEmpty()) {
+        List<String[]> botlists = BotData.getBotlists();
+        boolean startThread = false;
+        for (String[] array: botlists) {
+            String value = array[1];
+            if (value != null && !value.isEmpty()) {
+                startThread = true;
+                break;
+            }
+        }
+
+        if (startThread) {
             JSONObject json;
             while (ayaya.getPresence().getActivity() != null
                     && !ayaya.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
 
                 try {
                     TimeUnit.MINUTES.sleep(30);
-                    if (!dsToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("servers", ayaya.getGuilds().size())
-                                .put("shards", 1);
-                        if (
-                                HTTP.postJSON(
-                                        "https://api.discordservices.net/bot/"
-                                                + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", dsToken
-                                )
-                        ) System.out.println("Stats successfully posted to Discord Services.");
-                        else System.out.println("Failed to post the stats to Discord Services.");
-                    }
 
-                    if (!bodToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("guildCount", ayaya.getGuilds().size());
-                        if (
-                                HTTP.postJSON(
-                                        "https://bots.ondiscord.xyz/bot-api/bots/"
-                                                + ayaya.getSelfUser().getId() + "/guilds", json,
-                                        "Authorization", bodToken
-                                )
-                        ) System.out.println("Stats successfully posted to Bots on Discord.");
-                        else System.out.println("Failed to post the stats to Bots on Discord.");
-                    }
-
-                    if (!dboatsToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("server_count", ayaya.getGuilds().size());
-                        if (
-                                HTTP.postJSON(
-                                        "https://discord.boats/api/bot/"
-                                                + ayaya.getSelfUser().getId(), json,
-                                        "Authorization", dboatsToken
-                                )
-                        ) System.out.println("Stats successfully posted to Discord Boats.");
-                        else System.out.println("Failed to post the stats to Discord Boats.");
-                    }
-
-                    if (!dbotsToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("guildCount", ayaya.getGuilds().size())
-                                .put("shardCount", 1);
-                        if (
-                                HTTP.postJSON(
-                                        "https://discord.bots.gg/api/v1/bots/"
-                                                + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", dbotsToken
-                                )
-                        ) System.out.println("Stats successfully posted to discord.bots.gg.");
-                        else System.out.println("Failed to post the stats to discord.bots.gg.");
-                    }
-
-                    if (!delToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("guildCount", ayaya.getGuilds().size())
-                                .put("shardCount", 1);
-                        if (
-                                HTTP.postJSON(
-                                        "https://api.discordextremelist.xyz/v2/bot/"
-                                                + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", delToken
-                                )
-                        ) System.out.println("Stats successfully posted to Discord Extreme List.");
-                        else System.out.println("Failed to post the stats to Discord Extreme List.");
-                    }
-
-                    if (!dbotToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("guilds", ayaya.getGuilds().size());
-                        if (
-                                HTTP.postJSON(
-                                        "https://discordbotlist.com/api/v1/bots/"
-                                                + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", dbotToken
-                                )
-                        ) System.out.println("Stats successfully posted to discordbotlist.com.");
-                        else System.out.println("Failed to post the stats to discordbotlist.com.");
-                    }
-
-                    if (!dblToken.isEmpty()) {
-                        json = new JSONObject()
-                                .put("server_count", ayaya.getGuilds().size());
-                        if (
-                                HTTP.postJSON(
-                                        "https://top.gg/api/bots/"
-                                                + ayaya.getSelfUser().getId() + "/stats", json,
-                                        "Authorization", dblToken
-                                )
-                        ) System.out.println("Stats successfully posted to top.gg.");
-                        else System.out.println("Failed to post the stats to top.gg.");
+                    for (String[] array: botlists) {
+                        String value1 = array[1];
+                        String value2 = array[2];
+                        String value3 = array[3];
+                        if (value1 != null && !value1.isEmpty() &&
+                                value2 != null && !value2.isEmpty() &&
+                                value3 != null && !value3.isEmpty()) {
+                            String[] headers = value3.split(",");
+                            json = new JSONObject().put(headers[0], ayaya.getGuilds().size());
+                            if (headers.length > 1)
+                                json.put(headers[1], 1);
+                            if (
+                                    HTTP.postJSON(String.format(value2, ayaya.getSelfUser().getId()), json,
+                                            "Authorization", value1
+                                    )
+                            ) System.out.println("Stats successfully posted to " + array[0] + ".");
+                            else System.out.println("Failed to post the stats to " + array[0] + ".");
+                        }
                     }
                 } catch (InterruptedException e) {
                     //Retry.

@@ -55,19 +55,37 @@ public class Time extends Command {
                     args = timezone.split("\\+");
                     time = ZonedDateTime.now(ZoneId.of(args[0], Utils.ZONE_IDS));
                     try {
-                        time = time.plusHours(Long.parseLong(args[1]));
+                        String[] numbers = args[1].split(":");
+                        time = time.plusHours(Long.parseLong(numbers[0]));
+                        if (numbers.length > 1)
+                            time = time.plusMinutes(Long.parseLong(numbers[1]));
                     } catch (NumberFormatException e) {
-                        event.reply(
-                                ":x: The number inserted along with the timezone is either invalid, " +
+                        event.replyError(
+                                "The number(s) inserted along with the timezone is/are either invalid, " +
                                         "not an integer or too big."
                         );
                         return;
                     }
-                } else if (timezone.contains("-")) {
+                }
+                else if (timezone.contains("-")) {
                     args = timezone.split("-");
                     time = ZonedDateTime.now(ZoneId.of(args[0], Utils.ZONE_IDS));
-                    time = time.minusHours(Long.parseLong(args[1]));
-                } else time = ZonedDateTime.now(ZoneId.of(timezone, Utils.ZONE_IDS));
+                    try {
+                        String[] numbers = args[1].split(":");
+                        time = time.plusHours(Long.parseLong(numbers[0]));
+                        if (numbers.length > 1)
+                            time = time.plusMinutes(Long.parseLong(numbers[1]));
+                    } catch (NumberFormatException e) {
+                        event.replyError(
+                                "The number(s) inserted along with the timezone is/are either invalid, " +
+                                        "not an integer or too big."
+                        );
+                        return;
+                    }
+                }
+                else
+                    time = ZonedDateTime.now(ZoneId.of(timezone, Utils.ZONE_IDS));
+
                 event.reply(
                         String.format("The current time for **%s** is %s %s of %d, **%02d:%02d:%02d**",
                                 timezone, time.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
@@ -75,7 +93,7 @@ public class Time extends Command {
                                 time.getMinute(), time.getSecond())
                 );
             } catch (DateTimeException e) {
-                event.reply(":x: There is no such timezone in my list.");
+                event.replyError("There is no such timezone in my list.");
             }
         }
     }

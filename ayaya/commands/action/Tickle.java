@@ -14,7 +14,7 @@ import static ayaya.core.enums.ActionQuotes.*;
  */
 public class Tickle extends ActionBasicTemplate {
 
-    protected String selfDescription, selfFooter, ayayaDescription, everyoneDescription,
+    private String selfDescription, selfFooter, ayayaDescription, everyoneDescription,
             everyoneFooter;
 
     public Tickle() {

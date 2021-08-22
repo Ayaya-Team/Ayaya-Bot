@@ -1,6 +1,7 @@
 package ayaya.commands.owner;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
@@ -87,7 +88,9 @@ public class Blacklist extends Command {
         List<String[]> blacklist = new ArrayList<>();
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:data.db");
+            connection = DriverManager.getConnection(
+                    BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword()
+            );
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(10);
             ResultSet result = statement

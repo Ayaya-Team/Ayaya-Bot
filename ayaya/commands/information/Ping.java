@@ -1,11 +1,10 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
-import ayaya.core.utils.SQLController;
+import ayaya.core.BotData;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
-import java.sql.SQLException;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.Random;
@@ -17,9 +16,6 @@ import static ayaya.core.enums.CommandCategories.INFORMATION;
  * Class of the ping command.
  */
 public class Ping extends Command {
-
-    private String console;
-    private String ping_quote = "";
 
     public Ping() {
 
@@ -38,12 +34,11 @@ public class Ping extends Command {
         event.reply("Pinging...", (m) -> {
 
             Random var = new Random();
-            int number = var.nextInt(8) + 1;
-            fetchData(number);
+            int number = var.nextInt(8);
             long ping = event.getMessage().getTimeCreated().until(m.getTimeCreated(), ChronoUnit.MILLIS)
                     & 0b01111111111111111111111111111111;
             long websocket_ping = event.getJDA().getGatewayPing();
-            m.editMessage(ping_quote + " **" + ping + "ms** `Websocket: " + websocket_ping + "ms`")
+            m.editMessage(BotData.getPingQuotes().get(number) + " **" + ping + "ms** `Websocket: " + websocket_ping + "ms`")
                     .queue();
             String create_Hour, create_Minute, create_Second;
             int create_day = event.getMessage().getTimeCreated().getDayOfMonth();
@@ -60,7 +55,7 @@ public class Ping extends Command {
             else create_Second = String.valueOf(create_second);
             try {
                 Objects.requireNonNull(
-                        event.getJDA().getTextChannelById(console)).sendMessage(":warning: `"
+                        event.getJDA().getTextChannelById(BotData.getConsoleID())).sendMessage(":warning: `"
                         + event.getAuthor().getName() + "#" + event.getAuthor().getDiscriminator()
                         + "` checked my ping in the channel `"
                         + event.getChannel().getName() + "` in the server `" + event.getGuild().getName() + "` on `"
@@ -70,35 +65,6 @@ public class Ping extends Command {
                         + "ms**.").queue();
             } catch (NullPointerException | IllegalStateException e) {}
         });
-
-    }
-
-    /**
-     * Fetches the ping response from the database with the given id.
-     *
-     * @param number the id
-     */
-    private void fetchData(int number) {
-
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            console = jdbc.sqlSelect("SELECT * FROM settings WHERE option LIKE 'console';", 5)
-                    .getString("value");
-            ping_quote = jdbc.sqlSelect("SELECT * FROM 'ping quotes' WHERE id = " + number + ";", 5)
-                    .getString("quote");
-        } catch (SQLException e) {
-            System.out.println("A problem occurred while trying to get necessary information for the ping command! Aborting the read process...");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
 
     }
 

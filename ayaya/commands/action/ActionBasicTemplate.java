@@ -1,6 +1,7 @@
 package ayaya.commands.action;
 
 import ayaya.commands.GuildDMSCommand;
+import ayaya.core.BotData;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -9,6 +10,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -19,9 +21,9 @@ import static ayaya.core.enums.CommandCategories.ACTION;
  */
 public class ActionBasicTemplate extends GuildDMSCommand {
 
-    protected static final String NULL = "null";
+    static final String NULL = "null";
 
-    protected String description, footer;
+    String description, footer;
 
     public ActionBasicTemplate(String name, String help, String arguments, String[] aliases, String description,
                                String footer) {
@@ -87,7 +89,7 @@ public class ActionBasicTemplate extends GuildDMSCommand {
      *
      * @return url
      */
-    protected String getRandomGif() {
+    synchronized String getRandomGif() {
         int amount = getGifsAmount();
         Random rng = new Random();
         int id = rng.nextInt((amount & 0xff))+1;
@@ -95,14 +97,15 @@ public class ActionBasicTemplate extends GuildDMSCommand {
         SQLController jdbc = new SQLController();
         try
         {
-            jdbc.open("jdbc:sqlite:data.db");
-            url = jdbc.sqlSelect("SELECT * FROM "+name+" WHERE `gif id` LIKE '"+id+"';", 5)
-                    .getString("link");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM " + name + " WHERE gif_id=" + id + ";", 5);
+            url = rs.next() ? rs.getString("link") : "";
         }
         catch(SQLException e)
         {
             System.out.println(
-                    "A problem occurred while trying to get necessary information for the "+name+" command! Aborting the read process...");
+                    "A problem occurred while trying to get necessary information for the " + name
+                            + " command! Aborting the read process...");
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
@@ -126,21 +129,21 @@ public class ActionBasicTemplate extends GuildDMSCommand {
      *
      * @return gif amount
      */
-    protected int getGifsAmount() {
+    private synchronized int getGifsAmount() {
         int amount = 0;
         SQLController jdbc = new SQLController();
         try
         {
-            jdbc.open("jdbc:sqlite:data.db");
-            amount = Integer.parseInt(
-                    jdbc.sqlSelect("SELECT * FROM sqlite_sequence WHERE name LIKE '"+name+"';", 5)
-                    .getString("seq")
-            );
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet rs = jdbc.sqlSelect("SELECT last_value FROM " + name + "_gif_id_seq;", 5);
+            if (rs.next())
+                amount = rs.getInt(1);
         }
         catch(SQLException e)
         {
             System.out.println(
-                    "A problem occurred while trying to get necessary information for the "+name+" command! Aborting the read process...");
+                    "A problem occurred while trying to get necessary information for the " + name
+                            + " command! Aborting the read process...");
             System.err.println(e.getMessage());
             e.printStackTrace();
         }

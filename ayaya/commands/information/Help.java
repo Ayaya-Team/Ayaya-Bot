@@ -1,6 +1,6 @@
 package ayaya.commands.information;
 
-import ayaya.core.utils.SQLController;
+import ayaya.core.BotData;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -16,9 +15,6 @@ import java.util.regex.Pattern;
  * Class of the help command.
  */
 public class Help extends ayaya.commands.Command {
-
-    private String discordLink;
-    private String patreonLink;
 
     public Help() {
 
@@ -28,8 +24,6 @@ public class Help extends ayaya.commands.Command {
         this.arguments = "{prefix}help <command>\n\nTo just get the help list run: {prefix}help";
         this.category = CommandCategories.INFORMATION.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
-        discordLink = "";
-        patreonLink = "";
 
     }
 
@@ -90,14 +84,17 @@ public class Help extends ayaya.commands.Command {
                 helpEmbed.addField("Premium:", "No", false);
             helpEmbed.addField("Cooldown", cmd.getCooldown() + " seconds", false);
         } else {
-            String description = "This is the list with all my commands. Don't forget that my prefix is `" +
-                    event.getClient().getPrefix() + "`.";
-            getData();
-            if (!discordLink.isEmpty())
-                description = description.concat(" For support, please join my [server](" + discordLink + ").");
+            String description = String.format(
+                    "This is the list with all my commands. Don't forget my prefix is `%s`." +
+                            " For more help on a certain command, do `%shelp <command name>`.", prefix, prefix
+            );
+            String serverInvite = BotData.getServerInvite();
+            String patreonLink = BotData.getPatreonLink();
+            if (!serverInvite.isEmpty())
+                description = description.concat(" For support, please join my [server](" + serverInvite + ").");
             if (!patreonLink.isEmpty())
                 description = description
-                        .concat("\nJust a friendly reminder, my developer needs your help." +
+                        .concat("\nJust a friendly reminder, my developer needs your help, because hosting isn't for free." +
                                 " If you could donate on my [patreon page](" + patreonLink + ") that would be very appreciated.");
             if (CommandCategories.MUSIC.asListCategory().getCommands().isEmpty())
                 description = description
@@ -130,35 +127,6 @@ public class Help extends ayaya.commands.Command {
             helpEmbed.setColor(Color.decode("#155FA0"));
         }
         event.reply(helpEmbed.build());
-    }
-
-    /**
-     * Fetches the required data from the database to execute this command.
-     */
-    private void getData() {
-
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            discordLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'support';", 5)
-                    .getString("value");
-            patreonLink = jdbc.sqlSelect("SELECT * FROM `settings` WHERE `option` LIKE 'donate';", 5)
-                    .getString("value");
-        } catch (SQLException e) {
-            System.out.println(
-                    "A problem occurred while trying to get necessary information for the " + this.name
-                            + " command! Aborting the read process...");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
     }
 
 }

@@ -3,11 +3,14 @@ package ayaya.commands.funny;
 import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.RestAction;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
 
@@ -17,7 +20,9 @@ import static ayaya.core.enums.CommandCategories.FUNNY;
 public class Say extends Command {
 
     private static final int LIMIT = 2000;
-    private static final String ARROBA = "@";
+    private static final List<Message.MentionType> ALLOWED_MENTIONS = Arrays.asList(
+            Message.MentionType.CHANNEL, Message.MentionType.EMOTE
+    );
 
     public Say() {
 
@@ -40,11 +45,13 @@ public class Say extends Command {
             return;
         }
         RestAction.setDefaultFailure(ErrorResponseException.ignore(EnumSet.of(ErrorResponse.UNKNOWN_MESSAGE)));
-        if (!message.contains(ARROBA) && event.getChannelType().isGuild() && event.getGuild() != null
+        if (!event.getMessage().getMentions(
+                    Message.MentionType.USER, Message.MentionType.HERE, Message.MentionType.EVERYONE
+            ).isEmpty()
+                && event.getChannelType().isGuild() && event.getGuild() != null
                 && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE))
             event.getMessage().delete().queue();
-        message = "From " + event.getAuthor().getAsTag()
-                + " (" + event.getAuthor().getId() + "): " + message;
+        message = event.getAuthor().getAsMention() + ": " + message;
         if (message.length() > LIMIT) {
             event.replyError("The input message must have less than 1900 characters in it.");
             return;

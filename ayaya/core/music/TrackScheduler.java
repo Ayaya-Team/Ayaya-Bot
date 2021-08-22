@@ -90,7 +90,8 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     boolean startFirst() {
-        return !queue.isEmpty() && player.startTrack(queue.remove(0), true);
+        System.out.println(queue.get(0));
+        return !queue.isEmpty() && player.startTrack(this.removeFirstTrack(), true);
     }
 
     boolean skip() {
@@ -104,6 +105,13 @@ public class TrackScheduler extends AudioEventAdapter {
         if (repeat && allowRepeat)
             queue.add(track.makeClone());
         return player.startTrack(this.removeFirstTrack(), false);
+    }
+
+    boolean previousTrack() {
+        AudioTrack track = this.getCurrentTrack();
+        if (track == null)
+            return !queue.isEmpty() && player.startTrack(this.removeLastTrack(), false);
+        return player.startTrack(this.removeLastTrack(), false);
     }
 
     void stopAndClear() {
@@ -124,8 +132,14 @@ public class TrackScheduler extends AudioEventAdapter {
         return queue.remove(0);
     }
 
+    private AudioTrack removeLastTrack() {
+        if (queue.isEmpty())
+            return null;
+        return queue.remove(queue.size() - 1);
+    }
+
     int getTrackAmount() {
-        return queue.size();
+        return queue.size() + (this.getCurrentTrack() == null ? 0 : 1);
     }
 
     Iterator<AudioTrack> getTrackIterator() {
@@ -145,10 +159,15 @@ public class TrackScheduler extends AudioEventAdapter {
             return result;
         }
         else
-            return queue.remove(index - 1);
+            return queue.remove(this.getCurrentTrack() != null ? index - 1 : index);
     }
 
     boolean move(int i, int j) {
+
+        if (this.getCurrentTrack() != null) {
+            i--;
+            j--;
+        }
 
         if (i < 0 || i >= queue.size() || j < 0 || j >= queue.size())
             return false;
@@ -157,7 +176,7 @@ public class TrackScheduler extends AudioEventAdapter {
         else {
             synchronized (this) {
                 if (j == queue.size() - 1) {
-                    AudioTrack track = this.dequeue(i);
+                    AudioTrack track = this.dequeue(i + 1);
                     return queue.add(track);
                 }
                 else {
@@ -167,10 +186,9 @@ public class TrackScheduler extends AudioEventAdapter {
                     if (i < j)
                         while (it.hasNext() && it.nextIndex() < j)
                             it.next();
-                    else {
+                    else
                         while (it.hasPrevious() && it.previousIndex() >= j)
                             it.previous();
-                    }
                     it.add(track);
                     return true;
                 }
@@ -180,7 +198,26 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     void shuffle() {
-        //TODO
+
+        int currentQueueSize = queue.size();
+        int[] indexes = new int[currentQueueSize];
+        Random rng = new Random();
+
+        for (int i = 0; i < currentQueueSize; i++)
+            indexes[i] = rng.nextInt(currentQueueSize);
+
+        List<AudioTrack> currentQueue = new ArrayList<>();
+
+        synchronized (this) {
+            currentQueue.addAll(queue);
+
+            List<AudioTrack> newQueue = Collections.synchronizedList(new LinkedList<>());
+            for (int i = 0; i < currentQueueSize; i++)
+                newQueue.add(currentQueue.get(indexes[i]));
+
+            queue = newQueue;
+        }
+
     }
 
 }

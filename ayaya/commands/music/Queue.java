@@ -71,19 +71,27 @@ public class Queue extends MusicCommand {
     }
 
     private void printTrackList(CommandEvent event, Iterator<AudioTrack> iterator) {
-        AudioTrack current = musicHandler.getCurrentMusic(event.getGuild());
-        if (current == null) {
+
+        Guild guild = event.getGuild();
+        int musicAmount = musicHandler.getMusicAmount(guild);
+        if (musicAmount == 0) {
             event.reply("There are no tracks in the queue right now.");
         } else {
-            Guild guild = event.getGuild();
+            AudioTrack current = musicHandler.getCurrentMusic(event.getGuild());
             StringBuilder queueList = new StringBuilder();
-            String trackTitle = current.getInfo().title;
-            trackTitle = (trackTitle != null && !trackTitle.isEmpty()) ? trackTitle : "Undefined";
+            String trackTitle;
+            if (current != null) {
+                trackTitle = current.getInfo().title;
+                trackTitle = (trackTitle != null && !trackTitle.isEmpty()) ? trackTitle : "Undefined";
 
-            queueList.append(
-                    (musicHandler.getCurrentMusic(guild) == null || musicHandler.queueIsPaused(guild))
-                            ? "Next music: `" : "Now playing: `"
-            ).append(trackTitle).append("`\n");
+                queueList.append(musicHandler.queueIsPaused(guild) ? "Next music: `" : "Now playing: `")
+                        .append(trackTitle).append("`\n");
+            }
+            else if (iterator.hasNext()) {
+                trackTitle = iterator.next().getInfo().title;
+                trackTitle = (trackTitle != null && !trackTitle.isEmpty()) ? trackTitle : "Undefined";
+                queueList.append("Next music: `").append(trackTitle).append("`\n");
+            }
 
             int i = 1;
             while (iterator.hasNext()) {

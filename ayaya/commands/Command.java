@@ -1,5 +1,6 @@
 package ayaya.commands;
 
+import ayaya.core.BotData;
 import ayaya.core.exceptions.general.NullValueException;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -206,8 +207,10 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
         try {
 
-            if (!isPremium || isPremium(event))
-                executeInstructions(event);
+            if (!isPremium || isPremium(event)) {
+                event.getClient().getScheduleExecutor().submit(() -> executeInstructions(event));
+                //executeInstructions(event);
+            }
             else
                 event.replyError("You need to be premium to use this command.");
 
@@ -274,8 +277,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         boolean blocked;
         SQLController jdbc = new SQLController();
         try {
-            jdbc.open("jdbc:sqlite:data.db");
-            ResultSet result = jdbc.sqlSelect("SELECT * FROM blacklist WHERE user_id='" + id + "';", 5);
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            ResultSet result = jdbc.sqlSelect("SELECT * FROM blacklist WHERE user_id = '" + id + "';", 5);
             blocked = result.next();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -317,9 +320,9 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         String id = event.getAuthor().getId();
         SQLController jdbc = new SQLController();
         try {
-            jdbc.open("jdbc:sqlite:data.db");
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
             ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id='" + id + "';", 5);
+                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = '" + id + "';", 5);
             if (resultSet.next()) {
                 String result = resultSet.getString("expiration_date");
                 if (result.equals(INFINITE))
@@ -331,7 +334,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                     if (compare < 0) {
                         Serializable[] o = {id};
                         jdbc.sqlInsertUpdateOrDelete(
-                                "DELETE FROM patreon_whitelist WHERE user_id='?';", o, 5
+                                "DELETE FROM patreon_whitelist WHERE user_id = '?';", o, 5
                         );
                     } else answer = result;
                 }
@@ -367,31 +370,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                 return true;
             }
         return false;
-    }
-
-    /**
-     * Retrieves the Patreon page link for the case a non patron user attempts to trigger a PremiumCommand.
-     */
-    private void getPatreonLink() {
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open("jdbc:sqlite:data.db");
-            link = jdbc.sqlSelect("SELECT * FROM `settings` WHERE option='donate';", 5)
-                    .getString("value");
-        } catch (SQLException e) {
-            System.out.println(
-                    "A problem occurred while trying to get necessary information for the " + this.name
-                            + " command! Aborting the read process...");
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
     }
 
 }

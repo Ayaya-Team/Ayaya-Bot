@@ -1,6 +1,7 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.BotData;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -87,8 +88,8 @@ public class RPS extends Command {
         SQLController jdbc = new SQLController();
         try
         {
-            jdbc.open("jdbc:sqlite:data.db");
-            emoji = jdbc.sqlSelect("SELECT * FROM `emojis` WHERE `emoji name` LIKE '"+name+"';", 5)
+            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            emoji = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name='"+name+"';", 5)
                     .getString("emoji");
         }
         catch(SQLException e)
