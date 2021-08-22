@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.requests.RestAction;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,32 +56,39 @@ public class Say extends Command {
         String newMessage = message;
         Matcher matcher = TEXT.matcher(message);
         JDA jda = event.getJDA();
+        List<String> parsedEmotes = new LinkedList<>();
         while (matcher.find()) {
             matcher.usePattern(EMOTE);
             if (matcher.find()) {
                 String groupString = matcher.group();
-                int start = matcher.start();
-                if (start > 1 && message.charAt(start - 2) == '<') {
-                    matcher.usePattern(SNOWFLAKE);
-                    if (matcher.find()) {
-                        matcher.usePattern(TEXT);
-                        continue;
+                if (parsedEmotes.isEmpty() || !parsedEmotes.contains(groupString)) {
+                    int start = matcher.start();
+                    if ((start > 1 && message.charAt(start - 2) == '<')
+                            || (start > 2 && (message.charAt(start - 2) == 'a' && message.charAt(start - 3) == '<'))) {
+                        matcher.usePattern(SNOWFLAKE);
+                        if (matcher.find()) {
+                            parsedEmotes.add(groupString);
+                            matcher.usePattern(TEXT);
+                            continue;
+                        }
                     }
-                }
 
-                List<Emote> emotes = jda.getEmotesByName(groupString.substring(0, groupString.length() - 1), false);
-                if (!emotes.isEmpty()) {
-                    newMessage = newMessage.replace(":" + groupString, emotes.get(0).getAsMention());
+                    List<Emote> emotes = jda.getEmotesByName(groupString.substring(0, groupString.length() - 1), false);
+                    if (!emotes.isEmpty()) {
+                        newMessage = newMessage.replace(":" + groupString, emotes.get(0).getAsMention());
+                    }
+                    parsedEmotes.add(groupString);
                 }
             }
             matcher.usePattern(TEXT);
         }
 
         RestAction.setDefaultFailure(ErrorResponseException.ignore(EnumSet.of(ErrorResponse.UNKNOWN_MESSAGE)));
-        if (!event.getMessage().getMentions(
-                    Message.MentionType.USER, Message.MentionType.HERE, Message.MentionType.EVERYONE
+        if (event.getMessage().getMentions(
+                Message.MentionType.USER, Message.MentionType.HERE, Message.MentionType.EVERYONE,
+                Message.MentionType.ROLE
             ).isEmpty()
-                && event.getChannelType().isGuild() && event.getGuild() != null
+                && event.getGuild() != null
                 && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE))
             event.getMessage().delete().queue();
         newMessage = event.getAuthor().getAsMention() + ": " + newMessage;
