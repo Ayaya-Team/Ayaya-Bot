@@ -57,6 +57,7 @@ public class Say extends Command {
         Matcher matcher = TEXT.matcher(message);
         JDA jda = event.getJDA();
         List<String> parsedEmotes = new LinkedList<>();
+        boolean notInGuild = !event.getChannelType().isGuild();
         while (matcher.find()) {
             matcher.usePattern(EMOTE);
             if (matcher.find()) {
@@ -73,10 +74,18 @@ public class Say extends Command {
                         }
                     }
 
-                    List<Emote> emotes = jda.getEmotesByName(groupString.substring(0, groupString.length() - 1), false);
+                    String emoteName = groupString.substring(0, groupString.length() - 1);
+                    List<Emote> emotes;
+
+                    if (notInGuild
+                            || (emotes = event.getGuild().getEmotesByName(emoteName, false)).isEmpty()) {
+                        emotes = jda.getEmotesByName(emoteName, false);
+                    }
+
                     if (!emotes.isEmpty()) {
                         newMessage = newMessage.replace(":" + groupString, emotes.get(0).getAsMention());
                     }
+
                     parsedEmotes.add(groupString);
                 }
             }
@@ -88,7 +97,7 @@ public class Say extends Command {
                 Message.MentionType.USER, Message.MentionType.HERE, Message.MentionType.EVERYONE,
                 Message.MentionType.ROLE
             ).isEmpty()
-                && event.getGuild() != null
+                && event.getChannelType().isGuild()
                 && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE))
             event.getMessage().delete().queue();
         newMessage = event.getAuthor().getAsMention() + ": " + newMessage;

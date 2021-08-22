@@ -51,8 +51,8 @@ public class Bigtext extends Command {
             if (!event.getMessage().getMentions(
                         Message.MentionType.USER, Message.MentionType.HERE, Message.MentionType.EVERYONE
                 ).isEmpty()
-                    && event.getChannelType().isGuild() && event.getGuild() != null &&
-                    event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE))
+                    && event.getChannelType().isGuild()
+                    && event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_MANAGE))
                 event.getMessage().delete().queue();
             String big_text = event.getAuthor().getAsMention() + ": " + getBigText(message);
             if (big_text.length() > LIMIT) {

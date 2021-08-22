@@ -78,7 +78,7 @@ public class Block extends Command {
                 statement.setString(2, date.format(DateTimeFormatter.ofPattern(DATE_PATTERN)));
                 statement.executeUpdate();
             } catch (SQLException e) {
-                if (event.getGuild() == null || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+                if (event.getChannelType().isGuild() || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
                     event.replyError("There was a problem while trying to block this user. If the problem persists, check my server logs.");
                 else
                     System.err.println("There was a problem while trying to block this user. If the problem persists, check my server logs.");

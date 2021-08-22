@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.User;
 
+import java.awt.*;
+
 import static ayaya.core.enums.CommandCategories.UTILITIES;
 
 public class EmoteSearch extends Command {
@@ -46,6 +48,11 @@ public class EmoteSearch extends Command {
             User user = event.getAuthor();
             EmbedBuilder emoteEmbed = new EmbedBuilder().setTitle("Emotes Found").setDescription(emoteList)
                     .setFooter(String.format("Requested by %s", user.getName()), user.getAvatarUrl());
+            try {
+                emoteEmbed.setColor(event.getGuild().getSelfMember().getColor());
+            } catch (IllegalStateException | NullPointerException e) {
+                emoteEmbed.setColor(Color.decode("#155FA0"));
+            }
             event.reply(emoteEmbed.build());
         }
 

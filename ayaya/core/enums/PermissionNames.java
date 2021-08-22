@@ -31,6 +31,10 @@ public enum PermissionNames {
     MESSAGE_EXT_EMOJI("external_emoji", "Use External Emojis"),
     USE_SLASH_COMMANDS("slash_commands", "Use Slash Commands"),
 
+    MANAGE_THREADS("manage_threads", "Manage Threads"),
+    USE_PUBLIC_THREADS("public_threads", "Use Public Threads"),
+    USE_PRIVATE_THREADS("private_threads", "Use Private Threads"),
+
     // Voice Permissions
     VOICE_CONNECT("connect", "Connect"),
     VOICE_SPEAK("speak", "Speak"),
