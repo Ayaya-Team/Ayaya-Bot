@@ -8,6 +8,9 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
+/**
+ * Class of the shuffle command.
+ */
 public class Shuffle extends MusicCommand {
 
     public Shuffle() {

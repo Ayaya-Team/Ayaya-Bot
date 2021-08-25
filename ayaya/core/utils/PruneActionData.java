@@ -14,12 +14,14 @@ public class PruneActionData {
     private List<String> users;
     private List<Member> members;
     private boolean bots;
+    private String content;
 
     public PruneActionData() {
         amount = 0;
         users = new ArrayList<>(20);
         members = new ArrayList<>(20);
         bots = false;
+        content = "";
     }
 
     /**
@@ -92,6 +94,24 @@ public class PruneActionData {
      */
     public synchronized void setBotsFlag(boolean bots) {
         this.bots = bots;
+    }
+
+    /**
+     * Returns the content to look for when pruning.
+     *
+     * @return content
+     */
+    public synchronized String getContent() {
+        return content;
+    }
+
+    /**
+     * Sets the content to prune.
+     *
+     * @param content the new content to prune.
+     */
+    public synchronized void setContent(String content) {
+        this.content = content;
     }
 
 }

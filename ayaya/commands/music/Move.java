@@ -10,6 +10,9 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.util.List;
 
+/**
+ * Class of the move command.
+ */
 public class Move extends MusicCommand {
 
     public Move() {

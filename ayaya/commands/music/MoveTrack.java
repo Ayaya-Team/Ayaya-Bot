@@ -8,6 +8,9 @@ import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
+/**
+ * Class of the movetrack command.
+ */
 public class MoveTrack extends MusicCommand {
 
     public MoveTrack() {

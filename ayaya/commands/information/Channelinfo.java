@@ -36,7 +36,7 @@ public class Channelinfo extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String name = event.getArgs();
-        EmbedBuilder channelinfo_embed = new EmbedBuilder();
+        EmbedBuilder channelinfoEmbed = new EmbedBuilder();
         List<net.dv8tion.jda.api.entities.Category> categories = event.getGuild().getCategories();
         GuildChannel channel;
         if (event.getMessage().getMentionedChannels().size() > 0)
@@ -74,42 +74,43 @@ public class Channelinfo extends Command {
             String nsfw = "No";
             if (textChannel.isNSFW()) nsfw = "Yes";
             String topic = textChannel.getTopic();
-            channelinfo_embed.setTitle("#" + channel.getName());
+            channelinfoEmbed.setTitle("#" + channel.getName());
             if (topic != null)
-                channelinfo_embed.setDescription(topic);
-            channelinfo_embed.addField("Type", type, true)
+                channelinfoEmbed.setDescription(topic);
+            channelinfoEmbed.addField("Type", type, true)
                     .addField("Mention", textChannel.getAsMention(), true)
                     .addField("Category", categoryName, true)
                     .addField("NSFW", nsfw, true);
         } else if (channel instanceof VoiceChannel) {
             VoiceChannel voiceChannel = (VoiceChannel) channel;
             int bitrate = voiceChannel.getBitrate() / 1000;
-            channelinfo_embed.setTitle(channel.getName())
+            channelinfoEmbed.setTitle(channel.getName())
                     .addField("Type", type, true)
+                    .addField("Region", voiceChannel.getRegion().getName(), true)
                     .addField("Bitrate", bitrate + " kbps", true)
                     .addField("User Limit", String.valueOf(voiceChannel.getUserLimit()), true)
                     .addField("Category", categoryName, true);
         } else {
-            channelinfo_embed.setTitle(channel.getName())
+            channelinfoEmbed.setTitle(channel.getName())
                     .addField("Type", type, true)
                     .addField("Category", categoryName, true);
         }
-        channelinfo_embed.addField("Created on",
+        channelinfoEmbed.addField("Created on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         creation_week_day, creationTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),
                         Utils.getDayWithSuffix(creationTime.getDayOfMonth()), creationTime.getYear(),
                         creationTime.getHour(), creationTime.getMinute(), creationTime.getSecond()),
                 false);
-        channelinfo_embed.setFooter(
+        channelinfoEmbed.setFooter(
                 String.format("Requested by %s     Channel ID: %s", event.getAuthor().getName(), channel.getId()),
                 null
         );
         try {
-            channelinfo_embed.setColor(event.getSelfMember().getColor());
+            channelinfoEmbed.setColor(event.getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {
-            channelinfo_embed.setColor(Color.decode("#155FA0"));
+            channelinfoEmbed.setColor(Color.decode("#155FA0"));
         }
-        event.reply(channelinfo_embed.build());
+        event.reply(channelinfoEmbed.build());
 
     }
 

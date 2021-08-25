@@ -85,11 +85,13 @@ public class Serverinfo extends Command {
         StringBuilder roleList = new StringBuilder();
         List<Role> roleArray = guild.getRoles();
         for (Role role : roleArray) {
-            String s = role.getName();
-            if (roleList.length() + s.length() + 4 > FIELD_LIMIT)
-                break;
-            if (roleList.length() == 0) roleList.append('`').append(s).append('`');
-            else roleList.append(", `").append(s).append('`');
+            if (role.getPosition() >= 0) {
+                String s = role.getName();
+                if (roleList.length() + s.length() + 4 > FIELD_LIMIT)
+                    break;
+                if (roleList.length() == 0) roleList.append('`').append(s).append('`');
+                else roleList.append(", `").append(s).append('`');
+            }
         }
         roles = roleList.toString();
         guild.retrieveMetaData().queue(md -> guild.retrieveOwner(true).queue(owner -> {
@@ -101,7 +103,7 @@ public class Serverinfo extends Command {
             EmbedBuilder serverinfoEmbed = new EmbedBuilder()
                     .setTitle(guild.getName());
             serverinfoEmbed.addField("Owner", owner.getAsMention(), true)
-                    .addField("Region", guild.getRegion().getName(), true)
+                    .addField("Is Community", community, true)
                     .addField("Verification Level", vlevel, true)
                     .addField(
                             "Channels", "Text Channels: " + textChannelCount +
@@ -115,7 +117,6 @@ public class Serverinfo extends Command {
                                     + "\nOnline: " + totalMembersOnline + " (" + percentageOnline + "%)",
                             true
                     )
-                    .addField("Is Community", community, true)
                     .addField("Created on",
                             String.format("%s, %s %s of %02d at %02d:%02d:%02d", creationWeekDay,
                                     creationTime.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()),

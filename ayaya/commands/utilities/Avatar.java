@@ -34,7 +34,6 @@ public class Avatar extends Command {
         this.arguments = "{prefix}avatar <mention, name/nickname or id>\n\nIf you don't mention anyone, I will just get your avatar.";
         this.category = UTILITIES.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
-        this.isGuildOnly = false;
 
     }
 
@@ -103,17 +102,17 @@ public class Avatar extends Command {
     }
 
     /**
-     * Displays the avatar of a user in an embed.
+     * Displays the avatar of a user in an embed with the download links.
      *
      * @param event       the event that triggered the command
      * @param avatarEmbed the embed to use
      * @param user        the user
      */
     private void displayAvatar(CommandEvent event, EmbedBuilder avatarEmbed, User user) {
-        String urls[] = Utils.getAvatarUrls(user, MIN_SIZE, MAX_SIZE);
-        String originalURl = urls[0];
-        String url = urls[1];
-        String displayUrl = urls[2];
+        String originalURl = user.getEffectiveAvatarUrl();
+        String urls[] = Utils.getUrls(originalURl, MIN_SIZE, MAX_SIZE);
+        String url = urls[0];
+        String displayUrl = urls[1];
 
         String originalJPG, originalPNG, originalWEBP, originalGIF;
         String jpg, png, webp, gif;
@@ -165,7 +164,7 @@ public class Avatar extends Command {
         avatarEmbed.setDescription(
                 "**Original:** " + (originalGIF.isEmpty() ? "" : "[GIF](" + originalGIF + ") | ")
                         + "[PNG](" + originalPNG + ") | [JPG](" + originalJPG + ") | [WEBP](" + originalWEBP + ")" +
-                "\n**2048px:** " + (gif.isEmpty() ? "" : "[GIF](" + gif + ") | ")
+                "\n**Upscaled:** " + (gif.isEmpty() ? "" : "[GIF](" + gif + ") | ")
                         + "[PNG](" + png + ") | [JPG](" + jpg + ") | [WEBP](" + webp + ")"
         );
         avatarEmbed.setImage(displayUrl);

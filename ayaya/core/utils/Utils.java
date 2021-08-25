@@ -1,7 +1,5 @@
 package ayaya.core.utils;
 
-import net.dv8tion.jda.api.entities.User;
-
 import java.util.Map;
 
 import static java.util.Map.entry;
@@ -119,26 +117,25 @@ public class Utils {
     private static final String GIF = ".gif";
 
     /**
-     * Returns an array with 2 urls for the same avatar of an user.
-     * The first url of the avatar shows the smallest version of it.
-     * The second url of the avatar shows a version that may be larger.
+     * Returns an array with 3 urls for the same image but with different sizes.
+     * The first url shows a version that may be larger.
+     * The second url is resized to 512x512 for display purposes only.
      *
-     * @param user  the user from which to get the avatar urls
-     * @param size1 a size for one of the avatar urls
-     * @param size2 another size for the other avatar url
+     * @param originalURL  the original url
+     * @param size1        a size for one of the avatar urls
+     * @param size2        another size for the other avatar url
      * @return string array with 2 urls
      */
-    public static String[] getAvatarUrls(User user, int size1, int size2) {
+    public static String[] getUrls(String originalURL, int size1, int size2) {
         int minSize = Math.min(size1, size2);
         int maxSize = Math.max(size1, size2);
-        String originalURL = user.getEffectiveAvatarUrl();
         String url = originalURL;
         String displayUrl;
         if (!url.endsWith(JPG) || !url.endsWith(PNG) || !url.endsWith(WEBP) || !url.endsWith(GIF))
             url = url.split("\\?size=")[0];
         displayUrl = url + "?size=" + minSize;
         url = url + "?size=" + maxSize;
-        return new String[]{originalURL, url, displayUrl};
+        return new String[]{url, displayUrl};
     }
 
     /**

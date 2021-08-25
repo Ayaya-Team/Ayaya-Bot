@@ -22,6 +22,10 @@ import java.util.regex.Matcher;
  */
 public class Prune extends ModCommand {
 
+    private static final String BOT_PRUNE = "bots";
+    private static final String USER_PRUNE = "users";
+    private static final String CONTENT_PRUNE = "content";
+
     private Map<CommandEvent, PruneActionData> cmdData;
     private ReentrantLock lock;
 
@@ -62,10 +66,10 @@ public class Prune extends ModCommand {
             matcher = ARG.matcher(arg);
             if (matcher.find())
                 switch (matcher.group().trim().toLowerCase()) {
-                    case "bots":
+                    case BOT_PRUNE:
                         pruneBots = true;
                         break;
-                    case "users":
+                    case USER_PRUNE:
                         mentionFinder = Message.MentionType.USER.getPattern().matcher(arg);
                         while (mentionFinder.find()) {
                             idFinder = ANY_ID.matcher(mentionFinder.group());
@@ -77,23 +81,30 @@ public class Prune extends ModCommand {
                             mentionFinder = USER_MENTION.matcher(s);
                             idFinder = ID.matcher(s);
                             if (!mentionFinder.find()) {
-                                String finalS = s;
-                                threadHandler.addTask(
-                                        guild.retrieveMembersByPrefix(s, 1),
-                                        l -> {
-                                            if (l.isEmpty())
-                                                data.addUserId(finalS);
-                                            else
-                                                data.addMember(l.get(0));
-                                            threadHandler.onExecutionFinish();
-                                        },
-                                        e -> {
-                                            e.printStackTrace();
-                                            threadHandler.onExecutionFinish();
-                                        }
-                                );
+                                if (idFinder.find()) {
+                                    data.addUserId(s);
+                                } else {
+                                    String finalS = s;
+                                    threadHandler.addTask(
+                                            guild.retrieveMembersByPrefix(s, 1),
+                                            l -> {
+                                                if (l.isEmpty())
+                                                    data.addUserId(finalS);
+                                                else
+                                                    data.addMember(l.get(0));
+                                                threadHandler.onExecutionFinish();
+                                            },
+                                            e -> {
+                                                e.printStackTrace();
+                                                threadHandler.onExecutionFinish();
+                                            }
+                                    );
+                                }
                             }
                         }
+                        break;
+                    case CONTENT_PRUNE:
+                        data.setContent(arg.substring(matcher.end() + CONTENT_PRUNE.length()).trim());
                         break;
                     default:
                         amountString = matcher.group().trim();
@@ -138,7 +149,8 @@ public class Prune extends ModCommand {
                 "Options:\n" +
                 "   --users [mentions or ids separated by commas]" +
                 " - include this to prune messages from specific users in a given amount of messages;\n\n" +
-                "   --bots - prune messages from all bots in a given amount of messages.\n\n" +
+                "   --bots - prune messages from all bots in a given amount of messages;\n\n" +
+                "   --content [any content] - prune messages that contain specific content.\n\n" +
                 "You don't need to always set these options or to always change a role's name.\n\n" +
                 "Note: don't write the [] in your commands.\n" +
                 " In servers with over 250 accounts connected this command is more reliable with user mentions than with user names/nicknames.\n" +
@@ -166,7 +178,8 @@ public class Prune extends ModCommand {
                 if ((bots && m.getAuthor().isBot())
                         || users.contains(author.getId())
                         || members.contains(m.getMember())
-                        || (!bots && users.isEmpty()) && members.isEmpty()) {
+                        || (!bots && users.isEmpty()) && members.isEmpty()
+                        || (!data.getContent().isEmpty() && m.getContentRaw().contains(data.getContent()))) {
                     messages.add(m);
                     amountDeleted++;
                 }
