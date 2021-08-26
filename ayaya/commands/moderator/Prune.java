@@ -82,7 +82,7 @@ public class Prune extends ModCommand {
                             idFinder = ID.matcher(s);
                             if (!mentionFinder.find()) {
                                 if (idFinder.find()) {
-                                    data.addUserId(s);
+                                    data.addUserId(idFinder.group());
                                 } else {
                                     String finalS = s;
                                     threadHandler.addTask(
@@ -104,7 +104,7 @@ public class Prune extends ModCommand {
                         }
                         break;
                     case CONTENT_PRUNE:
-                        data.setContent(arg.substring(matcher.end() + CONTENT_PRUNE.length()).trim());
+                        data.setContent(arg.substring(matcher.end()).trim());
                         break;
                     default:
                         amountString = matcher.group().trim();
@@ -175,11 +175,11 @@ public class Prune extends ModCommand {
             int amountDeleted = 0;
             for (Message m : h.getRetrievedHistory()) {
                 User author = m.getAuthor();
-                if ((bots && m.getAuthor().isBot())
+                if ((bots && author.isBot())
                         || users.contains(author.getId())
                         || members.contains(m.getMember())
-                        || (!bots && users.isEmpty()) && members.isEmpty()
-                        || (!data.getContent().isEmpty() && m.getContentRaw().contains(data.getContent()))) {
+                        || (!bots && users.isEmpty()) && members.isEmpty() && data.getContent().isEmpty()
+                        || m.getContentRaw().contains(data.getContent())) {
                     messages.add(m);
                     amountDeleted++;
                 }
