@@ -65,7 +65,9 @@ public class Ayaya {
             System.err.println("The configuration file wasn't found. Aborting...");
             e.printStackTrace();
         } catch (SQLException throwables) {
-            System.err.println("The database wasn't found or wasn't set up correctly. Aborting...");
+            System.err.println(
+                    "The database wasn't found, wasn't set up correctly or the password is wrong. Aborting..."
+            );
             throwables.printStackTrace();
         }
     }

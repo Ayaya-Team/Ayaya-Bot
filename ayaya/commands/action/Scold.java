@@ -11,7 +11,7 @@ public class Scold extends ActionNormalTemplate {
 
     public Scold() {
 
-        super("scold", "Is someone behaving bad?", "{prefix}scold <@user>", new String[]{},
+        super("scold", "Is someone behaving bad?", "{prefix}scold <@user>", new String[]{"bonk"},
                 NORMAL_SCOLD.getQuote(), NORMAL_SCOLD.getFooter(), SELF_SCOLD.getQuote(), SELF_SCOLD.getFooter(),
                 AYAYA_SCOLD.getQuote());
 

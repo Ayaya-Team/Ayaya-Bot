@@ -1,12 +1,10 @@
 package ayaya.core;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +55,13 @@ public class BotData {
         name = settings.getString("name");
         prefix = settings.getString("prefix");
         token = settings.getString("token");
-        dbConnection = settings.getString("db-connection");
+
+        try {
+            dbConnection = settings.getString("db-connection");
+        } catch (JSONException e) {
+            dbConnection = "";
+        }
+
         dbUser = settings.getString("db-user");
         dbPassword = settings.getString("db-password");
         consoleID = settings.getString("console-id");
@@ -80,6 +84,13 @@ public class BotData {
 
     public static void refreshDBData() throws SQLException {
 
+        if (dbPassword.isEmpty()) {
+            Console console = System.console();
+            if (console != null) {
+                dbPassword = new String(console.readPassword());
+            }
+        }
+
         dbLock.lock();
         Connection connection = DriverManager.getConnection(dbConnection, dbUser, dbPassword);
         Statement statement = connection.createStatement();
@@ -92,6 +103,7 @@ public class BotData {
         }
         rs.close();
         statement.close();
+
         PreparedStatement preparedStatement =
                 connection.prepareStatement("SELECT version FROM changelogs;",
                         ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -255,7 +267,7 @@ public class BotData {
 
     }
 
-    public static List<String> getStatusQuotes() {
+    static List<String> getStatusQuotes() {
 
         List<String> list;
         dbLock.lock();

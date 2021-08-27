@@ -14,9 +14,9 @@ import com.jagrosh.jdautilities.command.Command;
  */
 public enum CommandAliases {
 
-    AWAKE("awake", new Wakeup()), COIN("coin", new Flipcoin()), CUDDLE("cuddle", new Hug()),
-    CUTE("cute", new Kawaii()), DICE("dice", new Roll()), DIE("die", new Roll()),
-    EMOJITEXT("emojitext", new Bigtext()), FLIP("flip", new Flipcoin()),
+    AWAKE("awake", new Wakeup()), BONK("bonk", new Scold()), COIN("coin", new Flipcoin()),
+    CUDDLE("cuddle", new Hug()), CUTE("cute", new Kawaii()), DICE("dice", new Roll()),
+    DIE("die", new Roll()), EMOJITEXT("emojitext", new Bigtext()), FLIP("flip", new Flipcoin()),
     GUILDINFO("guildinfo", new Serverinfo()), HAPPY("happy", new Smile()), HI("hi", new Greet()),
     INFO("info", new About()), KONNICHIWA("konnichiwa", new Greet()), NANI("nani", new Confused()),
     PP("pp", new PrivacyPolicy()), PRIVACY("privacy", new PrivacyPolicy()),
