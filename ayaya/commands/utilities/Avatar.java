@@ -34,6 +34,7 @@ public class Avatar extends Command {
         this.arguments = "{prefix}avatar <mention, name/nickname or id>\n\nIf you don't mention anyone, I will just get your avatar.";
         this.category = UTILITIES.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
+        this.aliases = new String[]{"pfp"};
 
     }
 

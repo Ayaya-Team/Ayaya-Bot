@@ -108,7 +108,6 @@ public class Serverinfo extends Command {
                     .addField(
                             "Channels", "Text Channels: " + textChannelCount +
                                     "\nVoice Channels: " + voiceChannelCount +
-                                    //"\nTotal: " + String.valueOf(textChannelCount + voiceChannelCount) +
                                     "\nCategories: " + String.valueOf(guild.getCategories().size()),
                             true
                     )

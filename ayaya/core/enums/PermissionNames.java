@@ -36,6 +36,7 @@ public enum PermissionNames {
     USE_PRIVATE_THREADS("private_threads", "Use Private Threads"),
 
     // Voice Permissions
+    VOICE_STREAM("video", "Video"),
     VOICE_CONNECT("connect", "Connect"),
     VOICE_SPEAK("speak", "Speak"),
     VOICE_MUTE_OTHERS("mute", "Mute Members"),
