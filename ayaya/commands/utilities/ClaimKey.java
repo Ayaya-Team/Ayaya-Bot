@@ -122,13 +122,13 @@ public class ClaimKey extends Command {
                     date = addExtraDurationToDate(date, duration);
             }
             else date = convertDurationtoDateString(duration);
-            Serializable[] o = new Serializable[]{id, date};
+            Serializable[] o = new Serializable[]{id, date, date};
             jdbc.sqlInsertUpdateOrDelete(
-                    "INSERT OR REPLACE INTO patreon_whitelist(user_id, expiration_date) VALUES(?, ?);",
-                    o, 5
+                    "INSERT INTO patreon_whitelist(user_id, expiration_date) VALUES(?, ?)" +
+                            " on conflict(user_id) do update set expiration_date = ?;", o, 5
             );
             o = new Serializable[]{key};
-            jdbc.sqlInsertUpdateOrDelete("DELETE FROM patreon_keys WHERE key = '?';", o, 5);
+            jdbc.sqlInsertUpdateOrDelete("DELETE FROM patreon_keys WHERE key = ?;", o, 5);
             fine = true;
         } catch (SQLException e) {
             event.replyError("There was a problem while assigning you the premium key. If this error persists, try again later.");

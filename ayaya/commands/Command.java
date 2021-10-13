@@ -334,7 +334,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                     if (compare < 0) {
                         Serializable[] o = {id};
                         jdbc.sqlInsertUpdateOrDelete(
-                                "DELETE FROM patreon_whitelist WHERE user_id = '?';", o, 5
+                                "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
                         );
                     } else answer = result;
                 }
