@@ -11,6 +11,7 @@ import ayaya.core.enums.MusicCommands;
 import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
+import ayaya.core.listeners.VoiceEventListener;
 import ayaya.core.music.MusicHandler;
 import ayaya.core.utils.HTTP;
 import com.jagrosh.jdautilities.command.CommandClient;
@@ -162,7 +163,7 @@ public class Ayaya {
             ayaya = JDABuilder.create(BotData.getToken(), intents)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
                     .enableCache(CacheFlag.ROLE_TAGS)
-                    .addEventListeners(client, new EventWaiter(), new EventListener())
+                    .addEventListeners(client, new EventWaiter(), new EventListener(), new VoiceEventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setEventPool(executor)
