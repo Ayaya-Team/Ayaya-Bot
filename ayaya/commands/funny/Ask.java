@@ -80,9 +80,9 @@ public class Ask extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet rs = jdbc.sqlSelect("SELECT * FROM sqlite_sequence WHERE name='answers';", 5);
+            ResultSet rs = jdbc.sqlSelect("SELECT last_value FROM answers_id_seq;", 5);
             if (rs.next())
-                amount = rs.getInt("seq");
+                amount = rs.getInt(1);
         } catch(SQLException e) {
             System.out.println(
                     "A problem occurred while trying to get necessary information for the " + name + " command! Aborting the read process...");
