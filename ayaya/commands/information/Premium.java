@@ -74,7 +74,7 @@ public class Premium extends Command {
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
             ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id=" + id + ";", 5);
+                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = '" + id + "';", 5);
             if (resultSet.next()) {
                 String result = resultSet.getString("expiration_date");
                 if (result.equals(INFINITE))
