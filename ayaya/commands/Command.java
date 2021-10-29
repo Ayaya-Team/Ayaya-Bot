@@ -4,11 +4,14 @@ import ayaya.core.BotData;
 import ayaya.core.exceptions.general.NullValueException;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import com.jagrosh.jdautilities.menu.Paginator;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.exceptions.PermissionException;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
@@ -17,6 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -52,23 +56,47 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
             Message.MentionType.CHANNEL, Message.MentionType.EMOTE, Message.MentionType.USER
     );
 
-    private String link;
     protected int cooldownTime;
     protected Permission[] botPerms;
     protected Permission[] userPerms;
     protected boolean isOwnerCommand;
     protected boolean isGuildOnly;
     protected boolean isPremium;
+    protected boolean isDisabled;
+    protected boolean isPaginated;
+    protected Paginator.Builder pbuilder;
 
     public Command() {
 
+        this.cooldownTime = 2;
         botPerms = new Permission[]{};
         userPerms = new Permission[]{};
         this.ownerCommand = false;
         this.guildOnly = false;
         this.isGuildOnly = false;
         this.isPremium = false;
-        this.cooldownTime = 2;
+        this.isDisabled = false;
+        this.isPaginated = false;
+
+    }
+
+    public void initPaginator(EventWaiter eventWaiter) {
+
+        if (pbuilder == null) {
+            pbuilder = new Paginator.Builder().setColumns(1)
+                    .setItemsPerPage(15)
+                    .showPageNumbers(true)
+                    .waitOnSinglePage(false)
+                    .useNumberedItems(false)
+                    .setFinalAction(m -> {
+                        try {
+                            m.clearReactions().queue();
+                        } catch (PermissionException | IllegalStateException ex) {
+                        }
+                    })
+                    .setEventWaiter(eventWaiter)
+                    .setTimeout(1, TimeUnit.MINUTES);
+        }
 
     }
 
@@ -94,6 +122,9 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         }
 
         if (event.getChannelType() == ChannelType.TEXT) {
+
+            if (isDisabled)
+                return;
 
             if (isOwnerCommand && !event.isOwner()) {
 
@@ -264,6 +295,38 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
      */
     public boolean isPremium() {
         return isPremium;
+    }
+
+    /**
+     * Returns if this command is disabled or not
+     *
+     * @return true or false
+     */
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
+    /**
+     * Enables this command.
+     */
+    public void enable() {
+        isDisabled = false;
+    }
+
+    /**
+     * Disables this command.
+     */
+    public void disable() {
+        isDisabled = true;
+    }
+
+    /**
+     * Returns if this is a paginated command or not
+     *
+     * @return true or false
+     */
+    public boolean isPaginated() {
+        return isPaginated;
     }
 
     /**

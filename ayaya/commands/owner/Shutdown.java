@@ -29,6 +29,7 @@ public class Shutdown extends Command {
         this.category = OWNER.asCategory();
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
+        this.isDisabled = true;
 
     }
 

@@ -21,6 +21,7 @@ public class Block extends Command {
         this.name = "block";
         this.category = CommandCategories.OWNER.asCategory();
         this.isOwnerCommand = true;
+        this.isDisabled = true;
 
     }
 

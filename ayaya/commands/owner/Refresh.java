@@ -22,6 +22,7 @@ public class Refresh extends Command {
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
         this.botPerms = new Permission[]{Permission.MESSAGE_ADD_REACTION};
+        this.isDisabled = true;
     }
 
     @Override

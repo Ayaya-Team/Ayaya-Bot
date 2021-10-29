@@ -1,20 +1,21 @@
 package ayaya.core.enums;
 
-import com.jagrosh.jdautilities.command.Command;
+import ayaya.commands.owner.Shutdown;
 import ayaya.commands.owner.*;
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
+import com.jagrosh.jdautilities.command.Command;
 
 /**
  * The owner commands.
  */
 public enum OwnerCommands {
 
-    ANNOUNCE("announce", new Announce()), BLACKLIST("blacklist", new Blacklist(new EventWaiter())),
+    ANNOUNCE("announce", new Announce()), BLACKLIST("blacklist", new Blacklist()),
     BLOCK("block", new Block()), CHANNELLIST("channellist", new Channellist()),
-    INSERTKEY("insertkey", new InsertKey()), MESSAGE("message", new Message()),
-    MUSICSWITCH("mswitch", new MusicSwitch()), REFRESH("refresh", new Refresh()),
-    SERVERLIST("serverlist", new Serverlist(new EventWaiter())), SHUTDOWN("shutdown", new Shutdown()),
-    UNBLOCK("unblock", new Unblock());
+    INSERTKEY("insertkey", new InsertKey()), LOAD("load", new Load()),
+    MESSAGE("message", new Message()), MUSICSWITCH("mswitch", new MusicSwitch()),
+    REFRESH("refresh", new Refresh()), SERVERLIST("serverlist", new Serverlist()),
+    SHUTDOWN("shutdown", new Shutdown()), UNBLOCK("unblock", new Unblock()),
+    UNLOAD("unload", new Unload());
 
     private String name;
     private Command cmd;

@@ -3,11 +3,9 @@ package ayaya.commands.owner;
 import ayaya.commands.Command;
 import ayaya.core.BotData;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.jagrosh.jdautilities.menu.Paginator;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.internal.entities.UserById;
 
 import java.awt.*;
@@ -15,7 +13,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import static ayaya.core.enums.CommandCategories.OWNER;
 
@@ -24,9 +21,9 @@ import static ayaya.core.enums.CommandCategories.OWNER;
  */
 public class Blacklist extends Command {
 
-    private final Paginator.Builder pbuilder;
+    private Paginator.Builder pbuilder;
 
-    public Blacklist(EventWaiter waiter) {
+    public Blacklist() {
 
         this.name = "blacklist";
         this.category = OWNER.asCategory();
@@ -34,19 +31,8 @@ public class Blacklist extends Command {
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_ADD_REACTION, Permission.MESSAGE_WRITE};
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
-        pbuilder = new Paginator.Builder().setColumns(1)
-                .setItemsPerPage(15)
-                .showPageNumbers(true)
-                .waitOnSinglePage(false)
-                .useNumberedItems(false)
-                .setFinalAction(m -> {
-                    try {
-                        m.clearReactions().queue();
-                    } catch (PermissionException | IllegalStateException ex) {
-                    }
-                })
-                .setEventWaiter(waiter)
-                .setTimeout(1, TimeUnit.MINUTES);
+        this.isPaginated = true;
+        this.isDisabled = true;
 
     }
 

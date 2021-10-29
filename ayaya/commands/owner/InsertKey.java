@@ -21,6 +21,7 @@ public class InsertKey extends Command {
         this.category = CommandCategories.OWNER.asCategory();
         this.isOwnerCommand = true;
         this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
+        this.isDisabled = true;
 
     }
 

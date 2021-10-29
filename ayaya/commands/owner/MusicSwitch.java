@@ -1,27 +1,25 @@
 package ayaya.commands.owner;
 
-import ayaya.commands.Command;
 import ayaya.commands.ListCategory;
-import ayaya.core.music.MusicHandler;
 import ayaya.core.enums.CommandCategories;
-import ayaya.core.enums.MusicCommands;
+import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.managers.AudioManager;
+
+import java.util.List;
 
 import static ayaya.core.enums.CommandCategories.OWNER;
 
 /**
  * Class of the musicswitch command.
  */
-public class MusicSwitch extends Command {
+public class MusicSwitch extends ayaya.commands.Command {
 
     private static final String REPLY = "The music system is %s.";
     private static final String ON = "on";
     private static final String OFF = "off";
-    private boolean isOn;
 
     public MusicSwitch() {
 
@@ -29,7 +27,6 @@ public class MusicSwitch extends Command {
         this.category = OWNER.asCategory();
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
-        isOn = false;
         this.botPerms = new Permission[]{Permission.MESSAGE_ADD_REACTION};
 
     }
@@ -38,9 +35,11 @@ public class MusicSwitch extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String[] args = event.getArgs().split(" ");
-        isOn = false;
-        for (com.jagrosh.jdautilities.command.Command cmd: event.getClient().getCommands())
-            if (cmd.getCategory().equals(CommandCategories.MUSIC.asCategory()))
+        boolean isOn = false;
+        List<Command> commands = event.getClient().getCommands();
+        for (Command command: commands)
+            if (command.getCategory().equals(CommandCategories.MUSIC.asCategory())
+                    && !((ayaya.commands.Command) command).isDisabled())
                 isOn = true;
         if (event.getArgs().isEmpty()) {
             if (isOn) event.reply(String.format(REPLY, ON));
@@ -50,7 +49,7 @@ public class MusicSwitch extends Command {
             ListCategory listCategory;
             String categoryName;
             if (option.equals(ON) && !isOn) {
-                MusicHandler musicHandler = new MusicHandler();
+                /*MusicHandler musicHandler = new MusicHandler();
                 for (MusicCommands command : MusicCommands.values()) {
                     command.getCommandAsMusicCommand().setMusicHandler(musicHandler);
                     event.getClient().addCommand(command.getCommand());
@@ -59,8 +58,14 @@ public class MusicSwitch extends Command {
                         listCategory = CommandCategories.getListCategory(categoryName);
                         if (listCategory != null) listCategory.add(command.getName());
                     }
+                }*/
+                for (Command command: commands) {
+                    if (command.getCategory().equals(CommandCategories.MUSIC.asCategory())) {
+                        ((ayaya.commands.Command) command).enable();
+                        listCategory = CommandCategories.getListCategory(command.getCategory().getName());
+                        if (listCategory != null) listCategory.add(command.getName());
+                    }
                 }
-                isOn = !isOn;
                 event.reactSuccess();
             } else if (option.equals(OFF) && isOn) {
                 AudioManager audioManager;
@@ -69,15 +74,21 @@ public class MusicSwitch extends Command {
                     if (audioManager.isConnected())
                         audioManager.closeAudioConnection();
                 }
-                for (MusicCommands command : MusicCommands.values()) {
+                /*for (MusicCommands command : MusicCommands.values()) {
                     event.getClient().removeCommand(command.getCommand().getName());
                     if (command.getCommand().getCategory() != null) {
                         categoryName = command.getCommand().getCategory().getName();
                         listCategory = CommandCategories.getListCategory(categoryName);
                         if (listCategory != null) listCategory.remove(command.getName());
                     }
+                }*/
+                for (Command command: commands) {
+                    if (command.getCategory().equals(CommandCategories.MUSIC.asCategory())) {
+                        ((ayaya.commands.Command) command).disable();
+                        listCategory = CommandCategories.getListCategory(command.getCategory().getName());
+                        if (listCategory != null) listCategory.remove(command.getName());
+                    }
                 }
-                isOn = !isOn;
                 event.reactSuccess();
             }
         }

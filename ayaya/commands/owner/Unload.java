@@ -3,10 +3,11 @@ package ayaya.commands.owner;
 import ayaya.commands.ListCategory;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
+
+import java.util.List;
 
 import static ayaya.core.enums.CommandCategories.OWNER;
 
@@ -37,12 +38,13 @@ public class Unload extends ayaya.commands.Command {
                 event.replyError("That command cannot be unloaded.");
             return;
         }
-        CommandClient client = event.getClient();
-        for (Command c : client.getCommands()) {
-            if (c.getName().equals(commandName)) {
+        List<Command> commands = event.getClient().getCommands();
+        for (Command c : commands) {
+            ayaya.commands.Command command = (ayaya.commands.Command) c;
+            if (c.getName().equals(commandName) && !command.isDisabled()) {
                 ListCategory listCategory = CommandCategories.getListCategory(c.getCategory().getName());
                 if (listCategory != null) listCategory.remove(commandName);
-                client.removeCommand(commandName);
+                command.disable();
                 if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
                     event.replySuccess("Command `" + commandName + "` unloaded with success.");
                 return;

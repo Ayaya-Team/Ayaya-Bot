@@ -98,9 +98,9 @@ public class Help extends ayaya.commands.Command {
                                 " If you could donate on my [patreon page](" + patreonLink + ") that would be very appreciated.");
             if (CommandCategories.MUSIC.asListCategory().getCommands().isEmpty())
                 description = description
-                        .concat("\n**The music system is currently disabled.**" +
-                        " My developer sometimes disables it when my current host is weak or doesn't have a good " +
-                        "internet connection. For updates on the situation, please head to my support server.");
+                        .concat("\n\n**The music system is currently disabled.**" +
+                                " My developer sometimes disables it when my current host is weak or doesn't have a good " +
+                                "internet connection. For updates on the situation, please head to my support server.");
             helpEmbed.setAuthor("Command's List", null, event.getJDA().getSelfUser().getAvatarUrl())
                     .setDescription(description)
                     .setFooter("Requested by " + event.getAuthor().getName() + " | Total commands: "

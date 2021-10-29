@@ -20,6 +20,7 @@ public class Announce extends Command {
         this.isGuildOnly = false;
         this.isOwnerCommand = true;
         this.botPerms = new Permission[]{Permission.MESSAGE_WRITE};
+        this.isDisabled = true;
 
     }
 

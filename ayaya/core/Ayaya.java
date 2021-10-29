@@ -2,12 +2,10 @@ package ayaya.core;
 
 import ayaya.commands.Command;
 import ayaya.commands.ListCategory;
-import ayaya.commands.owner.Load;
-import ayaya.commands.owner.MusicSwitch;
-import ayaya.commands.owner.Unload;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.Commands;
 import ayaya.core.enums.MusicCommands;
+import ayaya.core.enums.OwnerCommands;
 import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
@@ -60,8 +58,9 @@ public class Ayaya {
         try {
             BotData.refreshJSONData();
             BotData.refreshDBData();
-            CommandClient client = buildCommandClient();
-            startup(client);
+            EventWaiter eventWaiter = new EventWaiter();
+            CommandClient client = buildCommandClient(eventWaiter);
+            startup(client, eventWaiter);
         } catch (IOException e) {
             System.err.println("The configuration file wasn't found. Aborting...");
             e.printStackTrace();
@@ -78,7 +77,7 @@ public class Ayaya {
      *
      * @return the Command Client
      */
-    private static CommandClient buildCommandClient() {
+    private static CommandClient buildCommandClient(EventWaiter eventWaiter) {
 
         List<String> owners = BotData.getOwners();
         CommandClientBuilder client = new CommandClientBuilder()
@@ -91,8 +90,7 @@ public class Ayaya {
                 .setListener(new CommandListener())
                 .useHelpBuilder(false);
 
-        loadCommands(client);
-        loadMusicCommands(client);
+        loadCommands(client, eventWaiter);
 
         return client.build();
 
@@ -103,50 +101,39 @@ public class Ayaya {
      *
      * @param client the command client
      */
-    private static void loadCommands(CommandClientBuilder client) {
-
-        Command load = new Load();
-        Command unload = new Unload();
-        Command mswitch = new MusicSwitch();
-
-        client.addCommands(load, unload, mswitch);
-        ListCategory owner = CommandCategories.OWNER.asListCategory();
-        owner.add(load.getName());
-        owner.add(unload.getName());
-        owner.add(mswitch.getName());
+    private static void loadCommands(CommandClientBuilder client, EventWaiter eventWaiter) {
 
         ListCategory listCategory;
         String categoryName;
 
+        // Load the general purpose commands
         for (Commands command : Commands.values()) {
             client.addCommand(command.getCommand());
-            if (command.getCommand().getCategory() != null && !command.getCommand().isHidden()) {
-                categoryName = command.getCommand().getCategory().getName();
-                listCategory = CommandCategories.getListCategory(categoryName);
-                if (listCategory != null) listCategory.add(command.getName());
-            }
+            categoryName = command.getCommand().getCategory().getName();
+            listCategory = CommandCategories.getListCategory(categoryName);
+            if (listCategory != null) listCategory.add(command.getName());
         }
 
-    }
-
-    /**
-     * Loads the music commands to the command client
-     *
-     * @param client the command client
-     */
-    private static void loadMusicCommands(CommandClientBuilder client) {
-
-        ListCategory listCategory;
-        String categoryName;
+        // Load the music commands
         MusicHandler musicHandler = new MusicHandler();
         for (MusicCommands command : MusicCommands.values()) {
             command.getCommandAsMusicCommand().setMusicHandler(musicHandler);
             client.addCommand(command.getCommand());
-            if (command.getCommand().getCategory() != null) {
-                categoryName = command.getCommand().getCategory().getName();
-                listCategory = CommandCategories.getListCategory(categoryName);
-                if (listCategory != null) listCategory.add(command.getName());
-            }
+            categoryName = command.getCommand().getCategory().getName();
+            listCategory = CommandCategories.getListCategory(categoryName);
+            if (listCategory != null) listCategory.add(command.getName());
+        }
+
+        // Load the owner control commands
+        for (OwnerCommands command : OwnerCommands.values()) {
+            com.jagrosh.jdautilities.command.Command jagroshCommand = command.command();
+            Command ayayaCommand = (Command) jagroshCommand;
+            if (ayayaCommand.isPaginated())
+                ayayaCommand.initPaginator(eventWaiter);
+            client.addCommand(jagroshCommand);
+            categoryName = jagroshCommand.getCategory().getName();
+            listCategory = CommandCategories.getListCategory(categoryName);
+            if (listCategory != null) listCategory.add(command.getName());
         }
 
     }
@@ -156,14 +143,14 @@ public class Ayaya {
      *
      * @param client the Command CLient to handle the commands.
      */
-    private static void startup(CommandClient client) {
+    private static void startup(CommandClient client, EventWaiter eventWaiter) {
 
         try {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
             ayaya = JDABuilder.create(BotData.getToken(), intents)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
                     .enableCache(CacheFlag.ROLE_TAGS)
-                    .addEventListeners(client, new EventWaiter(), new EventListener(), new VoiceEventListener())
+                    .addEventListeners(client, eventWaiter, new EventListener(), new VoiceEventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setEventPool(executor)

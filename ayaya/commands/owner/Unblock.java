@@ -19,6 +19,7 @@ public class Unblock extends Command {
         this.name = "unblock";
         this.category = CommandCategories.OWNER.asCategory();
         this.isOwnerCommand = true;
+        this.isDisabled = true;
 
     }
 
