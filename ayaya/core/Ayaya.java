@@ -45,7 +45,7 @@ public class Ayaya {
     private static final String SHUTDOWN_GAME = "Going to bed.";
     private static final int STATUS_AMOUNT = 7;
 
-    private static final int THREAD_AMOUNT_PER_CORE = 20;
+    private static final int THREAD_AMOUNT_PER_CORE = 10;
     public static final int INITIAL_AMOUNT = THREAD_AMOUNT_PER_CORE * Runtime.getRuntime().availableProcessors();
 
     private static JDA ayaya = null;

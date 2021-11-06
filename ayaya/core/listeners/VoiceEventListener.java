@@ -31,7 +31,7 @@ public class VoiceEventListener extends ListenerAdapter {
 
     public VoiceEventListener() {
 
-        amount = INITIAL_AMOUNT;
+        amount = INITIAL_AMOUNT/2;
         voiceTimeoutManager = new ScheduledThreadPoolExecutor(amount);
         scheduledTimeouts = new HashMap<>(amount);
 
