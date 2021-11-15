@@ -15,6 +15,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static ayaya.core.Ayaya.INITIAL_AMOUNT;
+import static ayaya.core.Ayaya.disconnectVoice;
 
 /**
  * Class extending the ListenerAdapter to listen only to voice events events.
@@ -104,7 +105,7 @@ public class VoiceEventListener extends ListenerAdapter {
      * @param guild the server
      */
     private void voiceTimeoutLeave(Guild guild) {
-        guild.getAudioManager().closeAudioConnection();
+        disconnectVoice(guild);
         synchronized (this) {
             int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
             if (amount != INITIAL_AMOUNT && scheduledTimeouts.size() == shrinkThreshold) {

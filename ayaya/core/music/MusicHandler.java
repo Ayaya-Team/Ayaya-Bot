@@ -46,10 +46,10 @@ public class MusicHandler {
     }
 
     /**
-     * Returns the music manager of a guild.
+     * Returns the music manager of a server.
      *
-     * @param guild the guild
-     * @return guild music manager
+     * @param guild the server
+     * @return GuildMusicManager
      */
     private GuildMusicManager getGuildMusicManager(Guild guild) {
 
@@ -63,6 +63,11 @@ public class MusicHandler {
 
     }
 
+    /**
+     * Removes a server music manager from the map.
+     *
+     * @param guild the server of the music manager
+     */
     private void removeGuildMusicManager(Guild guild) {
 
         GuildMusicManager musicManager = musicManagers.remove(guild.getId());
@@ -104,18 +109,55 @@ public class MusicHandler {
         return false;
     }
 
+    /**
+     * Method to force a disconnection in case a timeout needs to be enforced.
+     *
+     * @param guild the server
+     */
+    public void forceDisconnect(Guild guild) {
+        AudioManager audioManager = guild.getAudioManager();
+        if (audioManager.isConnected()) {
+            audioManager.closeAudioConnection();
+            removeGuildMusicManager(guild);
+        }
+    }
+
+    /**
+     * Method to check if the queue of a server has repeat mode enabled or not.
+     *
+     * @param guild the server
+     * @return true if repeating, false if not
+     */
     public boolean queueIsRepeating(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().isRepeat();
     }
 
+    /**
+     * Method to enable or disable the repeat mode of a server
+     *
+     * @param guild the server
+     * @return true if the queue is now repeating, false if not
+     */
     public boolean repeatQueue(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().repeat();
     }
 
+    /**
+     * Method to check if a queue of a server is paused.
+     *
+     * @param guild the server
+     * @return true if the queue is paused, false if not
+     */
     public boolean queueIsPaused(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().isPaused();
     }
 
+    /**
+     * Method to pause a queue of a server.
+     *
+     * @param guild the server
+     * @return true if the queue was successfully paused, false if not
+     */
     public boolean pauseQueue(final Guild guild) {
         TrackScheduler trackScheduler = this.getGuildMusicManager(guild).getScheduler();
         if (trackScheduler.getCurrentTrack() != null && !trackScheduler.isPaused()) {
@@ -125,6 +167,12 @@ public class MusicHandler {
         return false;
     }
 
+    /**
+     * Method to unpause a queue of a server.
+     *
+     * @param guild the server
+     * @return true if the queue was successfully unpaused, false if not
+     */
     public boolean unpauseQueue(final Guild guild) {
         TrackScheduler trackScheduler = this.getGuildMusicManager(guild).getScheduler();
         if (trackScheduler.getCurrentTrack() == null || !trackScheduler.isPaused()) {
@@ -134,22 +182,54 @@ public class MusicHandler {
         return true;
     }
 
+    /**
+     * Method to retrieve the music volume in a server.
+     *
+     * @param guild the server
+     * @return music volume
+     */
     public int getMusicVolume(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().getVolume();
     }
 
+    /**
+     * Method to set the new music volume for a server.
+     *
+     * @param guild  the server
+     * @param volume the new volume
+     */
     public void setMusicVolume(final Guild guild, final int volume) {
         this.getGuildMusicManager(guild).getScheduler().setVolume(volume);
     }
 
+    /**
+     * Method to retrieve the music being played in a server.
+     *
+     * @param guild the server
+     * @return AudioTrack
+     */
     public AudioTrack getCurrentMusic(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().getCurrentTrack();
     }
 
+    /**
+     * Method to seek in the current music of a server.
+     *
+     * @param guild   the server
+     * @param seconds the amount in seconds to seek
+     * @return true if the operatio succeeded, false if not
+     */
     public boolean seekInMusic(final Guild guild, final long seconds) {
         return this.getGuildMusicManager(guild).getScheduler().seek(seconds);
     }
 
+    /**
+     * Method to queue and/or play a music from a given url/query.
+     *
+     * @param channel  channel where to play the music
+     * @param trackUrl the url/query of the music
+     * @param play     flag stating wether or not to start playing the music
+     */
     public void queueAndPlay(final TextChannel channel, final String trackUrl, final boolean play) {
 
         GuildMusicManager guildMusicManager = this.getGuildMusicManager(channel.getGuild());
@@ -201,14 +281,32 @@ public class MusicHandler {
 
     }
 
+    /**
+     * Method to skip the current music in a server.
+     *
+     * @param guild the server
+     * @return true if the music was skipped, false if not
+     */
     public boolean skipMusic(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().skip();
     }
 
+    /**
+     * Method to go back to the previous music in a server.
+     *
+     * @param guild the server
+     * @return true if the operation succeeded, false if not
+     */
     public boolean previousMusic(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().previousTrack();
     }
 
+    /**
+     * Method to stop the music and clear the queue in a server.
+     *
+     * @param guild the server
+     * @return true if the operations succeeded, false if not
+     */
     public boolean stopMusic(final Guild guild) {
         TrackScheduler scheduler = this.getGuildMusicManager(guild).getScheduler();
         if (scheduler.getCurrentTrack() != null || scheduler.getTrackAmount() != 0) {
@@ -218,26 +316,59 @@ public class MusicHandler {
             return false;
     }
 
+    /**
+     * Method to get the amount of musics in the queue of a server.
+     *
+     * @param guild the server
+     * @return amount of musics
+     */
     public int getMusicAmount(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().getTrackAmount();
     }
 
+    /**
+     * Method to retrieve the iterator of musics for a given server.
+     *
+     * @param guild the server
+     * @return Iterator<AudioTrack>
+     */
     public Iterator<AudioTrack> getMusicIterator(final Guild guild) {
         return this.getGuildMusicManager(guild).getScheduler().getTrackIterator();
     }
 
+    /**
+     * Method to remove a music from a server queue.
+     *
+     * @param guild the server
+     * @param index the index of the music to remove
+     * @return the removed track
+     */
     public AudioTrack dequeueMusic(final Guild guild, final int index) {
         return this.getGuildMusicManager(guild).getScheduler().dequeue(index);
     }
 
+    /**
+     * Method to move a music of a given index to another in a server's queue.
+     *
+     * @param guild the server
+     * @param i     the index of the music
+     * @param j     the index to move to
+     * @return true if the operation succeeded, false if not
+     */
     public boolean moveMusic(final Guild guild, final int i, final int j) {
         return this.getGuildMusicManager(guild).getScheduler().move(i, j);
     }
 
+    /**
+     * Method to shuffle a server's queue.
+     *
+     * @param guild the server
+     */
     public void queueShuffle(final Guild guild) {
         this.getGuildMusicManager(guild).getScheduler().shuffle();
     }
 
+    //TODO
     public boolean move(final Guild guild, final VoiceChannel currentVoiceChannel, final VoiceChannel nextVoiceChannel)
     {
         TrackScheduler scheduler = this.getGuildMusicManager(guild).getScheduler();

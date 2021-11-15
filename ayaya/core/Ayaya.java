@@ -19,6 +19,7 @@ import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -48,11 +49,11 @@ public class Ayaya {
     private static final int THREAD_AMOUNT_PER_CORE = 5;
     public static final int INITIAL_AMOUNT = THREAD_AMOUNT_PER_CORE * Runtime.getRuntime().availableProcessors();
 
-    private static JDA ayaya = null;
     private static ThreadPoolExecutor threads;
     private static ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(
             INITIAL_AMOUNT, new ThreadPoolExecutor.CallerRunsPolicy()
     );
+    private static MusicHandler musicHandler = new MusicHandler();
 
     public static void main(String[] args) {
         try {
@@ -116,7 +117,7 @@ public class Ayaya {
         }
 
         // Load the music commands
-        MusicHandler musicHandler = new MusicHandler();
+        //MusicHandler musicHandler = new MusicHandler();
         for (MusicCommands command : MusicCommands.values()) {
             command.getCommandAsMusicCommand().setMusicHandler(musicHandler);
 
@@ -149,6 +150,7 @@ public class Ayaya {
      */
     private static void startup(CommandClient client, EventWaiter eventWaiter) {
 
+        JDA ayaya;
         try {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
             ayaya = JDABuilder.create(BotData.getToken(), intents)
@@ -184,16 +186,16 @@ public class Ayaya {
         } while (interrupted);
         threads = new ThreadPoolExecutor(
                 3, 3, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<>());
-        threads.execute(Ayaya::gameChanger);
+        threads.execute(() -> gameChanger(ayaya));
         //getBotListsTokens();
-        threads.execute(Ayaya::updateBotListsStats);
+        threads.execute(() -> updateBotListsStats(ayaya));
 
     }
 
     /**
      * Changes the status once per minute.
      */
-    private static void gameChanger() {
+    private static void gameChanger(JDA ayaya) {
 
         int status = 0;
         while (ayaya.getPresence().getActivity() != null
@@ -218,7 +220,7 @@ public class Ayaya {
     /**
      * Updates the player count at the Discord Bot List website twice per hour.
      */
-    private static void updateBotListsStats() {
+    private static void updateBotListsStats(JDA ayaya) {
 
         List<String[]> botlists = BotData.getBotlists();
         boolean startThread = false;
@@ -267,6 +269,15 @@ public class Ayaya {
                     " The stats posting thread won't be started.");
         }
 
+    }
+
+    /**
+     * Forces a disconnection of any voice channel from a given server.
+     *
+     * @param guild the server to disconnect the voice
+     */
+    public static void disconnectVoice(Guild guild) {
+        musicHandler.forceDisconnect(guild);
     }
 
     /**

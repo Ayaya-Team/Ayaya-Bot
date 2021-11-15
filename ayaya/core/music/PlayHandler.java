@@ -11,6 +11,9 @@ import java.util.List;
 
 import static ayaya.core.music.MusicHandler.*;
 
+/**
+ * Class of queue/play requests handler.
+ */
 public class PlayHandler implements AudioLoadResultHandler {
 
     private String searchMode;
