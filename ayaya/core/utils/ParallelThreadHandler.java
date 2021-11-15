@@ -147,9 +147,10 @@ public class ParallelThreadHandler<R, T> {
      */
     public synchronized void onExecutionFinish() {
         threads--;
-        executing = false;
-        if (threads == 0)
+        if (threads == 0) {
             finalCallback.accept(event);
+            executing = false;
+        }
     }
 
 }

@@ -8,6 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,6 +63,13 @@ public class MusicHandler {
 
     }
 
+    private void removeGuildMusicManager(Guild guild) {
+
+        GuildMusicManager musicManager = musicManagers.remove(guild.getId());
+        musicManager.getPlayer().destroy();
+
+    }
+
     /**
      * Method to connect to a voice channel in a server.
      *
@@ -84,10 +92,13 @@ public class MusicHandler {
      * false if there wasn't any connection open in that server or the music was still playing.
      */
     public boolean disconnect(Guild guild) {
-        TrackScheduler trackScheduler = getGuildMusicManager(guild).getScheduler();
-        if (guild.getAudioManager().isConnected() && (trackScheduler.getCurrentTrack() == null
+        GuildMusicManager musicManager = getGuildMusicManager(guild);
+        TrackScheduler trackScheduler = musicManager.getScheduler();
+        AudioManager audioManager = guild.getAudioManager();
+        if (audioManager.isConnected() && (trackScheduler.getCurrentTrack() == null
                 || trackScheduler.isPaused() || trackScheduler.getTrackAmount() == 0)) {
-            guild.getAudioManager().closeAudioConnection();
+            audioManager.closeAudioConnection();
+            removeGuildMusicManager(guild);
             return true;
         }
         return false;

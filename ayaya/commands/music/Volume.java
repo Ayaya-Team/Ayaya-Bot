@@ -21,15 +21,18 @@ public class Volume extends MusicCommand {
 
     @Override
     protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
+
         String[] args = event.getArgs().split(" ");
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        if (event.getArgs().isEmpty()) {
-            int volume = musicHandler.getMusicVolume(guild);
-            event.reply("The current volume is " + volume + ".");
-        } else if (
-                voiceState == null || !voiceState.inVoiceChannel() || voiceChannel == voiceState.getChannel()
-        ) {
+        if (voiceState == null || !voiceState.inVoiceChannel())
+            event.reply("I'm not playing anything right now.");
+        else if (voiceChannel == voiceState.getChannel()) {
+            if (event.getArgs().isEmpty()) {
+                int volume = musicHandler.getMusicVolume(guild);
+                event.reply("The current volume is " + volume + ".");
+            }
+
             int volume = 0;
             for (String s : args) {
                 try {

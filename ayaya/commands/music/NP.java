@@ -7,6 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.awt.*;
@@ -28,6 +29,23 @@ public class NP extends MusicCommand {
 
     @Override
     protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
+
+        GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
+        if (voiceState == null || !voiceState.inVoiceChannel()) {
+            EmbedBuilder npEmbed = new EmbedBuilder()
+                    .setAuthor("Now Playing", null, event.getSelfUser().getAvatarUrl())
+                    .setDescription("I'm not playing anything right now.")
+                    .setFooter(
+                    "Repeat mode off | 0 tracks queued", null
+            );
+            try {
+                npEmbed.setColor(event.getGuild().getSelfMember().getColor());
+            } catch (IllegalStateException | NullPointerException e) {
+                npEmbed.setColor(Color.decode("#155FA0"));
+            }
+            event.reply(npEmbed.build());
+            return;
+        }
 
         Guild guild = event.getGuild();
         int trackAmount = musicHandler.getMusicAmount(guild);
