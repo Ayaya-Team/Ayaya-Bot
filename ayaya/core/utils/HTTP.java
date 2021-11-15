@@ -68,6 +68,7 @@ public class HTTP {
                 response.close();
                 throw new HttpNullResponseException("Null response received");
             }
+            response.close();
             throw new HttpResponseFailedException("Response failed");
         } else {
             InputStream stream = response.body().byteStream();

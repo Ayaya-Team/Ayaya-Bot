@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.util.List;
 
 import static ayaya.core.enums.CommandCategories.OWNER;
+import static ayaya.core.Ayaya.disconnectVoice;
 
 /**
  * Class of the musicswitch command.
@@ -70,9 +71,7 @@ public class MusicSwitch extends ayaya.commands.Command {
             } else if (option.equals(OFF) && isOn) {
                 AudioManager audioManager;
                 for (Guild guild : event.getJDA().getGuilds()) {
-                    audioManager = guild.getAudioManager();
-                    if (audioManager.isConnected())
-                        audioManager.closeAudioConnection();
+                    disconnectVoice(guild);
                 }
                 /*for (MusicCommands command : MusicCommands.values()) {
                     event.getClient().removeCommand(command.getCommand().getName());

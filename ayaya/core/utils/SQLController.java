@@ -33,22 +33,6 @@ public class SQLController {
     /**
      * Opens a connection with a database.
      *
-     * @param url the url of the database
-     * @throws SQLException when an sql error occurs
-     */
-    /*public void open(String url) throws SQLException {
-        try {
-            connection = DriverManager.getConnection(url);
-            connected = true;
-        } catch (SQLException e) {
-            connection = null;
-            throw e;
-        }
-    }*/
-
-    /**
-     * Opens a connection with a database.
-     *
      * @param url  the url of the database
      * @param user the database user
      * @param pass the user password
