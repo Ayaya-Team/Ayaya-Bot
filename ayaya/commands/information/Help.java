@@ -54,12 +54,13 @@ public class Help extends ayaya.commands.Command {
                 return;
             }
             if (cmd.isOwnerCommand() && !event.isOwner()) {
-                event.reply("Excuse me, but you don't even have permission to use this command.");
+                event.reply("Excuse me, but you don't have permission to see any help for this command.");
                 return;
             }
             helpEmbed.setTitle(cmdName.substring(0, 1).toUpperCase() + cmdName.substring(1))
                     .setDescription(cmd.getHelp())
-                    .addField("Category", cmd.getCategory().getName(), false)
+                    .addField("Category", cmd.getCategory().getName(), true)
+                    .addField("Cooldown", cmd.getCooldown() + " seconds", true)
                     .addField("Way to use:",
                             cmd.getArguments().replaceAll(Pattern.quote("{prefix}"), prefix)
                                     + "\n**Please do not type the <> in any of the commands.**", false)
@@ -79,10 +80,13 @@ public class Help extends ayaya.commands.Command {
                 helpEmbed.addField("Permissions required:", permissionsStr.toString(), false);
             }
             if (((ayaya.commands.Command) cmd).isPremium())
-                helpEmbed.addField("Premium:", "Yes", false);
+                helpEmbed.addField("Premium:", "Yes", true);
             else
-                helpEmbed.addField("Premium:", "No", false);
-            helpEmbed.addField("Cooldown", cmd.getCooldown() + " seconds", false);
+                helpEmbed.addField("Premium:", "No", true);
+            if (((ayaya.commands.Command) cmd).isDisabled())
+                helpEmbed.addField("Disabled:", "Yes", true);
+            else
+                helpEmbed.addField("Disabled:", "No", true);
         } else {
             String description = String.format(
                     "This is the list with all my commands. Don't forget my prefix is `%s`." +

@@ -37,10 +37,14 @@ public class Load extends ayaya.commands.Command {
         ayaya.commands.Command command = null;
         for (Command c : commands) {
             command = (ayaya.commands.Command) c;
-            if (c.getName().equals(commandName) && !command.isDisabled()) {
-                if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
+            if (c.getName().equals(commandName)) {
+                if (!command.isDisabled()
+                        && (event.getChannelType() != ChannelType.TEXT ||
+                        event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))) {
                     event.reply("That command is already loaded.");
-                return;
+                    return;
+                }
+                break;
             }
         }
 

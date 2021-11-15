@@ -111,17 +111,20 @@ public class Ayaya {
             client.addCommand(command.getCommand());
             categoryName = command.getCommand().getCategory().getName();
             listCategory = CommandCategories.getListCategory(categoryName);
-            if (listCategory != null) listCategory.add(command.getName());
+            if (listCategory != null && !((Command) command.getCommand()).isDisabled())
+                listCategory.add(command.getName());
         }
 
         // Load the music commands
         MusicHandler musicHandler = new MusicHandler();
         for (MusicCommands command : MusicCommands.values()) {
             command.getCommandAsMusicCommand().setMusicHandler(musicHandler);
+
             client.addCommand(command.getCommand());
             categoryName = command.getCommand().getCategory().getName();
             listCategory = CommandCategories.getListCategory(categoryName);
-            if (listCategory != null) listCategory.add(command.getName());
+            if (listCategory != null && !((Command) command.getCommand()).isDisabled())
+                listCategory.add(command.getName());
         }
 
         // Load the owner control commands
@@ -133,7 +136,8 @@ public class Ayaya {
             client.addCommand(jagroshCommand);
             categoryName = jagroshCommand.getCategory().getName();
             listCategory = CommandCategories.getListCategory(categoryName);
-            if (listCategory != null) listCategory.add(command.getName());
+            if (listCategory != null && !ayayaCommand.isDisabled())
+                listCategory.add(command.getName());
         }
 
     }
