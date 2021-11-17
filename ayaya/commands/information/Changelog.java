@@ -2,13 +2,14 @@ package ayaya.commands.information;
 
 import ayaya.commands.Command;
 import ayaya.core.BotData;
-import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
+import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -72,7 +73,9 @@ public class Changelog extends Command {
         try {
 
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet rs = jdbc.sqlSelect("SELECT * FROM changelogs WHERE version='" + version + "';", 5);
+
+            Serializable[] o = new Serializable[]{version};
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM changelogs WHERE version=?;", o, 5);
             changelog = rs.next() ? rs.getString("changes") : "The version " + version + " wasn't found.";
 
         } catch (SQLException e) {
@@ -112,8 +115,9 @@ public class Changelog extends Command {
         try {
 
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            Serializable[] o = new Serializable[]{BotData.getVersion()};
             ResultSet rs = jdbc.sqlSelect(
-                    "SELECT * FROM changelogs WHERE version='" + BotData.getVersion() + "';", 5
+                    "SELECT * FROM changelogs WHERE version = ?;", o, 5
             );
             changelog = rs.next() ? rs.getString("changes") : "";
 

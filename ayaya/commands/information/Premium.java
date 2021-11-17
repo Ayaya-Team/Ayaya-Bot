@@ -73,8 +73,9 @@ public class Premium extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            Serializable[] o = new Serializable[]{id};
             ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = '" + id + "';", 5);
+                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = ?;", o, 5);
             if (resultSet.next()) {
                 String result = resultSet.getString("expiration_date");
                 if (result.equals(INFINITE))
@@ -84,11 +85,10 @@ public class Premium extends Command {
                     LocalDate now = LocalDate.now();
                     int compare = date.compareTo(now);
                     if (compare < 0) {
-                        Serializable[] o = {id};
+                        o = new Serializable[]{id};
                         jdbc.sqlInsertUpdateOrDelete(
-                                "DELETE FROM patreon_whitelist WHERE user_id=?;", o, 5
+                                "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
                         );
-                        days_left = 0;
                     } else if (compare == 0) {
                         days_left = 1;
                     } else {

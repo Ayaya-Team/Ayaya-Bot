@@ -6,6 +6,7 @@ import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
@@ -52,7 +53,8 @@ public class Ask extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet rs = jdbc.sqlSelect("SELECT * FROM answers WHERE id=" + id + ";", 5);
+            Serializable[] o = new Serializable[]{id};
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM answers WHERE id = ?;", o, 5);
             answer = rs.next() ? rs.getString("string") : "I wish I knew.";
         } catch(SQLException e) {
             System.out.println(

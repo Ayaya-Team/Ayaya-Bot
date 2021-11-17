@@ -79,7 +79,8 @@ public class ClaimKey extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet result = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key = '" + key + "';", 5);
+            Serializable[] o = new Serializable[]{key};
+            ResultSet result = jdbc.sqlSelect("SELECT * FROM patreon_keys WHERE key = ?;", o, 5);
             premium = result.next();
         } catch (SQLException e) {
             event.replyError("There was a problem while checking wether you are or aren't a premium. If this error persists, try again later.");
@@ -110,7 +111,8 @@ public class ClaimKey extends Command {
         SQLController jdbc = new SQLController();
         assign: try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            int duration = jdbc.sqlSelectNext("SELECT * FROM patreon_keys WHERE key = '" + key + "';", 5)
+            Serializable[] o = new Serializable[]{key};
+            int duration = jdbc.sqlSelectNext("SELECT * FROM patreon_keys WHERE key = ?;", o, 5)
                     .getInt("duration");
             String date = getPremiumExpirationDate(event);
             if (date != null) {
@@ -122,7 +124,7 @@ public class ClaimKey extends Command {
                     date = addExtraDurationToDate(date, duration);
             }
             else date = convertDurationtoDateString(duration);
-            Serializable[] o = new Serializable[]{id, date, date};
+            o = new Serializable[]{id, date, date};
             jdbc.sqlInsertUpdateOrDelete(
                     "INSERT INTO patreon_whitelist(user_id, expiration_date) VALUES(?, ?)" +
                             " on conflict(user_id) do update set expiration_date = ?;", o, 5

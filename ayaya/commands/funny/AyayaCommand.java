@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
@@ -68,12 +69,13 @@ public class AyayaCommand extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            result[0] = jdbc.sqlSelectNext("SELECT * FROM ayaya WHERE gif_id=" + id + ";", 5)
+            Serializable[] o = new Serializable[]{id};
+            result[0] = jdbc.sqlSelectNext("SELECT * FROM ayaya WHERE gif_id = ?;", o, 5)
                     .getString("link");
-            result[1] = jdbc.sqlSelectNext("SELECT * FROM ayaya_quotes WHERE quote_id=" + id + ";", 5)
+            result[1] = jdbc.sqlSelectNext("SELECT * FROM ayaya_quotes WHERE quote_id ? ;", o, 5)
                     .getString("quote");
             result[2] = jdbc.sqlSelectNext(
-                    "SELECT * FROM ayaya_footer_quotes WHERE quote_id=" + id + ";", 5)
+                    "SELECT * FROM ayaya_footer_quotes WHERE quote_id = ?;", o, 5)
                     .getString("quote");
         } catch (SQLException e) {
             System.out.println(

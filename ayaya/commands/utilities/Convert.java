@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -160,8 +161,9 @@ public class Convert extends Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet rs = jdbc.sqlSelect("SELECT * FROM converter WHERE unit1 = '" + unit1
-                    + "' AND unit2 = '" + unit2 + "';", 5);
+            Serializable[] o = new Serializable[]{unit1, unit2};
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM converter WHERE unit1 = ?"
+                    + " AND unit2 = ?;", o, 5);
             rating = rs.next() ? rs.getDouble("rating") : 0;
         } catch (SQLException e) {
             System.out.println("A problem occurred while trying to get the convert rating.");

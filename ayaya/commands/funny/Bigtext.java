@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.RestAction;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -80,7 +81,8 @@ public class Bigtext extends Command {
             ResultSet result;
             do {
                 c = String.valueOf(args.charAt(i));
-                result = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name='" + c.toLowerCase() + "';", 5);
+                Serializable[] o = new Serializable[]{c.toLowerCase()};
+                result = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name = ?;", o, 5);
                 big_text.append(result.next() ? result.getString("emoji") : c)
                         .append(" ");
                 i++;

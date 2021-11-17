@@ -7,6 +7,7 @@ import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -89,7 +90,8 @@ public class RPS extends Command {
         try
         {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            emoji = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name='"+name+"';", 5)
+            Serializable[] o = new Serializable[]{name};
+            emoji = jdbc.sqlSelect("SELECT * FROM emojis WHERE emoji_name = ?;", o, 5)
                     .getString("emoji");
         }
         catch(SQLException e)

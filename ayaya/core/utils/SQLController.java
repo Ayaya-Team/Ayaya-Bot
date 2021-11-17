@@ -63,12 +63,12 @@ public class SQLController {
         if (resultSet != null && !resultSet.isClosed()) resultSet.close();
         if (statement != null && !statement.isClosed()) statement.close();
         PreparedStatement st = connection.prepareStatement(sql);
-        this.statement = st;
         if (timeout > 0) st.setQueryTimeout(timeout);
         for (int i = objects.length; i > 0; i--) {
             setObject(st, objects[i - 1], i);
         }
         st.executeUpdate();
+        this.statement = st;
     }
 
     /**
@@ -87,6 +87,26 @@ public class SQLController {
         else if (object instanceof Float) statement.setFloat(index, (Float) object);
         else if (object instanceof Double) statement.setDouble(index, (Double) object);
         else throw new UnsupportedTypeException();
+    }
+
+    /**
+     * Performs a select request with input sanitization and retrieves a result set.
+     *
+     * @param sql     the sql command
+     * @param objects the arguments to query
+     * @param timeout the query timeout
+     * @return a result set
+     * @throws SQLException            when an sql error occurs
+     * @throws DBNotConnectedException when there is no database connected to this controller
+     */
+    public ResultSet sqlSelect(String sql, Serializable[] objects, int timeout) throws SQLException,
+            DBNotConnectedException, UnsupportedTypeException{
+        PreparedStatement st = connection.prepareStatement(sql);
+        if (timeout > 0) st.setQueryTimeout(timeout);
+        for (int i = objects.length; i > 0; i--) {
+            setObject(st, objects[i - 1], i);
+        }
+        return this.sqlSelect(st.toString(), timeout);
     }
 
     /**
@@ -109,7 +129,8 @@ public class SQLController {
     }
 
     /**
-     * Performs a select request and retrieves a result set after moving the cursor to the first row if it exists.
+     * Performs a select request with input sanitization
+     * and retrieves a result set after moving the cursor to the first row if it exists.
      *
      * @param sql     the sql command
      * @param timeout the query timeout
@@ -117,8 +138,9 @@ public class SQLController {
      * @throws SQLException            when an sql error occurs
      * @throws DBNotConnectedException when there is no database connected to this controller
      */
-    public ResultSet sqlSelectNext(String sql, int timeout) throws SQLException, DBNotConnectedException {
-        ResultSet result = this.sqlSelect(sql, timeout);
+    public ResultSet sqlSelectNext(String sql, Serializable[] o, int timeout) throws SQLException,
+            DBNotConnectedException {
+        ResultSet result = this.sqlSelect(sql, o, timeout);
         result.next();
         return result;
     }

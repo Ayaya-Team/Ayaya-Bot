@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.User;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
@@ -100,7 +101,8 @@ public class Dance extends GuildDMSCommand {
         try
         {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet rs = jdbc.sqlSelect("SELECT * FROM " + name + " WHERE gif_id=" + id + ";", 5);
+            Serializable[] o = new Serializable[]{id};
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM " + name + " WHERE gif_id = ?;", o, 5);
             url = rs.next() ? rs.getString("link") : "";
         }
         catch(SQLException e)

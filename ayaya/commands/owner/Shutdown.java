@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.concurrent.TimeUnit;
 
+import static ayaya.core.Ayaya.disconnectVoice;
 import static ayaya.core.enums.CommandCategories.OWNER;
 
 /**
@@ -43,9 +44,7 @@ public class Shutdown extends Command {
         event.getClient().shutdown();
         AudioManager audioManager;
         for (Guild guild : event.getJDA().getGuilds()) {
-            audioManager = guild.getAudioManager();
-            if (audioManager.isConnected())
-                audioManager.closeAudioConnection();
+            disconnectVoice(guild);
         }
         try {
             TimeUnit.SECONDS.sleep(1);

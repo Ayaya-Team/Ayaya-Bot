@@ -341,7 +341,8 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet result = jdbc.sqlSelect("SELECT * FROM blacklist WHERE user_id = '" + id + "';", 5);
+            Serializable[] o = new Serializable[]{id};
+            ResultSet result = jdbc.sqlSelect("SELECT * FROM blacklist WHERE user_id = ?;", o, 5);
             blocked = result.next();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -384,8 +385,9 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         SQLController jdbc = new SQLController();
         try {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
+            Serializable[] o = new Serializable[]{id};
             ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = '" + id + "';", 5);
+                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = ?;", o, 5);
             if (resultSet.next()) {
                 String result = resultSet.getString("expiration_date");
                 if (result.equals(INFINITE))
@@ -395,7 +397,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
                     LocalDate now = LocalDate.now();
                     int compare = date.compareTo(now);
                     if (compare < 0) {
-                        Serializable[] o = {id};
                         jdbc.sqlInsertUpdateOrDelete(
                                 "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
                         );
