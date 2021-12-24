@@ -11,6 +11,7 @@ import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
 import ayaya.core.listeners.VoiceEventListener;
 import ayaya.core.music.MusicHandler;
+import ayaya.core.utils.CustomThreadFactory;
 import ayaya.core.utils.HTTP;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
@@ -51,7 +52,7 @@ public class Ayaya {
 
     private static ThreadPoolExecutor threads;
     private static ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(
-            INITIAL_AMOUNT, new ThreadPoolExecutor.CallerRunsPolicy()
+            INITIAL_AMOUNT, new CustomThreadFactory("cmd"), new ThreadPoolExecutor.CallerRunsPolicy()
     );
     private static MusicHandler musicHandler = new MusicHandler();
 
@@ -185,7 +186,9 @@ public class Ayaya {
             }
         } while (interrupted);
         threads = new ThreadPoolExecutor(
-                3, 3, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<>());
+                2, 2, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<>(),
+                new CustomThreadFactory("background-thread")
+        );
         threads.execute(() -> gameChanger(ayaya));
         //getBotListsTokens();
         threads.execute(() -> updateBotListsStats(ayaya));

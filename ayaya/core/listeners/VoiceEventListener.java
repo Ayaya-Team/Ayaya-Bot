@@ -1,5 +1,6 @@
 package ayaya.core.listeners;
 
+import ayaya.core.utils.CustomThreadFactory;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
@@ -33,7 +34,8 @@ public class VoiceEventListener extends ListenerAdapter {
     public VoiceEventListener() {
 
         amount = INITIAL_AMOUNT/2;
-        voiceTimeoutManager = new ScheduledThreadPoolExecutor(amount);
+        voiceTimeoutManager = new ScheduledThreadPoolExecutor(
+                amount, new CustomThreadFactory("voice-timeout-thread"));
         scheduledTimeouts = new HashMap<>(amount);
 
     }
@@ -72,10 +74,7 @@ public class VoiceEventListener extends ListenerAdapter {
         scheduledTimeouts.put(guild.getId(),
                 voiceTimeoutManager.schedule(() -> voiceTimeoutLeave(guild), 1, TimeUnit.MINUTES));
         synchronized (this) {
-            if (scheduledTimeouts.size() == amount) {
-                amount *= GROWTH_RATE;
-                voiceTimeoutManager.setCorePoolSize(amount);
-            }
+            growThreadPool();
         }
     }
 
@@ -90,11 +89,7 @@ public class VoiceEventListener extends ListenerAdapter {
         if (timer != null) {
             timer.cancel(false);
             synchronized (this) {
-                int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
-                if (amount != INITIAL_AMOUNT && scheduledTimeouts.size() == shrinkThreshold) {
-                    amount = Math.max(INITIAL_AMOUNT, shrinkThreshold);
-                    voiceTimeoutManager.setCorePoolSize(amount);
-                }
+                shrinkThreadPool();
             }
         }
     }
@@ -107,11 +102,22 @@ public class VoiceEventListener extends ListenerAdapter {
     private void voiceTimeoutLeave(Guild guild) {
         disconnectVoice(guild);
         synchronized (this) {
-            int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
-            if (amount != INITIAL_AMOUNT && scheduledTimeouts.size() == shrinkThreshold) {
-                amount = Math.max(INITIAL_AMOUNT, shrinkThreshold);
-                voiceTimeoutManager.setCorePoolSize(amount);
-            }
+            shrinkThreadPool();
+        }
+    }
+
+    private void growThreadPool() {
+        if (scheduledTimeouts.size() == amount) {
+            amount *= GROWTH_RATE;
+            voiceTimeoutManager.setCorePoolSize(amount);
+        }
+    }
+
+    private void shrinkThreadPool() {
+        int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
+        if (amount != INITIAL_AMOUNT/2 && scheduledTimeouts.size() <= shrinkThreshold) {
+            amount = Math.max(INITIAL_AMOUNT, shrinkThreshold);
+            voiceTimeoutManager.setCorePoolSize(amount);
         }
     }
 
