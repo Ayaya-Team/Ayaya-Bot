@@ -30,9 +30,11 @@ public class VoiceEventListener extends ListenerAdapter {
     private ScheduledThreadPoolExecutor voiceTimeoutManager;
     private Map<String, ScheduledFuture<?>> scheduledTimeouts;
     private int amount;
+    private volatile int threadCount;
 
     public VoiceEventListener() {
 
+        threadCount = 0;
         amount = INITIAL_AMOUNT/2;
         voiceTimeoutManager = new ScheduledThreadPoolExecutor(
                 amount, new CustomThreadFactory("voice-timeout-thread"));
@@ -73,6 +75,7 @@ public class VoiceEventListener extends ListenerAdapter {
     private void scheduleTimer(Guild guild) {
         scheduledTimeouts.put(guild.getId(),
                 voiceTimeoutManager.schedule(() -> voiceTimeoutLeave(guild), 1, TimeUnit.MINUTES));
+        threadCount++;
         synchronized (this) {
             growThreadPool();
         }
@@ -88,6 +91,7 @@ public class VoiceEventListener extends ListenerAdapter {
         ScheduledFuture<?> timer = scheduledTimeouts.get(id);
         if (timer != null) {
             timer.cancel(false);
+            threadCount--;
             synchronized (this) {
                 shrinkThreadPool();
             }
@@ -101,13 +105,14 @@ public class VoiceEventListener extends ListenerAdapter {
      */
     private void voiceTimeoutLeave(Guild guild) {
         disconnectVoice(guild);
+        threadCount--;
         synchronized (this) {
             shrinkThreadPool();
         }
     }
 
     private void growThreadPool() {
-        if (scheduledTimeouts.size() == amount) {
+        if (threadCount == amount) {
             amount *= GROWTH_RATE;
             voiceTimeoutManager.setCorePoolSize(amount);
         }
@@ -115,7 +120,7 @@ public class VoiceEventListener extends ListenerAdapter {
 
     private void shrinkThreadPool() {
         int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
-        if (amount != INITIAL_AMOUNT/2 && scheduledTimeouts.size() <= shrinkThreshold) {
+        if (amount != INITIAL_AMOUNT/2 && threadCount <= shrinkThreshold) {
             amount = Math.max(INITIAL_AMOUNT, shrinkThreshold);
             voiceTimeoutManager.setCorePoolSize(amount);
         }

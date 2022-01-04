@@ -52,7 +52,7 @@ public class Ayaya {
 
     private static ThreadPoolExecutor threads;
     private static ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(
-            INITIAL_AMOUNT, new CustomThreadFactory("cmd"), new ThreadPoolExecutor.CallerRunsPolicy()
+            INITIAL_AMOUNT, new CustomThreadFactory("command-thread"), new ThreadPoolExecutor.CallerRunsPolicy()
     );
     private static MusicHandler musicHandler = new MusicHandler();
 
