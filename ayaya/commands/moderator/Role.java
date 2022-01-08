@@ -478,7 +478,7 @@ public class Role extends ModCommand {
             idFinder = ANY_ID.matcher(mentionFinder.group());
             idFinder.find();
             final String id = idFinder.group();
-            threadHandler.addRestAction(
+            threadHandler.executeRestAction(
                     guild.retrieveMemberById(id),
                     m -> manageRolesForMember(m, author, guild, data),
                     e -> threadHandler.onExecutionFinish()
@@ -489,7 +489,7 @@ public class Role extends ModCommand {
             mentionFinder = USER_MENTION.matcher(s);
             if (!mentionFinder.find()) {
                 final String arg = s;
-                threadHandler.addTask(
+                threadHandler.executeTask(
                         guild.retrieveMembersByPrefix(s, 1),
                         l -> {
                             if (l.isEmpty())
@@ -508,7 +508,7 @@ public class Role extends ModCommand {
             }
         }
         cmdData.put(event, data);
-        threadHandler.run();
+        threadHandler.submittedAllThreads();
 
     }
 

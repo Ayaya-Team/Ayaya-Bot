@@ -13,10 +13,9 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 /**
@@ -25,7 +24,6 @@ import java.util.regex.Matcher;
 public class Mute extends ModCommand {
 
     private Map<CommandEvent, ModActionData> cmdData;
-    private ReentrantLock lock;
 
     public Mute() {
 
@@ -42,8 +40,7 @@ public class Mute extends ModCommand {
         this.botPerms = new Permission[]{Permission.MANAGE_ROLES, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.cooldownTime = 5;
-        cmdData = new HashMap<>(10);
-        lock = new ReentrantLock();
+        cmdData = new ConcurrentHashMap<>(10);
 
     }
 
@@ -96,7 +93,7 @@ public class Mute extends ModCommand {
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                threadHandler.addRestAction(
+                threadHandler.executeRestAction(
                         guild.retrieveMemberById(idFinder.group()),
                         m -> mute(author, authorHighestPosition, event.getSelfMember(),
                                 highestPosition, m, guild, muteRole, data, threadHandler),
@@ -112,7 +109,7 @@ public class Mute extends ModCommand {
                 mentionFinder = USER_MENTION.matcher(s);
                 if (!mentionFinder.find()) {
                     final String arg = s;
-                    threadHandler.addTask(
+                    threadHandler.executeTask(
                             guild.retrieveMembersByPrefix(s, 1),
                             l -> {
                                 if (l.isEmpty()) {
@@ -137,7 +134,7 @@ public class Mute extends ModCommand {
                 }
             }
             cmdData.put(event, data);
-            threadHandler.run();
+            threadHandler.submittedAllThreads();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to mute? You didn't tell me yet.");
         }
@@ -212,9 +209,7 @@ public class Mute extends ModCommand {
 
     @Override
     protected void onFinish(CommandEvent event) {
-        lock.lock();
         ModActionData data = cmdData.remove(event);
-        lock.unlock();
         String answer;
         switch (data.getSuccesses()) {
             case 0:

@@ -62,7 +62,7 @@ public class Ban extends ModCommand {
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                threadHandler.addRestAction(
+                threadHandler.executeRestAction(
                         guild.retrieveMemberById(idFinder.group()),
                         m -> ban(author, event.getSelfMember(), m, guild, data, threadHandler),
                         e -> {
@@ -77,7 +77,7 @@ public class Ban extends ModCommand {
                 mentionFinder = USER_MENTION.matcher(s);
                 if (!mentionFinder.find()) {
                     final String arg = s;
-                    threadHandler.addTask(
+                    threadHandler.executeTask(
                             guild.retrieveMembersByPrefix(s, 1),
                             l -> {
                                 if (l.isEmpty()) {
@@ -97,7 +97,7 @@ public class Ban extends ModCommand {
                 }
             }
             cmdData.put(event, data);
-            threadHandler.run();
+            threadHandler.submittedAllThreads();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to ban? You didn't tell me yet.");
         }

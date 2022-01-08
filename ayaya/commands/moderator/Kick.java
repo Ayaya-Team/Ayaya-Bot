@@ -62,7 +62,7 @@ public class Kick extends ModCommand {
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                threadHandler.addRestAction(
+                threadHandler.executeRestAction(
                         guild.retrieveMemberById(idFinder.group()),
                         m -> kick(author, event.getSelfMember(), m, guild, data, threadHandler),
                         e -> {
@@ -77,7 +77,7 @@ public class Kick extends ModCommand {
                 mentionFinder = USER_MENTION.matcher(s);
                 if (!mentionFinder.find()) {
                     final String arg = s;
-                    threadHandler.addTask(
+                    threadHandler.executeTask(
                             guild.retrieveMembersByPrefix(s, 1),
                             l -> {
                                 if (l.isEmpty()) {
@@ -99,7 +99,7 @@ public class Kick extends ModCommand {
                 }
             }
             cmdData.put(event, data);
-            threadHandler.run();
+            threadHandler.submittedAllThreads();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to kick? You didn't tell me yet.");
         }

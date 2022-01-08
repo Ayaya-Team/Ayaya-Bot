@@ -85,7 +85,7 @@ public class Prune extends ModCommand {
                                     data.addUserId(idFinder.group());
                                 } else {
                                     String finalS = s;
-                                    threadHandler.addTask(
+                                    threadHandler.executeTask(
                                             guild.retrieveMembersByPrefix(s, 1),
                                             l -> {
                                                 if (l.isEmpty())
@@ -135,7 +135,7 @@ public class Prune extends ModCommand {
         data.setAmount(amount);
         data.setBotsFlag(pruneBots);
         cmdData.put(event, data);
-        threadHandler.run();
+        threadHandler.submittedAllThreads();
 
     }
 

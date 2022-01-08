@@ -94,7 +94,7 @@ public class Unmute extends ModCommand {
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
-                threadHandler.addRestAction(
+                threadHandler.executeRestAction(
                         guild.retrieveMemberById(idFinder.group()),
                         m -> unmute(author, authorHighestPosition, event.getSelfMember(),
                                 highestPosition, m, guild, muteRole, data, threadHandler),
@@ -110,7 +110,7 @@ public class Unmute extends ModCommand {
                 mentionFinder = USER_MENTION.matcher(s);
                 if (!mentionFinder.find()) {
                     final String arg = s;
-                    threadHandler.addTask(
+                    threadHandler.executeTask(
                             guild.retrieveMembersByPrefix(s, 1),
                             l -> {
                                 if (l.isEmpty()) {
@@ -135,7 +135,7 @@ public class Unmute extends ModCommand {
                 }
             }
             cmdData.put(event, data);
-            threadHandler.run();
+            threadHandler.submittedAllThreads();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to mute? You didn't tell me yet.");
         }
@@ -157,7 +157,7 @@ public class Unmute extends ModCommand {
     private void unmute(Member author, int authorHighestPosition, Member self, int highestPosition,
                         Member member, Guild guild, Role muteRole, ModActionData data,
                         ParallelThreadHandler<Member, List<Member>> threadHandler) {
-        boolean abort = false;
+        boolean abort = true;
         List<Role> memberRoles;
         int memberHighestPosition = 0;
         memberRoles = member.getRoles();
@@ -173,12 +173,12 @@ public class Unmute extends ModCommand {
         ) {
             for (Role role : memberRoles) {
                 if (role.equals(muteRole)) {
-                    data.putRedundantAction();
-                    abort = true;
+                    abort = false;
                     break;
                 }
             }
             if (abort) {
+                data.putRedundantAction();
                 threadHandler.onExecutionFinish();
             } else {
                 guild.removeRoleFromMember(member, muteRole)

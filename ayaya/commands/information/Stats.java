@@ -49,13 +49,14 @@ public class Stats extends Command {
         com.jagrosh.jdautilities.command.CommandListener listener = event.getClient().getListener();
         if (listener instanceof CommandListener)
             cListener = (CommandListener) listener;
+        String utilitiesVersion = String.format("%s.%s", JDAUtilitiesInfo.VERSION_MAJOR, JDAUtilitiesInfo.VERSION_MINOR);
         EmbedBuilder stats_embed = new EmbedBuilder()
                 .setAuthor("Statistics for this session:", null, event.getSelfUser().getAvatarUrl())
                 .addField(
                         "Versions",
                         String.format(
-                                "Ayaya: %s\nJava: %s\nJDA: %s\nJDA Utilities: %s\nLavaplayer: %s",
-                                BotData.getVersion(), javaVersion, JDAInfo.VERSION, JDAUtilitiesInfo.VERSION, PlayerLibrary.VERSION
+                                "Ayaya: %s\nJava: %s\nJDA: %s\nJDA Chewtils: %s\nLavaplayer: %s",
+                                BotData.getVersion(), javaVersion, JDAInfo.VERSION, utilitiesVersion, PlayerLibrary.VERSION
                         ),
                         false
                 )
