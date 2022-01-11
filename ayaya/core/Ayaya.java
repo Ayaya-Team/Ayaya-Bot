@@ -18,11 +18,12 @@ import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.json.JSONObject;
@@ -151,16 +152,18 @@ public class Ayaya {
      */
     private static void startup(CommandClient client, EventWaiter eventWaiter) {
 
-        JDA ayaya;
+        ShardManager ayaya;
         try {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
-            ayaya = JDABuilder.create(BotData.getToken(), intents)
+            ayaya = DefaultShardManagerBuilder.create(BotData.getToken(), intents)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
                     .enableCache(CacheFlag.ROLE_TAGS)
                     .addEventListeners(client, eventWaiter, new EventListener(), new VoiceEventListener())
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setEventPool(executor)
+                    .setUseShutdownNow(true)
+                    .setShards(0, BotData.getShardAmount() - 1)
                     .build();
         } catch (LoginException e) {
             System.out.println("Error while trying to log in Discord. Probably the authentication failed. Shutting down...");
@@ -178,7 +181,9 @@ public class Ayaya {
         boolean interrupted;
         do {
             try {
-                ayaya.awaitStatus(JDA.Status.CONNECTED);
+                for (JDA jda: ayaya.getShards()) {
+                    jda.awaitStatus(JDA.Status.CONNECTED);
+                }
                 interrupted = false;
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -198,32 +203,39 @@ public class Ayaya {
     /**
      * Changes the status once per minute.
      */
-    private static void gameChanger(JDA ayaya) {
+    private static void gameChanger(ShardManager ayaya) {
 
         int status = 0;
-        while (ayaya.getPresence().getActivity() != null
-                && !ayaya.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
-
-            String quote = BotData.getStatusQuotes().get(status);
-
-            ayaya.getPresence().setActivity(Activity.playing(BotData.getPrefix() + "help | " + quote));
-            try {
-                TimeUnit.SECONDS.sleep(60);
-            } catch (InterruptedException e) {
-                //Skip ahead.
+        boolean loop = true;
+        do {
+            for (JDA jda: ayaya.getShards()) {
+                if (jda.getPresence().getActivity() == null
+                        || jda.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
+                    loop = false;
+                    break;
+                }
             }
+            if (loop) {
+                String quote = BotData.getStatusQuotes().get(status);
 
-            status++;
-            if (status == STATUS_AMOUNT) status = 0;
+                ayaya.setActivity(Activity.playing(BotData.getPrefix() + "help | " + quote));
+                try {
+                    TimeUnit.SECONDS.sleep(60);
+                } catch (InterruptedException e) {
+                    //Skip ahead.
+                }
 
-        }
+                status++;
+                if (status == STATUS_AMOUNT) status = 0;
+            }
+        } while (loop);
 
     }
 
     /**
      * Updates the player count at the Discord Bot List website twice per hour.
      */
-    private static void updateBotListsStats(JDA ayaya) {
+    private static void updateBotListsStats(ShardManager ayaya) {
 
         List<String[]> botlists = BotData.getBotlists();
         boolean startThread = false;
@@ -237,36 +249,44 @@ public class Ayaya {
 
         if (startThread) {
             JSONObject json;
-            while (ayaya.getPresence().getActivity() != null
-                    && !ayaya.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
-
-                try {
-                    TimeUnit.MINUTES.sleep(30);
-
-                    for (String[] array: botlists) {
-                        String value1 = array[1];
-                        String value2 = array[2];
-                        String value3 = array[3];
-                        if (value1 != null && !value1.isEmpty() &&
-                                value2 != null && !value2.isEmpty() &&
-                                value3 != null && !value3.isEmpty()) {
-                            String[] headers = value3.split(",");
-                            json = new JSONObject().put(headers[0], ayaya.getGuilds().size());
-                            if (headers.length > 1)
-                                json.put(headers[1], 1);
-                            if (
-                                    HTTP.postJSON(String.format(value2, ayaya.getSelfUser().getId()), json,
-                                            "Authorization", value1
-                                    )
-                            ) System.out.println("Stats successfully posted to " + array[0] + ".");
-                            else System.out.println("Failed to post the stats to " + array[0] + ".");
-                        }
+            boolean loop = true;
+            do {
+                for (JDA jda: ayaya.getShards()) {
+                    if (jda.getPresence().getActivity() == null
+                            || jda.getPresence().getActivity().getName().equals(SHUTDOWN_GAME)) {
+                        loop = false;
+                        break;
                     }
-                } catch (InterruptedException e) {
-                    //Retry.
-                } catch (IOException | MissingHeaderInfoException ignored) {}
+                }
+                if (loop) {
+                    try {
+                        TimeUnit.MINUTES.sleep(30);
 
-            }
+                        for (String[] array: botlists) {
+                            String value1 = array[1];
+                            String value2 = array[2];
+                            String value3 = array[3];
+                            if (value1 != null && !value1.isEmpty() &&
+                                    value2 != null && !value2.isEmpty() &&
+                                    value3 != null && !value3.isEmpty()) {
+                                String[] headers = value3.split(",");
+                                json = new JSONObject().put(headers[0], ayaya.getGuilds().size());
+                                if (headers.length > 1)
+                                    json.put(headers[1], 1);
+                                if (
+                                        HTTP.postJSON(
+                                                String.format(value2, ayaya.getShards().get(0).getSelfUser().getId()),
+                                                json, "Authorization", value1
+                                        )
+                                ) System.out.println("Stats successfully posted to " + array[0] + ".");
+                                else System.out.println("Failed to post the stats to " + array[0] + ".");
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        //Retry.
+                    } catch (IOException | MissingHeaderInfoException ignored) {}
+                }
+            } while(loop);
         } else {
             System.out.println("None of the bot list tokens were found." +
                     " The stats posting thread won't be started.");

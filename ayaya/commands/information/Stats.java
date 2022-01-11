@@ -12,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.tools.PlayerLibrary;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.sharding.ShardManager;
 
 import java.awt.*;
 import java.time.LocalDateTime;
@@ -50,6 +51,7 @@ public class Stats extends Command {
         if (listener instanceof CommandListener)
             cListener = (CommandListener) listener;
         String utilitiesVersion = String.format("%s.%s", JDAUtilitiesInfo.VERSION_MAJOR, JDAUtilitiesInfo.VERSION_MINOR);
+        ShardManager ayaya = event.getJDA().getShardManager();
         EmbedBuilder stats_embed = new EmbedBuilder()
                 .setAuthor("Statistics for this session:", null, event.getSelfUser().getAvatarUrl())
                 .addField(
@@ -65,8 +67,8 @@ public class Stats extends Command {
                         String.format(
                                 "Total Servers: **%d**\nTotal Text Channels: **%d**\nTotal Voice Channels: **%d**\n" +
                                         "Uptime: %s",
-                                event.getJDA().getGuilds().size(),
-                                event.getJDA().getTextChannels().size(), event.getJDA().getVoiceChannels().size(),
+                                ayaya.getGuilds().size(),
+                                ayaya.getTextChannels().size(), ayaya.getVoiceChannels().size(),
                                 "**" + String.valueOf(uptime.getDayOfYear() - 1) + "** days, **" + uptime.getHour() +
                                         "** hours, **" + uptime.getMinute() + "** minutes and **" + uptime.getSecond()
                                         + "** seconds"

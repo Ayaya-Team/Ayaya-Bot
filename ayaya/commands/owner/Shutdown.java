@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.managers.AudioManager;
+import net.dv8tion.jda.api.sharding.ShardManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -39,10 +39,10 @@ public class Shutdown extends Command {
 
         if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
             event.reply(SHUTDOWN_REPLY);
+        ShardManager shardManager = event.getJDA().getShardManager();
         JDA jda = event.getJDA();
-        jda.getPresence().setActivity(Activity.playing(SHUTDOWN_GAME));
+        shardManager.setActivity(Activity.playing(SHUTDOWN_GAME));
         event.getClient().shutdown();
-        AudioManager audioManager;
         for (Guild guild : event.getJDA().getGuilds()) {
             disconnectVoice(guild);
         }
@@ -50,8 +50,8 @@ public class Shutdown extends Command {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {}
         Ayaya.shutdownThreads();
-        jda.getPresence().setStatus(OnlineStatus.OFFLINE);
-        jda.shutdownNow();
+        shardManager.setStatus(OnlineStatus.OFFLINE);
+        shardManager.shutdown();
         System.exit(0);
 
     }

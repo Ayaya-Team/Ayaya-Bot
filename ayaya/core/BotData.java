@@ -19,6 +19,7 @@ public class BotData {
     private static String prefix;
     private static String version;
     private static String token;
+    private static int shardAmount;
     private static String dbConnection;
     private static String dbUser;
     private static String dbPassword;
@@ -55,6 +56,7 @@ public class BotData {
         name = settings.getString("name");
         prefix = settings.getString("prefix");
         token = settings.getString("token");
+        shardAmount = Integer.parseInt(settings.getString("shard-amount"));
 
         try {
             dbConnection = settings.getString("db-connection");
@@ -127,6 +129,10 @@ public class BotData {
 
     static String getToken() {
         return token;
+    }
+
+    static int getShardAmount() {
+        return shardAmount;
     }
 
     public static String getDBConnection() {
