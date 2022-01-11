@@ -9,13 +9,13 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static ayaya.core.Ayaya.INITIAL_AMOUNT;
+import static ayaya.core.Ayaya.THREAD_AMOUNT_PER_CORE;
 import static ayaya.core.Ayaya.disconnectVoice;
 
 /**
@@ -23,22 +23,18 @@ import static ayaya.core.Ayaya.disconnectVoice;
  */
 public class VoiceEventListener extends ListenerAdapter {
 
-    private static final float GROWTH_RATE = 1.5f;
-    private static final float SHRINK_RATE = 1/3;
-    private static final float SHRINK_LEFTOVER = 2/3;
+    private static final int MAX_MULTIPLIER = 10;
 
     private ScheduledThreadPoolExecutor voiceTimeoutManager;
     private Map<String, ScheduledFuture<?>> scheduledTimeouts;
-    private int amount;
-    private volatile int threadCount;
 
     public VoiceEventListener() {
 
-        threadCount = 0;
-        amount = INITIAL_AMOUNT/2;
+        int corePoolSize = THREAD_AMOUNT_PER_CORE;
         voiceTimeoutManager = new ScheduledThreadPoolExecutor(
-                amount, new CustomThreadFactory("voice-timeout-thread"));
-        scheduledTimeouts = new HashMap<>(amount);
+                corePoolSize, new CustomThreadFactory("voice-timeout-thread"));
+        voiceTimeoutManager.setMaximumPoolSize(THREAD_AMOUNT_PER_CORE * MAX_MULTIPLIER);
+        scheduledTimeouts = new ConcurrentHashMap<>(corePoolSize);
 
     }
 
@@ -75,10 +71,6 @@ public class VoiceEventListener extends ListenerAdapter {
     private void scheduleTimer(Guild guild) {
         scheduledTimeouts.put(guild.getId(),
                 voiceTimeoutManager.schedule(() -> voiceTimeoutLeave(guild), 1, TimeUnit.MINUTES));
-        threadCount++;
-        synchronized (this) {
-            growThreadPool();
-        }
     }
 
     /**
@@ -91,10 +83,7 @@ public class VoiceEventListener extends ListenerAdapter {
         ScheduledFuture<?> timer = scheduledTimeouts.get(id);
         if (timer != null) {
             timer.cancel(false);
-            threadCount--;
-            synchronized (this) {
-                shrinkThreadPool();
-            }
+            scheduledTimeouts.remove(id);
         }
     }
 
@@ -105,25 +94,7 @@ public class VoiceEventListener extends ListenerAdapter {
      */
     private void voiceTimeoutLeave(Guild guild) {
         disconnectVoice(guild);
-        threadCount--;
-        synchronized (this) {
-            shrinkThreadPool();
-        }
-    }
-
-    private void growThreadPool() {
-        if (threadCount == amount) {
-            amount *= GROWTH_RATE;
-            voiceTimeoutManager.setCorePoolSize(amount);
-        }
-    }
-
-    private void shrinkThreadPool() {
-        int shrinkThreshold = (int)(SHRINK_LEFTOVER * (float)amount);
-        if (amount != INITIAL_AMOUNT/2 && threadCount <= shrinkThreshold) {
-            amount = Math.max(INITIAL_AMOUNT, shrinkThreshold);
-            voiceTimeoutManager.setCorePoolSize(amount);
-        }
+        scheduledTimeouts.remove(guild.getId());
     }
 
 }
