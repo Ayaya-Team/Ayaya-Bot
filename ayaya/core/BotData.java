@@ -118,183 +118,75 @@ public class BotData {
     }
 
     public static String getName() {
-
-        String result;
-        jsLock.lock();
-        result = name;
-        jsLock.unlock();
-        return result;
-
+        return name;
     }
 
     public static String getPrefix() {
-
-        String result;
-        jsLock.lock();
-        result = prefix;
-        jsLock.unlock();
-        return result;
-
+        return prefix;
     }
 
     static String getToken() {
-
-        String result;
-        jsLock.lock();
-        result = token;
-        jsLock.unlock();
-        return result;
-
+        return token;
     }
 
     public static String getDBConnection() {
-
-        String result;
-        jsLock.lock();
-        result = dbConnection;
-        jsLock.unlock();
-        return result;
-
+        return dbConnection;
     }
 
     public static String getDBUser() {
-
-        String result;
-        jsLock.lock();
-        result = dbUser;
-        jsLock.unlock();
-        return result;
-
+        return dbUser;
     }
 
     public static String getDbPassword() {
-
-        String result;
-        jsLock.lock();
-        result = dbPassword;
-        jsLock.unlock();
-        return result;
-
+        return dbPassword;
     }
 
     public static String getVersion() {
-
-        String result;
-        dbLock.lock();
-        result = version;
-        dbLock.unlock();
-        return result;
-
+        return version;
     }
 
     public static String getInviteNormal() {
-
-        String result;
-        jsLock.lock();
-        result = inviteNormal;
-        jsLock.unlock();
-        return result;
-
+        return inviteNormal;
     }
 
     public static String getInviteAdmin() {
-
-        String result;
-        jsLock.lock();
-        result = inviteAdmin;
-        jsLock.unlock();
-        return result;
-
+        return inviteAdmin;
     }
 
     public static String getInviteMinimal() {
-
-        String result;
-        jsLock.lock();
-        result = inviteMinimal;
-        jsLock.unlock();
-        return result;
-
+        return inviteMinimal;
     }
 
     public static String getServerInvite() {
-
-        String result;
-        jsLock.lock();
-        result = serverInvite;
-        jsLock.unlock();
-        return result;
-
+        return serverInvite;
     }
 
     public static String getPatreonLink() {
-
-        String result;
-        jsLock.lock();
-        result = patreonLink;
-        jsLock.unlock();
-        return result;
-
+        return patreonLink;
     }
 
     public static String getConsoleID() {
-
-        String result;
-        jsLock.lock();
-        result = consoleID;
-        jsLock.unlock();
-        return result;
-
+        return consoleID;
     }
 
     public static String getDescription() {
-
-        String result;
-        jsLock.lock();
-        result = description;
-        jsLock.unlock();
-        return result;
-
+        return description;
     }
 
     public static List<String> getOwners() {
-
-        List<String> list;
-        dbLock.lock();
-        list = owners;
-        dbLock.unlock();
-        return list;
-
+        return owners;
     }
 
     static List<String> getStatusQuotes() {
-
-        List<String> list;
-        dbLock.lock();
-        list = statusQuotes;
-        dbLock.unlock();
-        return list;
-
+        return statusQuotes;
     }
 
     public static List<String> getPingQuotes() {
-
-        List<String> list;
-        dbLock.lock();
-        list = pingQuotes;
-        dbLock.unlock();
-        return list;
-
+        return pingQuotes;
     }
 
     public static List<String[]> getBotlists() {
-
-        List<String[]> list;
-        dbLock.lock();
-        list = botlists;
-        dbLock.unlock();
-        return list;
-
+        return botlists;
     }
 
 }
