@@ -62,7 +62,7 @@ public class CheckColor extends Command {
                     String hex = "";
                     matcher = HEX.matcher(args);
                     if (matcher.find()) hex = matcher.group();
-                    json = HTTP.getJSON(String.format(URL, codeType, hex));
+                    json = HTTP.getJSONObject(String.format(URL, codeType, hex));
                     break;
                 case "rgb":
                     int rgb[] = new int[3];
@@ -80,7 +80,7 @@ public class CheckColor extends Command {
                             return;
                         }
                     }
-                    json = HTTP.getJSON(
+                    json = HTTP.getJSONObject(
                             String.format(URL, codeType, String.format("%d,%d,%d", rgb[0], rgb[1], rgb[2]))
                     );
                     break;

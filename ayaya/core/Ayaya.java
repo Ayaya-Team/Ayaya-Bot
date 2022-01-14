@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Main class of the bot.
@@ -113,7 +115,9 @@ public class Ayaya {
             client.addCommand(command.getCommand());
             categoryName = command.getCommand().getCategory().getName();
             listCategory = CommandCategories.getListCategory(categoryName);
-            if (listCategory != null && !((Command) command.getCommand()).isDisabled())
+            if (listCategory != null
+                    && !((Command) command.getCommand()).isDisabled()
+                    && !command.getCommand().isHidden())
                 listCategory.add(command.getName());
         }
 
@@ -125,7 +129,9 @@ public class Ayaya {
             client.addCommand(command.getCommand());
             categoryName = command.getCommand().getCategory().getName();
             listCategory = CommandCategories.getListCategory(categoryName);
-            if (listCategory != null && !((Command) command.getCommand()).isDisabled())
+            if (listCategory != null
+                    && !((Command) command.getCommand()).isDisabled()
+                    && !command.getCommand().isHidden())
                 listCategory.add(command.getName());
         }
 
@@ -175,6 +181,8 @@ public class Ayaya {
             e.printStackTrace();
             return;
         }
+        updateDServicesCommandList(ayaya.getSelfUser().getId(), client);
+
         boolean interrupted;
         do {
             try {
@@ -185,6 +193,7 @@ public class Ayaya {
                 interrupted = true;
             }
         } while (interrupted);
+
         threads = new ThreadPoolExecutor(
                 2, 2, 0, TimeUnit.NANOSECONDS, new LinkedBlockingQueue<>(),
                 new CustomThreadFactory("background-thread")
@@ -255,7 +264,7 @@ public class Ayaya {
                             if (headers.length > 1)
                                 json.put(headers[1], 1);
                             if (
-                                    HTTP.postJSON(String.format(value2, ayaya.getSelfUser().getId()), json,
+                                    HTTP.postJSONObject(String.format(value2, ayaya.getSelfUser().getId()), json,
                                             "Authorization", value1
                                     )
                             ) System.out.println("Stats successfully posted to " + array[0] + ".");
@@ -272,6 +281,51 @@ public class Ayaya {
                     " The stats posting thread won't be started.");
         }
 
+    }
+
+    /**
+     * Updates the command list on Discord Services.
+     *
+     * @param accountID     the id of the bot account
+     * @param commandClient the command client
+     */
+    private static void updateDServicesCommandList(String accountID, CommandClient commandClient) {
+        String baseUrl = "https://api.discordservices.net/bot/%s/commands";
+        String dServices = "Discord Services";
+        String dServicesToken = "";
+        for (String[] array: BotData.getBotlists()) {
+            if (array[0].equals(dServices) && array[1] != null) {
+                dServicesToken = array[1];
+                break;
+            }
+        }
+        if (dServicesToken.isEmpty())
+            return;
+
+        String prefix = commandClient.getPrefix();
+        JSONArray json = new JSONArray();
+        List<JSONObject> commandList = commandClient.getCommands().stream().map(c -> {
+            if (c.isOwnerCommand() || c.isHidden())
+                return null;
+            JSONObject object = new JSONObject();
+            object
+                    .put("command", prefix + c.getName())
+                    .put("desc", c.getHelp())
+                    .put("category", c.getCategory().getName());
+            return object;
+        }).collect(Collectors.toList());
+        json.putAll(commandList);
+
+        try {
+            if (
+                    HTTP.postJSONArray(String.format(baseUrl, accountID), json,
+                            "Authorization", dServicesToken)
+            ) System.out.println("Command list posted to " + dServices + " successfully.");
+            else System.out.println("Failed to post the command list to " + dServices + ".");
+        } catch (IOException | MissingHeaderInfoException e) {
+            System.out.println("There was an error while trying to post the command list.");
+            e.printStackTrace();
+        }
     }
 
     /**

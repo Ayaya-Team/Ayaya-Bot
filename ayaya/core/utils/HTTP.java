@@ -4,6 +4,7 @@ import ayaya.core.exceptions.http.HttpNullResponseException;
 import ayaya.core.exceptions.http.HttpResponseFailedException;
 import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import okhttp3.*;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -37,9 +38,25 @@ public class HTTP {
      * @throws HttpResponseFailedException when the response fails
      * @throws MissingHeaderInfoException  when there is a value missing for a header
      */
-    public static JSONObject getJSON(String url, String... headersData)
+    public static JSONObject getJSONObject(String url, String... headersData)
             throws IOException, HttpNullResponseException, HttpResponseFailedException, MissingHeaderInfoException {
         return new JSONObject(get(url, headersData));
+    }
+
+    /**
+     * Fetches a json array from a url.
+     *
+     * @param url         the url
+     * @param headersData the titles and values of the headers
+     * @return json object
+     * @throws IOException                 in case something goes wrong
+     * @throws HttpNullResponseException   when the response body is null
+     * @throws HttpResponseFailedException when the response fails
+     * @throws MissingHeaderInfoException  when there is a value missing for a header
+     */
+    public static JSONArray getJSONArray(String url, String... headersData)
+            throws IOException, HttpNullResponseException, HttpResponseFailedException, MissingHeaderInfoException {
+        return new JSONArray(get(url, headersData));
     }
 
     /**
@@ -88,10 +105,45 @@ public class HTTP {
      * @throws IOException                in case something goes wrong
      * @throws MissingHeaderInfoException when there is a value missing for a header
      */
-    public static boolean postJSON(String url, JSONObject json, String... headersData)
+    public static boolean postJSONObject(String url, JSONObject json, String... headersData)
             throws IOException, MissingHeaderInfoException {
+
+        return post(url, json.toString(), headersData);
+
+    }
+
+    /**
+     * Posts json content to an url.
+     *
+     * @param url         the url
+     * @param json        the json array
+     * @param headersData the titles and values of the headers
+     * @return true if the request was successful, false on the contrary
+     * @throws IOException                in case something goes wrong
+     * @throws MissingHeaderInfoException when there is a value missing for a header
+     */
+    public static boolean postJSONArray(String url, JSONArray json, String... headersData)
+            throws IOException, MissingHeaderInfoException {
+
+        return post(url, json.toString(), headersData);
+
+    }
+
+    /**
+     * Posts content to an url.
+     *
+     * @param url         the url
+     * @param content     the content of the request body
+     * @param headersData the titles and values of the headers
+     * @return true if the request was successful, false on the contrary
+     * @throws IOException                in case something goes wrong
+     * @throws MissingHeaderInfoException when there is a value missing for a header
+     */
+    public static boolean post(String url, String content, String... headersData)
+            throws IOException, MissingHeaderInfoException {
+
         RequestBody body = RequestBody.create(
-                MediaType.parse("application/json; charset=utf-8"), json.toString()
+                MediaType.parse("application/json; charset=utf-8"), content
         );
         Request.Builder requestBuilder = new Request.Builder().post(body).url(url);
         int argAmount = headersData.length;

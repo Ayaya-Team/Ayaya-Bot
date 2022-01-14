@@ -14,7 +14,7 @@ import org.json.JSONObject;
 import java.awt.*;
 import java.io.IOException;
 
-import static ayaya.core.utils.HTTP.getJSON;
+import static ayaya.core.utils.HTTP.getJSONObject;
 
 /**
  * Class of the cc command.
@@ -81,7 +81,7 @@ public class CC extends Command {
         String prefix = event.getClient().getPrefix();
         JSONObject ratings = null;
         try {
-            ratings = getJSON("https://frankfurter.app/latest?from=" + unit1.toUpperCase());
+            ratings = getJSONObject("https://frankfurter.app/latest?from=" + unit1.toUpperCase());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException | MissingHeaderInfoException e) {
