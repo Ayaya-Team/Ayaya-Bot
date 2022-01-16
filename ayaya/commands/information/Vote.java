@@ -11,25 +11,25 @@ import java.awt.*;
 import static ayaya.core.enums.CommandCategories.INFORMATION;
 
 /**
- * Class of the upvote command.
+ * Class of the vote command.
  */
-public class Upvote extends Command {
+public class Vote extends Command {
 
-    public Upvote() {
+    public Vote() {
 
-        this.name = "upvote";
-        this.help = "If you like me you can upvote me in discordbots.org. This command will give you the link to upvote.";
-        this.arguments = "{prefix}upvote";
+        this.name = "vote";
+        this.help = "If you like me you can vote for me in some of the bot lists. This command will give you the links.";
+        this.arguments = "{prefix}vote";
         this.category = INFORMATION.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
-        this.aliases = new String[]{"vote"};
+        this.aliases = new String[]{"upvote"};
 
     }
 
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        StringBuilder s = new StringBuilder("You can upvote me in one of these websites:");
+        StringBuilder s = new StringBuilder("You can vote for me in one of these websites:");
         for (String[] botlistData : BotData.getBotlists()) {
             if (botlistData[4] != null && !botlistData[4].isEmpty())
                 s.append("\n[").append(botlistData[0]).append("](").append(botlistData[4]).append(")");

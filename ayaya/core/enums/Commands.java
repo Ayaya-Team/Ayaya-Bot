@@ -28,7 +28,7 @@ public enum Commands {
     SCOLD(new Scold()), SHRUG(new Shrug()), SLAP(new Slap()), SLEEP(new Sleep()), SMILE(new Smile()),
     SNUGGLE(new Snuggle()), STARE(new Stare()), STATS(new Stats()), SUPPORT(new Support()), TEEHEE(new Teehee()),
     THROW(new Throw()), THUMBUP(new ThumbUp()), TICKLE(new Tickle()), TIME(new Time()), TSUNDERE(new Tsundere()),
-    UNFLIPTABLE(new Unfliptable()), UNMUTE(new Unmute()), UPVOTE(new Upvote()), USERINFO(new Userinfo()),
+    UNFLIPTABLE(new Unfliptable()), UNMUTE(new Unmute()), USERINFO(new Userinfo()), VOTE(new Vote()),
     WAKEUP(new Wakeup());
 
     private Command cmd;
