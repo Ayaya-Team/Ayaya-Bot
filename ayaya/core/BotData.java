@@ -72,10 +72,13 @@ public class BotData {
         inviteAdmin = invites.getString("admin");
         inviteMinimal = invites.getString("minimal");
 
+        owners = new ArrayList<>();
         for (Object value: ownersArray)
             owners.add((String) value);
+        statusQuotes = new ArrayList<>();
         for (Object value: statusQuotesArray)
             statusQuotes.add((String) value);
+        pingQuotes = new ArrayList<>();
         for (Object value: pingQuotesArray)
             pingQuotes.add((String) value);
         jsLock.unlock();
@@ -95,6 +98,7 @@ public class BotData {
         Connection connection = DriverManager.getConnection(dbConnection, dbUser, dbPassword);
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery("SELECT * FROM botlists;");
+        botlists = new ArrayList<>();
         while (rs.next()) {
             botlists.add(new String[]{
                     rs.getString(1), rs.getString(2), rs.getString(3),
