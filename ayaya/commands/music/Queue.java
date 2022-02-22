@@ -37,7 +37,6 @@ public class Queue extends MusicCommand {
         TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-        String prefix = event.getClient().getPrefix();
         String url = event.getArgs();
         try {
             if (musicHandler.connect(guild, voiceChannel)) {
@@ -100,8 +99,8 @@ public class Queue extends MusicCommand {
                 trackTitle = track.getInfo().title;
                 queueList.append((trackTitle != null && !trackTitle.isEmpty()) ? track.getInfo().title : "Undefined")
                         .append("`\n");
-                if (i == 10) {
-                    queueList.append("And ").append(musicHandler.getMusicAmount(guild) - 11).append(" more tracks.");
+                if (i == LIST_LIMIT) {
+                    queueList.append("And ").append(musicHandler.getMusicAmount(guild) - (LIST_LIMIT + 1)).append(" more tracks.");
                     break;
                 }
                 i++;

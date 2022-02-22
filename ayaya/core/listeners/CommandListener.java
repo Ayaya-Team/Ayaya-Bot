@@ -29,8 +29,8 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
 
     @Override
     public void onCommandException(CommandEvent event, Command command, Throwable throwable) {
-        int ids_amount = 2;
-        String[] ids = new String[ids_amount];
+        //int ids_amount = 2;
+        //String[] ids = new String[ids_amount];
         event.getChannel()
                 .sendMessage(":x: An error has occurred and has been reported to my developer. S-Sorry for this...")
                 .queue();
@@ -40,8 +40,6 @@ public class CommandListener implements com.jagrosh.jdautilities.command.Command
         int hour = event.getMessage().getTimeCreated().getHour();
         int minute = event.getMessage().getTimeCreated().getMinute();
         int second = event.getMessage().getTimeCreated().getSecond();
-        int guilds = event.getJDA().getGuilds().size();
-        int users = event.getJDA().getUsers().size();
         String final_day, final_month, final_year, final_hour, final_minute, final_second;
         if (day < 10) final_day = "0" + String.valueOf(day);
         else final_day = String.valueOf(day);

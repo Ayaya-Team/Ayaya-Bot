@@ -81,7 +81,6 @@ public class Blacklist extends Command {
             statement.setQueryTimeout(10);
             ResultSet result = statement
                     .executeQuery("SELECT * FROM blacklist;");
-            int i = 0;
             while (result.next()) {
                 blacklist.add(new String[]{
                         result.getString(2),

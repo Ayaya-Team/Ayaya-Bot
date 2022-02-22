@@ -87,7 +87,7 @@ public class ActionExtraTemplate extends ActionNormalTemplate {
             return;
         }
         embed.setImage(url);
-        channel.sendMessage(embed.build()).queue();
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
     @Override
@@ -150,7 +150,7 @@ public class ActionExtraTemplate extends ActionNormalTemplate {
             return;
         }
         embed.setImage(url);
-        channel.sendMessage(embed.build()).queue();
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
 }

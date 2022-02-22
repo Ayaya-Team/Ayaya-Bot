@@ -107,7 +107,7 @@ public class Tsundere extends GuildDMSCommand {
         } catch (IllegalStateException | NullPointerException e) {
             embed.setColor(Color.decode("#155FA0"));
         }
-        channel.sendMessage(embed.build()).queue();
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
     @Override

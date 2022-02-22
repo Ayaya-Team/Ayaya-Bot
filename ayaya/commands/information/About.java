@@ -15,10 +15,6 @@ import static ayaya.core.enums.CommandCategories.INFORMATION;
  */
 public class About extends Command {
 
-    private String dblLink;
-    private String dboatsLink;
-    private String dbotLink;
-
     public About() {
 
         this.name = "about";
@@ -34,7 +30,6 @@ public class About extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        String javaVersion = System.getProperty("java.version");
         String upvoteList = "";
         StringBuilder s = new StringBuilder();
         for (String[] data : BotData.getBotlists()) {

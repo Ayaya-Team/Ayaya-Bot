@@ -90,7 +90,7 @@ public class ActionCompleteTemplate extends ActionBasicTemplate {
             return;
         }
         embed.setImage(url);
-        channel.sendMessage(embed.build()).queue();
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
 
@@ -151,7 +151,7 @@ public class ActionCompleteTemplate extends ActionBasicTemplate {
             return;
         }
         embed.setImage(url);
-        channel.sendMessage(embed.build()).queue();
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
 }

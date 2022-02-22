@@ -27,7 +27,6 @@ public class CheckColor extends Command {
     private static final String URL = "http://thecolorapi.com/id?%s=%s&format=json";
     private static final String IMAGE_URL = "https://dummyimage.com/300x300/%s.png&text=%%20";
 
-    private static final int MAX_INT = 16777215;
     private static final int MAX_RGB_VAL = 255;
 
     public CheckColor() {
