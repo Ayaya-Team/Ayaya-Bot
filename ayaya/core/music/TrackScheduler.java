@@ -119,11 +119,11 @@ public class TrackScheduler extends AudioEventAdapter {
         queue.clear();
     }
 
-    private AudioTrack getFirstTrack() {
+    /**private AudioTrack getFirstTrack() {
         if (queue.isEmpty())
             return null;
         return queue.get(0);
-    }
+    }*/
 
     private AudioTrack removeFirstTrack() {
         if (queue.isEmpty())
