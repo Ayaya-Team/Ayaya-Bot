@@ -53,8 +53,6 @@ public class Userinfo extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         String content = event.getArgs();
-        User mentionedUser;
-        Member member;
         Guild guild = event.getGuild();
         Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(content);
         Matcher idFinder;

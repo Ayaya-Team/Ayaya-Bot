@@ -5,7 +5,6 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 
 import java.util.List;
@@ -28,7 +27,6 @@ public class Move extends MusicCommand {
     @Override
     protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
-        TextChannel textChannel = event.getTextChannel();
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         if (voiceState == null || !voiceState.inVoiceChannel()) {

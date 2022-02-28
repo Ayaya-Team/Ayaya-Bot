@@ -15,7 +15,6 @@ public class SQLController {
     private static final String CREATE_DB = "create database";
     private static final String DROP_DB = "drop database";
 
-    private boolean connected;
     private Connection connection;
     private Statement statement;
     private ResultSet resultSet;
@@ -24,7 +23,6 @@ public class SQLController {
      * Creates an SQLController object.
      */
     public SQLController() {
-        connected = false;
         connection = null;
         statement = null;
         resultSet = null;
@@ -41,7 +39,6 @@ public class SQLController {
     public void open(String url, String user, String pass) throws SQLException {
         try {
             connection = DriverManager.getConnection(url, user, pass);
-            connected = true;
         } catch (SQLException e) {
             connection = null;
             throw e;
@@ -209,7 +206,6 @@ public class SQLController {
     public void close() throws SQLException {
         if (connection != null) {
             connection.close();
-            connected = false;
             connection = null;
             if (resultSet != null && !resultSet.isClosed()) resultSet.close();
             resultSet = null;

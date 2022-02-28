@@ -65,7 +65,6 @@ public class Unmute extends ModCommand {
         Member author = event.getMember();
         Role muteRole = roles.get(0);
         int muteRolePosition = muteRole.getPosition();
-        StringBuilder name_list = new StringBuilder();
         final int authorHighestPosition;
         if (!author.getRoles().isEmpty())
             authorHighestPosition = author.getRoles().get(0).getPosition();

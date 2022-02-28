@@ -28,7 +28,6 @@ public class Channel extends Command {
     private static final String BITRATE = "bitrate";
     private static final String USER_LIMIT = "user-limit";
     private static final String NSFW = "nsfw";
-    private static final String PERMS = "permissions";
     private static final String NEW_NAME = "new-name";
     private static final String ADD_PERMS = "add-permissions";
     private static final String REMOVE_PERMS = "remove-permissions";
@@ -71,7 +70,7 @@ public class Channel extends Command {
                 event.reply(roleHelp.toString());
                 return;
             case "create":
-                String type, name = "";
+                String type = "";
                 if (matcher.find())
                     type = matcher.group().trim().toLowerCase();
                 else {

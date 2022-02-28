@@ -25,9 +25,6 @@ public class EventListener extends ListenerAdapter {
     private static final String GREETING =
             "Welcome %s to the Aya's Office! For any help related with me, go to the #support channel. Hope you enjoy your stay here!";
     private static final String FAREWELL = "Goodbye %s, we will miss you.";
-    private static final float GROWTH_RATE = 1.5f;
-    private static final float SHRINK_RATE = 1/3;
-    private static final float SHRINK_LEFTOVER = 2/3;
 
     //private String server;
     //private String greetings_farewells;
@@ -65,9 +62,7 @@ public class EventListener extends ListenerAdapter {
         String content = event.getMessage().getContentRaw();
         messagesCounter++;
         User user = event.getAuthor();
-        Member member = event.getMember();
         MessageChannel channel = event.getChannel();
-        boolean bot = user.isBot();
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
         if (!content.isBlank() && channel instanceof PrivateChannel
                 && !user.isBot() && !content.toLowerCase().startsWith(BotData.getPrefix())) {
@@ -77,13 +72,13 @@ public class EventListener extends ListenerAdapter {
                 return;
             }
             System.out.printf(
-                    "Warning: %s sent me a direct message at %02d/%02d/%d at %02d:%02d:%02d.\n\nContent:\n%s\n",
-                    user.getName(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
+                    "Warning: %s#%s sent me a direct message at %02d/%02d/%d at %02d:%02d:%02d.\n\nContent:\n%s\n",
+                    user.getName(), user.getDiscriminator(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
                     time.getHour(), time.getMinute(), time.getSecond(), content
             );
             Objects.requireNonNull(event.getJDA().getTextChannelById(BotData.getConsoleID())).sendMessage(
-                    String.format(":warning: %s sent me a direct message at `%02d/%02d/%d` at `%02d:%02d:%02d`.\n\n**Content:**\n```css\n%s```",
-                            user.getName(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
+                    String.format(":warning: %s#%s sent me a direct message at `%02d/%02d/%d` at `%02d:%02d:%02d`.\n\n**Content:**\n```css\n%s```",
+                            user.getName(), user.getDiscriminator(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
                             time.getHour(), time.getMinute(), time.getSecond(), content)
             ).queue();
         }

@@ -6,7 +6,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.managers.AudioManager;
+//import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class MusicSwitch extends ayaya.commands.Command {
         } else {
             String option = args[0];
             ListCategory listCategory;
-            String categoryName;
+            //String categoryName;
             if (option.equals(ON) && !isOn) {
                 /*MusicHandler musicHandler = new MusicHandler();
                 for (MusicCommands command : MusicCommands.values()) {
@@ -69,7 +69,7 @@ public class MusicSwitch extends ayaya.commands.Command {
                 }
                 event.reactSuccess();
             } else if (option.equals(OFF) && isOn) {
-                AudioManager audioManager;
+                //AudioManager audioManager;
                 for (Guild guild : event.getJDA().getGuilds()) {
                     disconnectVoice(guild);
                 }

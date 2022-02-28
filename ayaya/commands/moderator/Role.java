@@ -468,7 +468,6 @@ public class Role extends ModCommand {
             return;
         }
 
-        Member member;
         mentionFinder = Message.MentionType.USER.getPattern().matcher(users);
         ParallelThreadHandler<Member, List<Member>> threadHandler =
                 new ParallelThreadHandler<>();

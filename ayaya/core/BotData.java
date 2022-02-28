@@ -45,6 +45,7 @@ public class BotData {
         String line;
         while ((line = reader.readLine()) != null)
             stringBuilder.append(line).append('\n');
+        reader.close();
 
         JSONObject json = new JSONObject(stringBuilder.toString().trim());
         JSONObject settings = json.getJSONObject("settings");

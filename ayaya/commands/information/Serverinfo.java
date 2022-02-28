@@ -48,8 +48,6 @@ public class Serverinfo extends Command {
         Guild guild = event.getGuild();
         OffsetDateTime creationTime = guild.getTimeCreated();
         String creationWeekDay = creationTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        int user_count = 0;
-        int bot_count = 0;
         String vlevel;
         switch (guild.getVerificationLevel()) {
             case NONE:

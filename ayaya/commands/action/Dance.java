@@ -174,7 +174,7 @@ public class Dance extends GuildDMSCommand {
         int choice = new Random().nextInt(100);
         if (choice == EASTEREGG) {
             EmbedBuilder easteregg = new EmbedBuilder().setTitle("Easter Egg").setImage(VIDEO);
-            channel.sendMessage(easteregg.build()).queue();
+            channel.sendMessageEmbeds(easteregg.build()).queue();
             return true;
         }
         return false;

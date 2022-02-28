@@ -77,7 +77,7 @@ public class Tickle extends ActionBasicTemplate {
             embed.setColor(Color.decode("#155FA0"));
         }
         embed.setImage(getRandomGif());
-        channel.sendMessage(embed.build()).queue();
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
     @Override
