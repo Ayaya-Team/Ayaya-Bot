@@ -28,10 +28,12 @@ public class MusicHandler {
 
     private final AudioPlayerManager player;
     private final Map<String, GuildMusicManager> musicManagers;
+    private final Map<String, String> channelIDs;
 
     public MusicHandler() {
         player = new DefaultAudioPlayerManager();
         musicManagers = new ConcurrentHashMap<>();
+        channelIDs = new ConcurrentHashMap<>();
         AudioSourceManagers.registerRemoteSources(player);
         AudioSourceManagers.registerLocalSource(player);
     }
@@ -54,7 +56,7 @@ public class MusicHandler {
     private GuildMusicManager getGuildMusicManager(Guild guild) {
 
         String guildId = guild.getId();
-        musicManagers.putIfAbsent(guildId, new GuildMusicManager(player));
+        musicManagers.putIfAbsent(guildId, new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(guildId))));
 
         GuildMusicManager musicManager = musicManagers.get(guildId);
         guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
@@ -78,14 +80,30 @@ public class MusicHandler {
     /**
      * Method to connect to a voice channel in a server.
      *
-     * @param guild   the server
-     * @param channel the voice channel to connect to
+     * @param guild        the server
+     * @param voiceChannel the voice channel to connect to
+     * @param textChannel  the text channel to send messages when new tracks start
      * @return true if the connection was open,
      * false if it was already open in that server.
      */
-    public boolean connect(Guild guild, VoiceChannel channel) {
-        if (guild.getAudioManager().isConnected()) return false;
-        guild.getAudioManager().openAudioConnection(channel);
+    public boolean connect(Guild guild, VoiceChannel voiceChannel, TextChannel textChannel) {
+        return this.connect(guild, voiceChannel, textChannel, false);
+    }
+
+    /**
+     * Method to connect to a voice channel in a server.
+     *
+     * @param guild        the server
+     * @param voiceChannel the voice channel to connect to
+     * @param textChannel  the text channel to send messages when new tracks start
+     * @param move         a boolean telling wether we want to move voice channel
+     * @return true if the connection was open,
+     * false if it was already open in that server.
+     */
+    public boolean connect(Guild guild, VoiceChannel voiceChannel, TextChannel textChannel, boolean move) {
+        if (!move && guild.getAudioManager().isConnected()) return false;
+        guild.getAudioManager().openAudioConnection(voiceChannel);
+        channelIDs.put(guild.getId(), textChannel.getId());
         return true;
     }
 
@@ -104,6 +122,7 @@ public class MusicHandler {
                 || trackScheduler.isPaused() || trackScheduler.getTrackAmount() == 0)) {
             audioManager.closeAudioConnection();
             removeGuildMusicManager(guild);
+            channelIDs.remove(guild.getId());
             return true;
         }
         return false;
@@ -372,15 +391,14 @@ public class MusicHandler {
     public boolean move(final Guild guild, final VoiceChannel currentVoiceChannel, final VoiceChannel nextVoiceChannel)
     {
         TrackScheduler scheduler = this.getGuildMusicManager(guild).getScheduler();
+        TextChannel textChannel = guild.getTextChannelById(channelIDs.get(guild.getId()));
         scheduler.pause();
         this.disconnect(guild);
-        if (this.connect(guild, nextVoiceChannel)) {
+        if (this.connect(guild, nextVoiceChannel, textChannel, true)) {
             scheduler.unpause();
             return true;
-        } else if (this.connect(guild, currentVoiceChannel))
+        } else
             scheduler.unpause();
-        else
-            scheduler.stopAndClear();
         return false;
     }
 

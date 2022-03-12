@@ -30,7 +30,7 @@ public class Pause extends MusicCommand {
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         try {
-            if (musicHandler.connect(guild, voiceChannel)) {
+            if (musicHandler.connect(guild, voiceChannel, event.getTextChannel())) {
                 event.reply("Now connected to the voice channel `" + voiceChannel.getName()
                         + "`.\nThere is no track in the queue to pause.");
             } else if (voiceState != null && voiceChannel == voiceState.getChannel()) {

@@ -31,7 +31,7 @@ public class Seek extends MusicCommand {
         Guild guild = event.getGuild();
         try {
             GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
-            if (musicHandler.connect(guild, voiceChannel))
+            if (musicHandler.connect(guild, voiceChannel, event.getTextChannel()))
                 event.reply("Now connected to the voice channel `" + voiceChannel.getName()
                         + "`.\nThere is no music being played right now.");
             else if (voiceState != null && voiceChannel == voiceState.getChannel()) {

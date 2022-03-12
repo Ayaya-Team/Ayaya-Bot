@@ -5,6 +5,8 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import net.dv8tion.jda.api.entities.TextChannel;
+
 import java.util.*;
 
 /**
@@ -19,17 +21,19 @@ public class TrackScheduler extends AudioEventAdapter {
     private final int limit;
     private List<AudioTrack> queue;
     private volatile boolean repeat;
+    private TextChannel channel;
 
     /**
      * @param player The audio player this scheduler uses
      */
-    TrackScheduler(AudioPlayer player) {
+    TrackScheduler(AudioPlayer player, TextChannel channel) {
 
         this.player = player;
         this.player.setVolume(INITIAL_AUDIO_VOLUME);
         this.limit = QUEUE_CAPACITY;
         queue = Collections.synchronizedList(new LinkedList<>());
         repeat = false;
+        this.channel = channel;
 
     }
 
@@ -41,6 +45,13 @@ public class TrackScheduler extends AudioEventAdapter {
             if (repeat)
                 queue.add(track.makeClone());
             this.startFirst();
+            AudioTrack next = this.getCurrentTrack();
+            if (next != null) {
+                String playingTrackTitle = next.getInfo().title;
+                playingTrackTitle =
+                        (playingTrackTitle == null || playingTrackTitle.isEmpty()) ? "Undefined" : playingTrackTitle;
+                channel.sendMessage("Now playing `" + playingTrackTitle + "`.").queue();
+            }
         }
 
     }
@@ -71,6 +82,14 @@ public class TrackScheduler extends AudioEventAdapter {
 
     void setVolume(int volume) {
         player.setVolume(volume);
+    }
+
+    TextChannel getChannel() {
+        return channel;
+    }
+
+    void setChannel(TextChannel channel) {
+        this.channel = channel;
     }
 
     AudioTrack getCurrentTrack() {

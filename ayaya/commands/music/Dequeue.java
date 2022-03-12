@@ -46,7 +46,7 @@ public class Dequeue extends MusicCommand {
             return;
         }
         try {
-            if ((voiceState == null || !voiceState.inVoiceChannel()) && musicHandler.connect(guild, voiceChannel))
+            if ((voiceState == null || !voiceState.inVoiceChannel()) && musicHandler.connect(guild, voiceChannel, event.getTextChannel()))
             {
                 event.reply("Now connected to the voice channel `" + voiceChannel.getName()
                         + "`.\nThe queue is already empty.");
