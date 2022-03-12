@@ -387,18 +387,29 @@ public class MusicHandler {
         this.getGuildMusicManager(guild).getScheduler().shuffle();
     }
 
-    //TODO
+    /**
+     * Method to move the bot to another voice channel.
+     * 
+     * @param guild               the server
+     * @param currentVoiceChannel the current voice channel
+     * @param nextVoiceChannel    the voice channel to move to
+     * @return true if the move was successful, false if it was aborted
+     */
     public boolean move(final Guild guild, final VoiceChannel currentVoiceChannel, final VoiceChannel nextVoiceChannel)
     {
         TrackScheduler scheduler = this.getGuildMusicManager(guild).getScheduler();
         TextChannel textChannel = guild.getTextChannelById(channelIDs.get(guild.getId()));
         scheduler.pause();
-        this.disconnect(guild);
+        //guild.getAudioManager().closeAudioConnection();
         if (this.connect(guild, nextVoiceChannel, textChannel, true)) {
-            scheduler.unpause();
+            //scheduler.unpause();
             return true;
-        } else
-            scheduler.unpause();
+        }
+        //else if (this.connect(guild, currentVoiceChannel, textChannel))
+        //    scheduler.unpause();
+        //else
+        //    scheduler.stopAndClear();
+        scheduler.unpause();
         return false;
     }
 

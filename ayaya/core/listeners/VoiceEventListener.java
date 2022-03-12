@@ -1,5 +1,6 @@
 package ayaya.core.listeners;
 
+import ayaya.core.music.MusicHandler;
 import ayaya.core.utils.CustomThreadFactory;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -7,6 +8,8 @@ import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.managers.AudioManager;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -27,14 +30,16 @@ public class VoiceEventListener extends ListenerAdapter {
 
     private ScheduledThreadPoolExecutor voiceTimeoutManager;
     private Map<String, ScheduledFuture<?>> scheduledTimeouts;
+    private MusicHandler musicHandler;
 
-    public VoiceEventListener() {
+    public VoiceEventListener(MusicHandler musicHandler) {
 
         int corePoolSize = THREAD_AMOUNT_PER_CORE;
         voiceTimeoutManager = new ScheduledThreadPoolExecutor(
                 corePoolSize, new CustomThreadFactory("voice-timeout-thread"));
         voiceTimeoutManager.setMaximumPoolSize(THREAD_AMOUNT_PER_CORE * MAX_MULTIPLIER);
         scheduledTimeouts = new ConcurrentHashMap<>(corePoolSize);
+        this.musicHandler = musicHandler;
 
     }
 
@@ -42,25 +47,48 @@ public class VoiceEventListener extends ListenerAdapter {
     public void onGuildVoiceJoin(@NotNull GuildVoiceJoinEvent event) {
         VoiceChannel channel = event.getChannelJoined();
         Guild guild = event.getGuild();
-        if (channel.getMembers().size() >= 2
-                && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
-            cancelTimer(guild.getId());
+        AudioManager audioManager = guild.getAudioManager();
+        if (audioManager.isConnected()
+                && audioManager.getConnectedChannel().getId().equals(channel.getId())) {
+            if (channel.getMembers().size() >= 2) {
+                cancelTimer(guild.getId());
+                if (channel.getMembers().size() == 2
+                        && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
+                    musicHandler.unpauseQueue(guild);
+            }
+            else
+                scheduleTimer(guild);
+        }
     }
 
     @Override
     public void onGuildVoiceLeave(@NotNull GuildVoiceLeaveEvent event) {
         VoiceChannel channel = event.getChannelLeft();
-        if (channel.getMembers().size() < 2
+        AudioManager audioManager = event.getGuild().getAudioManager();
+        if (audioManager.isConnected()
+                && audioManager.getConnectedChannel().getId().equals(channel.getId())
+                && channel.getMembers().size() < 2
                 && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
             scheduleTimer(event.getGuild());
     }
 
     @Override
     public void onGuildVoiceMove(@NotNull GuildVoiceMoveEvent event) {
-        VoiceChannel channel = event.getChannelLeft();
-        if (channel.getMembers().size() < 2
-                && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
-            scheduleTimer(event.getGuild());
+        VoiceChannel channel = event.getChannelJoined();
+        Guild guild = event.getGuild();
+        AudioManager audioManager = guild.getAudioManager();
+        if (audioManager.isConnected()
+                && audioManager.getConnectedChannel().getId().equals(channel.getId())) {
+                if (channel.getMembers().size() < 2
+                        && event.getMember().getUser().equals(event.getJDA().getSelfUser()))
+                    scheduleTimer(guild);
+                else {
+                    cancelTimer(guild.getId());
+                    if (channel.getMembers().size() == 2
+                        && !event.getMember().getUser().equals(event.getJDA().getSelfUser()))
+                    musicHandler.unpauseQueue(guild);
+                }
+        }
     }
 
     /**
