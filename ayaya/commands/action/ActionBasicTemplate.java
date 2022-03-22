@@ -13,7 +13,7 @@ import java.awt.*;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ayaya.core.enums.CommandCategories.ACTION;
 
@@ -25,6 +25,7 @@ public class ActionBasicTemplate extends GuildDMSCommand {
     static final String NULL = "null";
 
     String description, footer;
+    private ThreadLocalRandom rng;
 
     public ActionBasicTemplate(String name, String help, String arguments, String[] aliases, String description,
                                String footer) {
@@ -38,6 +39,7 @@ public class ActionBasicTemplate extends GuildDMSCommand {
         this.description = description;
         this.footer = footer;
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};
+        rng = ThreadLocalRandom.current();
 
     }
 
@@ -92,7 +94,6 @@ public class ActionBasicTemplate extends GuildDMSCommand {
      */
     synchronized String getRandomGif() {
         int amount = getGifsAmount();
-        Random rng = new Random();
         int id = rng.nextInt((amount & 0xff))+1;
         String url = NULL;
         SQLController jdbc = new SQLController();

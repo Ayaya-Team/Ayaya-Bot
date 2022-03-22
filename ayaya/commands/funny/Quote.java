@@ -12,7 +12,6 @@ import java.time.OffsetDateTime;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 
 /**
@@ -126,19 +125,6 @@ public class Quote extends Command {
         if (!attachments.isEmpty()) quote_embed.setImage(attachments.get(0).getUrl());
         event.reply(quote_embed.build());
 
-    }
-
-    /**
-     * Checks if the given string contains a long.
-     *
-     * @param test the test string
-     * @return true if the string contains a number, false on the contrary
-     */
-    private boolean isLong(String test) {
-        Scanner scanner = new Scanner(test);
-        boolean answer = scanner.hasNextLong();
-        scanner.close();
-        return answer;
     }
 
     /**

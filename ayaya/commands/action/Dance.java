@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ayaya.core.enums.ActionQuotes.NORMAL_DANCE;
 import static ayaya.core.enums.CommandCategories.ACTION;
@@ -26,6 +27,7 @@ public class Dance extends GuildDMSCommand {
     private static final String VIDEO = "https://www.youtube.com/watch?v=oQTo6aSHWz8";
 
     private String description, footer;
+    private ThreadLocalRandom rng;
 
     public Dance() {
 
@@ -94,7 +96,6 @@ public class Dance extends GuildDMSCommand {
     private synchronized String getRandomGif() {
 
         int amount = getGifsAmount();
-        Random rng = new Random();
         int id = rng.nextInt((amount & 0xff))+1;
         String url = NULL;
         SQLController jdbc = new SQLController();

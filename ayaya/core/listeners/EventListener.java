@@ -22,9 +22,9 @@ import java.util.Objects;
 public class EventListener extends ListenerAdapter {
 
     private static final String LINK = "https://discord.gg/";
-    private static final String GREETING =
-            "Welcome %s to the Aya's Office! For any help related with me, go to the #support channel. Hope you enjoy your stay here!";
-    private static final String FAREWELL = "Goodbye %s, we will miss you.";
+    //private static final String GREETING =
+    //        "Welcome %s to the Aya's Office! For any help related with me, go to the #support channel. Hope you enjoy your stay here!";
+    //private static final String FAREWELL = "Goodbye %s, we will miss you.";
 
     //private String server;
     //private String greetings_farewells;

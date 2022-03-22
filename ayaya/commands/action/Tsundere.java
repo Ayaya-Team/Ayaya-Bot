@@ -12,7 +12,7 @@ import java.awt.*;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 
 import static ayaya.core.enums.ActionQuotes.*;
@@ -24,6 +24,8 @@ import static ayaya.core.enums.CommandCategories.ACTION;
 public class Tsundere extends GuildDMSCommand {
 
     private static final String NULL = "null";
+
+    private ThreadLocalRandom rng;
 
     public Tsundere() {
 
@@ -172,7 +174,6 @@ public class Tsundere extends GuildDMSCommand {
 
     private synchronized String getRandomGif() {
         int amount = getGifsAmount();
-        Random rng = new Random();
         int id = rng.nextInt((amount & 0xff))+1;
         String url = null;
         SQLController jdbc = new SQLController();
