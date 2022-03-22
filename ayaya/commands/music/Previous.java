@@ -2,6 +2,8 @@ package ayaya.commands.music;
 
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -26,8 +28,17 @@ public class Previous extends MusicCommand {
         if (voiceState == null || !voiceState.inVoiceChannel()) {
             event.reply("I'm not playing anything right now.");
         } else if (voiceChannel == voiceState.getChannel()) {
-            if (musicHandler.previousMusic(guild))
-                event.reply("Rewinded to the previous track.");
+            if (musicHandler.previousMusic(guild)) {
+                AudioTrack track = musicHandler.getCurrentMusic(guild);
+                if (track == null)
+                    event.reply("Rewinded to the previous track.");
+                else {
+                    String playingTrackTitle = musicHandler.getCurrentMusic(guild).getInfo().title;
+                    playingTrackTitle =
+                            (playingTrackTitle == null || playingTrackTitle.isEmpty()) ? "Undefined" : playingTrackTitle;
+                    event.reply("Rewinded to the previous track.\nNow playing `" + playingTrackTitle + "`.");
+                }
+            }
             else event.reply("There aren't any previous tracks.");
         } else {
             event.reply("I only listen to the music commands of who is in the same voice channel as me.");

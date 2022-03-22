@@ -31,7 +31,7 @@ public class Join extends MusicCommand {
         Guild guild = event.getGuild();
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         try {
-            if (musicHandler.connect(guild, voiceChannel))
+            if (musicHandler.connect(guild, voiceChannel, event.getTextChannel()))
                 event.reply("Now connected to the voice channel `" + Objects.requireNonNull(voiceChannel).getName() + "`.");
             else if (voiceState != null && voiceChannel == voiceState.getChannel()) {
                 event.reply("I'm already connected to your channel.");

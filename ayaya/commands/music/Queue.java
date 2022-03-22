@@ -39,7 +39,7 @@ public class Queue extends MusicCommand {
         GuildVoiceState voiceState = event.getSelfMember().getVoiceState();
         String url = event.getArgs();
         try {
-            if (musicHandler.connect(guild, voiceChannel)) {
+            if (musicHandler.connect(guild, voiceChannel, textChannel)) {
                 event.reply(
                         "Now connected to the voice channel `" + voiceChannel.getName() + "`."
                 );

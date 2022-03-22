@@ -164,7 +164,7 @@ public class Ayaya {
             ayaya = DefaultShardManagerBuilder.create(BotData.getToken(), intents)
                     .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
                     .enableCache(CacheFlag.ROLE_TAGS)
-                    .addEventListeners(client, eventWaiter, new EventListener(), new VoiceEventListener())
+                    .addEventListeners(client, eventWaiter, new EventListener(), new VoiceEventListener(musicHandler))
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)
                     .setEventPool(executor)
