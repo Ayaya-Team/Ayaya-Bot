@@ -12,7 +12,7 @@ import java.util.List;
 import static ayaya.core.music.MusicHandler.*;
 
 /**
- * Class of queue/play requests handler.
+ * Class of handler for play/queue requests.
  */
 public class PlayHandler implements AudioLoadResultHandler {
 
@@ -23,6 +23,15 @@ public class PlayHandler implements AudioLoadResultHandler {
     private AudioPlayerManager audioPlayerManager;
     private boolean queueOnly;
 
+    /**
+     * Constructor of the handler
+     * 
+     * @param url                the url of the requested track
+     * @param channel            the channel where the request was issued
+     * @param guildMusicManager  the guild music manager
+     * @param audioPlayerManager the audio player manager
+     * @param queueOnly          flag telling if it's a queue request
+     */
     PlayHandler(
             String url, TextChannel channel, GuildMusicManager guildMusicManager, AudioPlayerManager audioPlayerManager,
             boolean queueOnly
@@ -35,6 +44,16 @@ public class PlayHandler implements AudioLoadResultHandler {
         this.queueOnly = queueOnly;
     }
 
+    /**
+     * Constructor of the handler
+     * 
+     * @param searchMode         the string with the search mode
+     * @param url                the url of the requested track
+     * @param channel            the channel where the request was issued
+     * @param guildMusicManager  the guild music manager
+     * @param audioPlayerManager the audio player manager
+     * @param queueOnly          flag telling if it's a queue request
+     */
     PlayHandler(
             String searchMode, String url, TextChannel channel,
             GuildMusicManager guildMusicManager, AudioPlayerManager audioPlayerManager, boolean queueOnly

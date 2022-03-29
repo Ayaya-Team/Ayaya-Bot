@@ -10,7 +10,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import java.util.*;
 
 /**
- * This class schedules tracks for the audio player. It contains the queue of tracks.
+ * This class is the track scheduler. It contains the queue of tracks,
+ * the audio player and the channel to send update messages.
  */
 public class TrackScheduler extends AudioEventAdapter {
 
@@ -24,7 +25,10 @@ public class TrackScheduler extends AudioEventAdapter {
     private TextChannel channel;
 
     /**
-     * @param player The audio player this scheduler uses
+     * Constructor of the track scheduler.
+     * 
+     * @param player  The audio player this scheduler uses
+     * @param channel The channel for started track messages
      */
     TrackScheduler(AudioPlayer player, TextChannel channel) {
 
@@ -56,46 +60,99 @@ public class TrackScheduler extends AudioEventAdapter {
 
     }
 
+    /**
+     * Tells wether the queue is in repeat mode or not
+     * 
+     * @return true if repeating, false on the contrary
+     */
     boolean isRepeat() {
         return repeat;
     }
 
+    /**
+     * Toggles the repeat mode and returns the new value.
+     * 
+     * @return true if repeating, false on the contrary
+     */
     boolean repeat() {
         return repeat = !repeat;
     }
 
+    /**
+     * Pauses the player.
+     */
     void pause() {
         player.setPaused(true);
     }
 
+    /**
+     * Resumes the player.
+     */
     void unpause() {
         player.setPaused(false);
     }
 
+    /**
+     * Tells if the player is paused or not
+     * 
+     * @return true if paused, false on the contrary
+     */
     boolean isPaused() {
         return player.isPaused();
     }
 
+    /**
+     * Returns the current volume of the player.
+     * 
+     * @return volume
+     */
     int getVolume() {
         return player.getVolume();
     }
 
+    /**
+     * Changes the volume of the player.
+     * 
+     * @param volume the new volume
+     */
     void setVolume(int volume) {
         player.setVolume(volume);
     }
 
+    /**
+     * Retrieves the channel to which the messages of started tracks are being sent.
+     * 
+     * @return channel
+     */
     TextChannel getChannel() {
         return channel;
     }
 
+    /**
+     * Changes the channel of started track messages.
+     * 
+     * @param channel
+     */
     void setChannel(TextChannel channel) {
         this.channel = channel;
     }
 
+    /**
+     * Gets the track being played. Can be null.
+     * 
+     * @return track
+     */
     AudioTrack getCurrentTrack() {
         return player.getPlayingTrack();
     }
 
+    /**
+     * Attempts to fast-forward the track for the given amount of seconds.
+     * With a negative amount, the fast-forward is inverted.
+     * 
+     * @param seconds the amount of seconds to fast-forward/fast-backward
+     * @return true if the track is seekable, false on the contrary
+     */
     boolean seek(long seconds) {
         AudioTrack track = this.getCurrentTrack();
         if (!track.isSeekable()) return false;
@@ -108,10 +165,20 @@ public class TrackScheduler extends AudioEventAdapter {
         return true;
     }
 
+    /**
+     * Attempts to start the first track in the queue.
+     * 
+     * @return true if the track was started, false if there was a problem or the queue was empty
+     */
     boolean startFirst() {
         return !queue.isEmpty() && player.startTrack(this.removeFirstTrack(), true);
     }
 
+    /**
+     * Attempts to skip the current track to play the next one.
+     * 
+     * @return true or false
+     */
     boolean skip() {
         return this.skipTrack(true);
     }
@@ -125,6 +192,11 @@ public class TrackScheduler extends AudioEventAdapter {
         return player.startTrack(this.removeFirstTrack(), false);
     }
 
+    /**
+     * Attempts to go back to the previous track.
+     * 
+     * @return true or false
+     */
     boolean previousTrack() {
         AudioTrack track = this.getCurrentTrack();
         if (track == null)
@@ -132,6 +204,9 @@ public class TrackScheduler extends AudioEventAdapter {
         return player.startTrack(this.removeLastTrack(), false);
     }
 
+    /**
+     * Clears the queue and stops the player.
+     */
     void stopAndClear() {
         if (player.getPlayingTrack() != null)
             player.startTrack(null, false);
@@ -156,18 +231,40 @@ public class TrackScheduler extends AudioEventAdapter {
         return queue.remove(queue.size() - 1);
     }
 
+    /**
+     * Returns the total amount of tracks, including the one being played.
+     * 
+     * @return amount
+     */
     int getTrackAmount() {
         return queue.size() + (this.getCurrentTrack() == null ? 0 : 1);
     }
 
+    /**
+     * Returns an iterator for the current tracks in the queue.
+     * 
+     * @return iterator
+     */
     Iterator<AudioTrack> getTrackIterator() {
         return queue.iterator();
     }
 
+    /**
+     * Attempts to queue a track.
+     * 
+     * @param track the track to add to the queue
+     * @return true if the track was queued, false on the contrary
+     */
     boolean queue(AudioTrack track) {
         return track != null && queue.size() < limit && queue.add(track);
     }
 
+    /**
+     * Removes a track at a given index.
+     * 
+     * @param index the index of the track to remove
+     * @return the removed track
+     */
     AudioTrack dequeue(int index) {
         if (index >= queue.size() + 1)
             return null;
@@ -180,6 +277,13 @@ public class TrackScheduler extends AudioEventAdapter {
             return queue.remove(this.getCurrentTrack() != null ? index - 1 : index);
     }
 
+    /**
+     * Attempts to move a track from index i to index j.
+     * 
+     * @param i the index of the track to move
+     * @param j the position to move it to
+     * @return true of the track was moved, false on the contrary
+     */
     boolean move(int i, int j) {
 
         if (this.getCurrentTrack() != null) {
@@ -215,6 +319,9 @@ public class TrackScheduler extends AudioEventAdapter {
 
     }
 
+    /**
+     * Shuffles the queue.
+     */
     void shuffle() {
 
         int currentQueueSize = queue.size();

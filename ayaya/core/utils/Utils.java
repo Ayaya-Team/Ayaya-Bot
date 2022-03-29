@@ -159,4 +159,27 @@ public class Utils {
         return bar.toString();
     }
 
+    /**
+     * Prints a enhanced bar giving 2 double values and a lenght.
+     * One of the values will be the current value, while the other is the max value.
+     *
+     * @param value1 one of the values
+     * @param value2 other of the values
+     * @param length the lenght of the bar
+     * @return string with the bar
+     */
+    public static String printEnhancedBar(double value1, double value2, int length) {
+        double current = Math.min(value1, value2);
+        double max = Math.max(value1, value2);
+        StringBuilder bar = new StringBuilder();
+        long fullChars = Math.round(current / max * length);
+        for (long i = 1; i <= length; i++) {
+            if (i == fullChars || (i == 1 && fullChars == 0)) bar.append("🔵");
+            else if (i == 1) bar.append("<:start_seek_bar:958141018585301062>");
+            else if (i == length) bar.append("<:end_seek_bar:958141242905092196>");
+            else bar.append("<:section_seek_bar:958141162877759489>");
+        }
+        return bar.toString();
+    }
+
 }
