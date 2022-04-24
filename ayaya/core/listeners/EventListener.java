@@ -59,28 +59,38 @@ public class EventListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
 
+        String alternatePrefix = String.format("<@%s>", BotData.getId());
         String content = event.getMessage().getContentRaw();
         messagesCounter++;
         User user = event.getAuthor();
         MessageChannel channel = event.getChannel();
         OffsetDateTime time = OffsetDateTime.now(ZoneId.of("GMT"));
-        if (!content.isBlank() && channel instanceof PrivateChannel
-                && !user.isBot() && !content.toLowerCase().startsWith(BotData.getPrefix())) {
-            if (content.contains(LINK)) {
-                channel.sendMessage("If you want to invite me to a server you need to use one of my invite links!\n"
-                        + "Write `" + BotData.getPrefix() + "invite` to see a list of the available invite links.").queue();
-                return;
+        if (!content.isBlank()
+                && !user.isBot())
+        {
+            if (content.toLowerCase().startsWith(BotData.getPrefix())) {
+                channel.sendMessage("Starting in the 30th of April 2022, you will have to use my mention as prefix when using my commands like this:\n"
+                        + alternatePrefix + " help\n"
+                        + "Without it, I won't be able to see the content of the messages.").queue();
             }
-            System.out.printf(
-                    "Warning: %s#%s sent me a direct message at %02d/%02d/%d at %02d:%02d:%02d.\n\nContent:\n%s\n",
-                    user.getName(), user.getDiscriminator(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
-                    time.getHour(), time.getMinute(), time.getSecond(), content
-            );
-            Objects.requireNonNull(event.getJDA().getTextChannelById(BotData.getConsoleID())).sendMessage(
-                    String.format(":warning: %s#%s sent me a direct message at `%02d/%02d/%d` at `%02d:%02d:%02d`.\n\n**Content:**\n```css\n%s```",
-                            user.getName(), user.getDiscriminator(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
-                            time.getHour(), time.getMinute(), time.getSecond(), content)
-            ).queue();
+            else if (channel instanceof PrivateChannel
+                        && !content.toLowerCase().startsWith(alternatePrefix)) {
+                if (content.contains(LINK)) {
+                    channel.sendMessage("If you want to invite me to a server you need to use one of my invite links!\n"
+                            + "Write `" + BotData.getPrefix() + "invite` to see a list of the available invite links.").queue();
+                    return;
+                }
+                System.out.printf(
+                        "Warning: %s#%s sent me a direct message at %02d/%02d/%d at %02d:%02d:%02d.\n\nContent:\n%s\n",
+                        user.getName(), user.getDiscriminator(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
+                        time.getHour(), time.getMinute(), time.getSecond(), content
+                );
+                Objects.requireNonNull(event.getJDA().getTextChannelById(BotData.getConsoleID())).sendMessage(
+                        String.format(":warning: %s#%s sent me a direct message at `%02d/%02d/%d` at `%02d:%02d:%02d`.\n\n**Content:**\n```css\n%s```",
+                                user.getName(), user.getDiscriminator(), time.getDayOfMonth(), time.getMonth().getValue(), time.getYear(),
+                                time.getHour(), time.getMinute(), time.getSecond(), content)
+                ).queue();
+            }
         }
 
     }

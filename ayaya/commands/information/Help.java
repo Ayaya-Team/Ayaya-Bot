@@ -89,8 +89,8 @@ public class Help extends ayaya.commands.Command {
                 helpEmbed.addField("Disabled:", "No", true);
         } else {
             String description = String.format(
-                    "This is the list with all my commands. Don't forget my prefix is `%s`." +
-                            " For more help on a certain command, do `%shelp <command name>`.", prefix, prefix
+                    "This is the list with all my commands. Don't forget my prefix is %s." +
+                            " For more help on a certain command, do \"%shelp <command name>\".", prefix, prefix
             );
             String serverInvite = BotData.getServerInvite();
             String patreonLink = BotData.getPatreonLink();

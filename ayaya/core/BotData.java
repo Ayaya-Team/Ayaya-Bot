@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class BotData {
 
+    private static String id;
     private static String name;
     private static String prefix;
     private static String version;
@@ -53,6 +54,7 @@ public class BotData {
         JSONArray statusQuotesArray = json.getJSONArray("status-quotes");
         JSONArray pingQuotesArray = json.getJSONArray("ping-quotes");
 
+        id = settings.getString("discord-id");
         name = settings.getString("name");
         prefix = settings.getString("prefix");
         token = settings.getString("token");
@@ -120,6 +122,10 @@ public class BotData {
         connection.close();
         dbLock.unlock();
 
+    }
+
+    public static String getId() {
+        return id;
     }
 
     public static String getName() {
