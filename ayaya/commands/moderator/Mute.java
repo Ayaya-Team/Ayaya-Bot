@@ -89,6 +89,7 @@ public class Mute extends ModCommand {
             threadHandler.setFinalCallback(this::onFinish);
             threadHandler.setCommandEvent(event);
             ModActionData data = new ModActionData();
+            cmdData.put(event, data);
             while (mentionFinder.find()) {
                 idFinder = ANY_ID.matcher(mentionFinder.group());
                 idFinder.find();
@@ -132,7 +133,6 @@ public class Mute extends ModCommand {
                     );
                 }
             }
-            cmdData.put(event, data);
             threadHandler.submittedAllThreads();
         } else {
             event.reply("<:AyaWhat:362990028915474432> Who do you want me to mute? You didn't tell me yet.");

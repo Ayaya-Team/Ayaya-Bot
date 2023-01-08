@@ -181,7 +181,7 @@ public class Tsundere extends GuildDMSCommand {
         {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
             Serializable[] o = new Serializable[]{id};
-            ResultSet rs = jdbc.sqlSelect("SELECT * FROM " + name + " WHERE gif_id = ?;", o, 5);
+            ResultSet rs = jdbc.sqlSelect("SELECT * FROM " + this.name + " WHERE gif_id = ?;", o, 5);
             url = rs.next() ? rs.getString("link") : "";
         }
         catch(SQLException e)
@@ -212,14 +212,14 @@ public class Tsundere extends GuildDMSCommand {
         try
         {
             jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            ResultSet rs = jdbc.sqlSelect("SELECT last_value FROM " + name + "_gif_id_seq;", 5);
+            ResultSet rs = jdbc.sqlSelect("SELECT last_value FROM " + this.name + "_gif_id_seq;", 5);
             if (rs.next())
                 amount = rs.getInt(1);
         }
         catch(SQLException e)
         {
             System.out.println(
-                    "A problem occurred while trying to get necessary information for the " + name
+                    "A problem occurred while trying to get necessary information for the " + this.name
                             + " command! Aborting the read process...");
             System.err.println(e.getMessage());
             e.printStackTrace();

@@ -16,10 +16,9 @@ import net.dv8tion.jda.api.requests.restaction.RoleAction;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 /**
@@ -41,7 +40,6 @@ public class Role extends ModCommand {
     private static final String REMOVE_ROLES = "remove-roles";
 
     private Map<CommandEvent, RoleManageActionData> cmdData;
-    private ReentrantLock lock;
 
     public Role() {
 
@@ -53,8 +51,7 @@ public class Role extends ModCommand {
         this.userPerms = new Permission[]{Permission.MANAGE_ROLES};
         this.isGuildOnly = true;
         this.cooldownTime = 5;
-        cmdData = new HashMap<>(10);
-        lock = new ReentrantLock();
+        cmdData = new ConcurrentHashMap<>(10);
 
     }
 
@@ -612,9 +609,7 @@ public class Role extends ModCommand {
 
     @Override
     protected void onFinish(CommandEvent event) {
-        lock.lock();
         RoleManageActionData data = cmdData.remove(event);
-        lock.unlock();
         int memberAmount = data.getMemberAmount();
         List<net.dv8tion.jda.api.entities.Role> rolesToAdd = data.getRolesToAdd();
         List<net.dv8tion.jda.api.entities.Role> rolesToRemove = data.getRolesToRemove();

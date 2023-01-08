@@ -10,11 +10,10 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 
 /**
@@ -27,7 +26,6 @@ public class Prune extends ModCommand {
     private static final String CONTENT_PRUNE = "content";
 
     private Map<CommandEvent, PruneActionData> cmdData;
-    private ReentrantLock lock;
 
     public Prune() {
 
@@ -41,8 +39,7 @@ public class Prune extends ModCommand {
         this.botPerms = new Permission[]{Permission.MESSAGE_MANAGE, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.MESSAGE_MANAGE};
         this.cooldownTime = 5;
-        cmdData = new HashMap<>(10);
-        lock = new ReentrantLock();
+        cmdData = new ConcurrentHashMap<>(10);
 
     }
 
@@ -160,9 +157,7 @@ public class Prune extends ModCommand {
     @Override
     protected void onFinish(CommandEvent event) {
 
-        lock.lock();
         PruneActionData data = cmdData.remove(event);
-        lock.unlock();
         int amount = data.getAmount();
         List<String> users = data.getUsers();
         List<Member> members = data.getMembers();

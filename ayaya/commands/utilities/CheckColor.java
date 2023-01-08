@@ -22,7 +22,7 @@ public class CheckColor extends Command {
     protected static final Pattern CODE_TYPE = Pattern.compile("(?:([^\\p{Blank}\\p{Digit}#])+([\\p{Blank}])?)");
     private static final Pattern HEX = Pattern.compile("(?:[\\p{Digit}a-f]{3}?){1,2}");
     private static final Pattern RGB = Pattern.compile("([\\p{Digit}]{1,3})");
-    private static final Pattern INT = Pattern.compile("(?:[\\p{Digit}]{1,8}?)");
+    //private static final Pattern INT = Pattern.compile("(?:[\\p{Digit}]{1,8}?)");
 
     private static final String URL = "http://thecolorapi.com/id?%s=%s&format=json";
     private static final String IMAGE_URL = "https://dummyimage.com/300x300/%s.png&text=%%20";

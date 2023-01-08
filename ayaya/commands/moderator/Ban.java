@@ -13,10 +13,9 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.ErrorResponse;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 /**
@@ -25,7 +24,6 @@ import java.util.regex.Matcher;
 public class Ban extends ModCommand {
 
     private Map<CommandEvent, ModActionData> cmdData;
-    private ReentrantLock lock;
 
     public Ban() {
 
@@ -40,8 +38,7 @@ public class Ban extends ModCommand {
         this.botPerms = new Permission[]{Permission.BAN_MEMBERS, Permission.MESSAGE_WRITE};
         this.userPerms = new Permission[]{Permission.BAN_MEMBERS};
         this.cooldownTime = 5;
-        cmdData = new HashMap<>(10);
-        lock = new ReentrantLock();
+        cmdData = new ConcurrentHashMap<>(10);
 
     }
 
@@ -193,9 +190,7 @@ public class Ban extends ModCommand {
 
     @Override
     protected void onFinish(CommandEvent event) {
-        lock.lock();
         ModActionData data = cmdData.remove(event);
-        lock.unlock();
         String answer;
         switch (data.getSuccesses()) {
             case 0:

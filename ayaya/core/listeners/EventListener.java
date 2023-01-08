@@ -68,12 +68,7 @@ public class EventListener extends ListenerAdapter {
         if (!content.isBlank()
                 && !user.isBot())
         {
-            if (content.toLowerCase().startsWith(BotData.getPrefix())) {
-                channel.sendMessage("Starting in the 30th of April 2022, you will have to use my mention as prefix when using my commands like this:\n"
-                        + alternatePrefix + " help\n"
-                        + "Without it, I won't be able to see the content of the messages.").queue();
-            }
-            else if (channel instanceof PrivateChannel
+            if (channel instanceof PrivateChannel
                         && !content.toLowerCase().startsWith(alternatePrefix)) {
                 if (content.contains(LINK)) {
                     channel.sendMessage("If you want to invite me to a server you need to use one of my invite links!\n"
