@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id "com.sedmelluq.jdaction" version "1.0.99-beta3"
+}
+
+sourceCompatibility = 1.11
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
+    jcenter()
+    maven { url 'https://jitpack.io' }
+    maven { url "https://m2.chew.pro/releases" }
+}
+
+dependencies {
+    implementation 'net.dv8tion:JDA:4.4.1_353'
+    implementation 'pw.chew:jda-chewtils:1.24.1'
+    implementation 'com.github.walkyst:lavaplayer-fork:1.4.0'
+    implementation 'com.sedmelluq:jda-nas:1.1.0'
+    implementation 'org.slf4j:slf4j-simple:2.0.3'
+    implementation 'org.json:json:20220924'
+    implementation 'org.postgresql:postgresql:42.5.0'
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+shadowJar{
+    mainClassName = 'ayaya.core.Ayaya'
+    archiveBaseName.set('Ayaya')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    applicationName = "Ayaya"
+}
