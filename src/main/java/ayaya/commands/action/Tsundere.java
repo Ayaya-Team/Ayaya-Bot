@@ -36,6 +36,7 @@ public class Tsundere extends GuildDMSCommand {
         this.category = ACTION.asCategory();
         this.isGuildOnly = false;
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
+        rng = ThreadLocalRandom.current();
 
     }
 
