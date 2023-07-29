@@ -29,3 +29,6 @@ A: Yes, you have to change the JDBC dependency in build.gradle to the appropriat
 
 Q: Why did you not use an image API for the gifs?
 A: I am very strict and selective with the gifs I use, so I preferred to have a database of selected gifs.
+
+Q: Why do I get a message in the console saying `None of the bot list tokens were found. The stats posting thread won't be started.`?
+A: This is related with the code the bot has that was used to post statistics on bot lists. This code is useless now and may be removed in the future.
