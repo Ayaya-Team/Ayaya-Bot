@@ -87,8 +87,8 @@ public class Ayaya {
         CommandClientBuilder client = new CommandClientBuilder()
                 .setOwnerId(owners.get(0))
                 .setCoOwnerIds(owners.subList(1, owners.size()).toArray(new String[owners.size()-1]))
-                .setPrefix(String.format("<@%s> ", BotData.getId()))
-                .setAlternativePrefix(BotData.getPrefix())
+                .setPrefix(BotData.getPrefix())
+                .setAlternativePrefix(String.format("<@%s> ", BotData.getId()))
                 .setHelpConsumer(null)
                 .setHelpWord(null)
                 .setEmojis("<:KawaiiThumbup:361601400079253515>", ":warning:", ":x:")
@@ -216,7 +216,7 @@ public class Ayaya {
 
             String quote = BotData.getStatusQuotes().get(status);
 
-            ayaya.getPresence().setActivity(Activity.playing("@" + BotData.getName() + " help | " + quote));
+            ayaya.getPresence().setActivity(Activity.playing(BotData.getPrefix() + " help | " + quote));
             try {
                 TimeUnit.SECONDS.sleep(60);
             } catch (InterruptedException e) {
