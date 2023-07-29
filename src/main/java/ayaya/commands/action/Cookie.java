@@ -28,7 +28,7 @@ public class Cookie extends GuildDMSCommand {
         Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
         Matcher idFinder;
         if (!mentionFinder.find()) {
-            event.reply("<:AngryAya:331115100771450880> Mention the person you want to give a cookie to, you baka!");
+            event.reply("<:AyaWhat:362990028915474432> You did not mention the person to give the cookie to.");
             return;
         }
         idFinder = ANY_ID.matcher(mentionFinder.group());
