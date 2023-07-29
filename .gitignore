@@ -1,0 +1,8 @@
+/.idea
+/.vscode
+/.vs
+
+/bin
+/build
+/wrapper/gradle-wrapper.jar
+/out
