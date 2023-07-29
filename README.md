@@ -26,3 +26,6 @@ A: You can use another version if you want, do note however that the build.gradl
 
 Q: Can I use another database management system other than PostgreSQL?
 A: Yes, you have to change the JDBC dependency in build.gradle to the appropriate one for the system you want to use. Do consider that the database dump in [here](https://github.com/Ayaya-Team/Ayaya-Misc) is a dump from a PostgreSQL database, you may need to take extra steps to fill a database in another system with it.
+
+Q: Why did you not use an image API for the gifs?
+A: I am very strict and selective with the gifs I use, so I preferred to have a database of selected gifs.
