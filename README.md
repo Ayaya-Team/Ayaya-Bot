@@ -18,17 +18,17 @@ Current issues with this project:
 
 ###### Short FAQ:
 
-Q: Can I use Java 8 instead?
+Q: Can I use Java 8 instead?  
 A: When I first made Ayaya version 2 in Java, I was using Java 8, but I am not sure if the dependencies currently in use still support it.
 
-Q: Do I need to use the Gradle version in the current configuration?
+Q: Do I need to use the Gradle version in the current configuration?  
 A: You can use another version if you want, do note however that the build.gradle file uses a feature that was removed in Gradle 8 or newer.
 
-Q: Can I use another database management system other than PostgreSQL?
+Q: Can I use another database management system other than PostgreSQL?  
 A: Yes, you have to change the JDBC dependency in build.gradle to the appropriate one for the system you want to use. Do consider that the database dump in [here](https://github.com/Ayaya-Team/Ayaya-Misc) is a dump from a PostgreSQL database, you may need to take extra steps to fill a database in another system with it.
 
-Q: Why did you not use an image API for the gifs?
+Q: Why did you not use an image API for the gifs?  
 A: I am very strict and selective with the gifs I use, so I preferred to have a database of selected gifs.
 
-Q: Why do I get a message in the console saying `None of the bot list tokens were found. The stats posting thread won't be started.`?
+Q: Why do I get a message in the console saying `None of the bot list tokens were found. The stats posting thread won't be started.`?  
 A: This is related with the code the bot has that was used to post statistics on bot lists. This code is useless now and may be removed in the future.
