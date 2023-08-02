@@ -2,7 +2,10 @@
 ###### The source code of my discord bot Ayaya.
 
 Here lies the result of the discord bot project I started back in 2017.
-This is a bot that aimed at being cute while providing different functionalities.
+Originally this bot was made from another bot written in Python using the [discord.py](https://github.com/Rapptz/discord.py) wrapper.
+For version 2 I decided to rewrite her from scratch in Java using [JDA](https://github.com/discord-jda/JDA).
+
+This is a bot that aims at being cute while providing different functionalities.
 The public instance was shut down in the 31st of May 2023 due to lack of funding for the VPS I hosted her on.
 
 If you are interested in running your own private instance of this bot, here's what you need:
