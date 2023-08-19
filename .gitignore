@@ -6,3 +6,4 @@
 /build
 /wrapper/gradle-wrapper.jar
 /out
+/.gradle
