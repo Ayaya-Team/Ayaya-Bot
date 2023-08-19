@@ -16,7 +16,6 @@ If you are interested in running your own private instance of this bot, here's w
 
 Current issues with this project:
 - The project is still using JDA 4, which currently no longer receives regular updates. I am not sure yet if I will convert her to use JDA 5, but in the meantime, JDA 4 still works.
-- The source code still contains the mechanisms used to authenticate premium users. I may remove it entirely in the future or make a different branch.
 - The project is mostly documented, but some of the code may lack documentation.
 
 ###### Short FAQ:
