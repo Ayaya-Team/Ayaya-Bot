@@ -6,13 +6,11 @@ import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.Commands;
 import ayaya.core.enums.MusicCommands;
 import ayaya.core.enums.OwnerCommands;
-import ayaya.core.exceptions.http.MissingHeaderInfoException;
 import ayaya.core.listeners.CommandListener;
 import ayaya.core.listeners.EventListener;
 import ayaya.core.listeners.VoiceEventListener;
 import ayaya.core.music.MusicHandler;
 import ayaya.core.utils.CustomThreadFactory;
-import ayaya.core.utils.HTTP;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
@@ -25,8 +23,6 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
@@ -35,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * Main class of the bot.

@@ -16,8 +16,6 @@ import net.dv8tion.jda.api.exceptions.PermissionException;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
