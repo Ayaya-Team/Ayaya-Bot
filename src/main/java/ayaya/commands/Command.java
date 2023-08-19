@@ -61,7 +61,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     protected Permission[] userPerms;
     protected boolean isOwnerCommand;
     protected boolean isGuildOnly;
-    protected boolean isPremium;
     protected boolean isDisabled;
     protected boolean isPaginated;
     protected Paginator.Builder pbuilder;
@@ -74,7 +73,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
         this.ownerCommand = false;
         this.guildOnly = false;
         this.isGuildOnly = false;
-        this.isPremium = false;
         this.isDisabled = false;
         this.isPaginated = false;
 
@@ -238,12 +236,7 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
 
         try {
 
-            if (!isPremium || isPremium(event)) {
-                event.getClient().getScheduleExecutor().submit(() -> executeInstructions(event));
-                //executeInstructions(event);
-            }
-            else
-                event.replyError("You need to be premium to use this command.");
+            event.getClient().getScheduleExecutor().submit(() -> executeInstructions(event));
 
         } catch (NullPointerException e) {
 
@@ -286,15 +279,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
     @Override
     public int getCooldown() {
         return cooldownTime;
-    }
-
-    /**
-     * Returns if this command is premium or not
-     *
-     * @return true or false
-     */
-    public boolean isPremium() {
-        return isPremium;
     }
 
     /**
@@ -357,64 +341,6 @@ public class Command extends com.jagrosh.jdautilities.command.Command {
             }
         }
         return blocked;
-    }
-
-    /**
-     * Checks wether a user is or isn't a patron. If the verification fails, the command will never be executed.
-     *
-     * @param event The {@link CommandEvent CommandEvent} that triggered this Command
-     * @return true if the user that triggered the command is a patron, false if not
-     */
-    private boolean isPremium(CommandEvent event) {
-        return getPremiumExpirationDate(event) != null;
-    }
-
-    /**
-     * Retrieves the string with the expiration date for user who triggered the command event. In case the user isn't on
-     * the whitelist or is no longer premium, returns null.
-     *
-     * @param event the command event
-     * @return (possibly null) string
-     */
-    protected String getPremiumExpirationDate(CommandEvent event) {
-        if (isOwner(event))
-            return INFINITE;
-
-        String answer = null;
-        String id = event.getAuthor().getId();
-        SQLController jdbc = new SQLController();
-        try {
-            jdbc.open(BotData.getDBConnection(), BotData.getDBUser(), BotData.getDbPassword());
-            Serializable[] o = new Serializable[]{id};
-            ResultSet resultSet = jdbc
-                    .sqlSelect("SELECT * FROM patreon_whitelist WHERE user_id = ?;", o, 5);
-            if (resultSet.next()) {
-                String result = resultSet.getString("expiration_date");
-                if (result.equals(INFINITE))
-                    answer = INFINITE;
-                else {
-                    LocalDate date = LocalDate.parse(result, DateTimeFormatter.ofPattern(DATE_PATTERN));
-                    LocalDate now = LocalDate.now();
-                    int compare = date.compareTo(now);
-                    if (compare < 0) {
-                        jdbc.sqlInsertUpdateOrDelete(
-                                "DELETE FROM patreon_whitelist WHERE user_id = ?;", o, 5
-                        );
-                    } else answer = result;
-                }
-            }
-        } catch (SQLException e) {
-            event.replyError("There was a problem while checking wether you are or aren't a premium. If this error persists, try again later.");
-            e.printStackTrace();
-        } finally {
-            try {
-                jdbc.close();
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        return answer;
     }
 
     /**

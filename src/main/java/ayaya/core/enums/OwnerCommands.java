@@ -11,11 +11,10 @@ public enum OwnerCommands {
 
     ANNOUNCE("announce", new Announce()), BLACKLIST("blacklist", new Blacklist()),
     BLOCK("block", new Block()), CHANNELLIST("channellist", new Channellist()),
-    INSERTKEY("insertkey", new InsertKey()), LOAD("load", new Load()),
-    MESSAGE("message", new Message()), MUSICSWITCH("mswitch", new MusicSwitch()),
-    REFRESH("refresh", new Refresh()), SERVERLIST("serverlist", new Serverlist()),
-    SHUTDOWN("shutdown", new Shutdown()), UNBLOCK("unblock", new Unblock()),
-    UNLOAD("unload", new Unload());
+    LOAD("load", new Load()), MESSAGE("message", new Message()),
+    MUSICSWITCH("mswitch", new MusicSwitch()), REFRESH("refresh", new Refresh()),
+    SERVERLIST("serverlist", new Serverlist()), SHUTDOWN("shutdown", new Shutdown()),
+    UNBLOCK("unblock", new Unblock()), UNLOAD("unload", new Unload());
 
     private String name;
     private Command cmd;

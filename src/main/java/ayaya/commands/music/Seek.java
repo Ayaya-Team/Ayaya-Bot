@@ -20,7 +20,6 @@ public class Seek extends MusicCommand {
         this.arguments = "{prefix}seek <seconds>";
         this.category = CommandCategories.MUSIC.asCategory();
         this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
-        this.isPremium = true;
 
     }
 

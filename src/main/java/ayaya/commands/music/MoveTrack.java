@@ -18,7 +18,6 @@ public class MoveTrack extends MusicCommand {
         this.arguments = "{prefix}movetrack <number of track> <number of position in the queue>";
         this.category = CommandCategories.MUSIC.asCategory();
         this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
-        this.isPremium = true;
         this.cooldownTime = 5;
     }
 

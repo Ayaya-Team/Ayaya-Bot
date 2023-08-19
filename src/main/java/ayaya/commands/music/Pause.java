@@ -20,7 +20,6 @@ public class Pause extends MusicCommand {
         this.arguments = "{prefix}pause";
         this.category = CommandCategories.MUSIC.asCategory();
         this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
-        this.isPremium = true;
 
     }
 

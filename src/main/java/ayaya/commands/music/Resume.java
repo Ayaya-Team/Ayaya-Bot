@@ -21,7 +21,6 @@ public class Resume extends MusicCommand {
         this.aliases = new String[]{"unpause"};
         this.category = CommandCategories.MUSIC.asCategory();
         this.botPerms = new Permission[]{Permission.VOICE_CONNECT, Permission.MESSAGE_WRITE};
-        this.isPremium = true;
 
     }
 

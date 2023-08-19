@@ -79,10 +79,6 @@ public class Help extends ayaya.commands.Command {
                     permissionsStr.append(perm.getName()).append("\n");
                 helpEmbed.addField("Permissions required:", permissionsStr.toString(), false);
             }
-            if (((ayaya.commands.Command) cmd).isPremium())
-                helpEmbed.addField("Premium:", "Yes", true);
-            else
-                helpEmbed.addField("Premium:", "No", true);
             if (((ayaya.commands.Command) cmd).isDisabled())
                 helpEmbed.addField("Disabled:", "Yes", true);
             else
