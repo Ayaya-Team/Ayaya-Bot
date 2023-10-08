@@ -7,3 +7,5 @@
 /wrapper/gradle-wrapper.jar
 /out
 /.gradle
+
+config.json
