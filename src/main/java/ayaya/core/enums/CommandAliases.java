@@ -24,8 +24,7 @@ public enum CommandAliases {
     PURGE("purge", new Prune()), REGIONALTEXT("regionaltext", new Bigtext()),
     SHRUGS("shrugs", new Shrug()), STATISTICS("statistics", new Stats()),
     TABLEFLIP("tableflip", new Fliptable()), TSUN("tsun", new Tsundere()),
-    UNFLIP("unflip", new Unfliptable()), UPVOTE("upvote", new Vote()),
-    WAA("waa", new Cry()), WHAT("what", new Confused());
+    UNFLIP("unflip", new Unfliptable()), WAA("waa", new Cry()), WHAT("what", new Confused());
 
     private String name;
     private Command cmd;

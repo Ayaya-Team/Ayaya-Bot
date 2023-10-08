@@ -23,17 +23,12 @@ public class BotData {
     private static String dbConnection;
     private static String dbUser;
     private static String dbPassword;
-    private static String inviteNormal;
-    private static String inviteAdmin;
-    private static String inviteMinimal;
     private static String serverInvite;
-    private static String patreonLink;
     private static String consoleID;
     private static String description;
     private static List<String> owners = new ArrayList<>();
     private static List<String> statusQuotes = new ArrayList<>();
     private static List<String> pingQuotes = new ArrayList<>();
-    private static List<String[]> botlists = new ArrayList<>();
     private static ReentrantLock jsLock = new ReentrantLock();
     private static ReentrantLock dbLock = new ReentrantLock();
 
@@ -69,11 +64,7 @@ public class BotData {
         dbPassword = settings.getString("db-password");
         consoleID = settings.getString("console-id");
         serverInvite = settings.getString("server-invite");
-        patreonLink = settings.getString("patreon-link");
         description = settings.getString("description");
-        inviteNormal = invites.getString("normal");
-        inviteAdmin = invites.getString("admin");
-        inviteMinimal = invites.getString("minimal");
 
         owners = new ArrayList<>();
         for (Object value: ownersArray)
@@ -99,26 +90,13 @@ public class BotData {
 
         dbLock.lock();
         Connection connection = DriverManager.getConnection(dbConnection, dbUser, dbPassword);
-        Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery("SELECT * FROM botlists;");
-        botlists = new ArrayList<>();
-        while (rs.next()) {
-            botlists.add(new String[]{
-                    rs.getString(1), rs.getString(2), rs.getString(3),
-                    rs.getString(4), rs.getString(5)
-            });
-        }
-        rs.close();
-        statement.close();
-
         PreparedStatement preparedStatement =
                 connection.prepareStatement("SELECT version FROM changelogs;",
                         ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        rs = preparedStatement.executeQuery();
+        ResultSet rs = preparedStatement.executeQuery();
         rs.last();
         version = rs.getString(1);
         rs.close();
-        statement.close();
         connection.close();
         dbLock.unlock();
 
@@ -156,24 +134,8 @@ public class BotData {
         return version;
     }
 
-    public static String getInviteNormal() {
-        return inviteNormal;
-    }
-
-    public static String getInviteAdmin() {
-        return inviteAdmin;
-    }
-
-    public static String getInviteMinimal() {
-        return inviteMinimal;
-    }
-
     public static String getServerInvite() {
         return serverInvite;
-    }
-
-    public static String getPatreonLink() {
-        return patreonLink;
     }
 
     public static String getConsoleID() {
@@ -194,10 +156,6 @@ public class BotData {
 
     public static List<String> getPingQuotes() {
         return pingQuotes;
-    }
-
-    public static List<String[]> getBotlists() {
-        return botlists;
     }
 
 }

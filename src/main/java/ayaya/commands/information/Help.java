@@ -89,13 +89,8 @@ public class Help extends ayaya.commands.Command {
                             " For more help on a certain command, do \"%shelp <command name>\".", prefix, prefix
             );
             String serverInvite = BotData.getServerInvite();
-            String patreonLink = BotData.getPatreonLink();
             if (!serverInvite.isEmpty())
                 description = description.concat(" For support, please join my [server](" + serverInvite + ").");
-            if (!patreonLink.isEmpty())
-                description = description
-                        .concat("\nJust a friendly reminder, my developer needs your help, because hosting isn't for free." +
-                                " If you could donate on my [patreon page](" + patreonLink + ") that would be very appreciated.");
             if (CommandCategories.MUSIC.asListCategory().getCommands().isEmpty())
                 description = description
                         .concat("\n\n**The music system is currently disabled.**" +

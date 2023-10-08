@@ -30,24 +30,13 @@ public class About extends Command {
     @Override
     protected void executeInstructions(CommandEvent event) {
 
-        String upvoteList = "";
-        StringBuilder s = new StringBuilder();
-        for (String[] data : BotData.getBotlists()) {
-            String upvoteLink = data[4];
-            if (upvoteLink != null && !upvoteLink.isEmpty())
-                s.append('[').append(data[0]).append("](").append(upvoteLink).append(")\n");
-        }
-        upvoteList = s.toString();
         EmbedBuilder about_embed = new EmbedBuilder();
         about_embed.setTitle("About " + event.getSelfUser().getName())
                 .setDescription(BotData.getDescription())
                 .setThumbnail(event.getJDA().getSelfUser().getAvatarUrl())
-                .addField("Version", BotData.getVersion(), false)
-                .addField("Invite", "[click here](" + BotData.getInviteNormal() + ")", true)
+                .addField("Version", BotData.getVersion(), true)
                 .addField("Support Server Invite", "[click here](" + BotData.getServerInvite() + ")",
                         true)
-                .addField("Donate", "[click here](" + BotData.getPatreonLink() + ")", true)
-                .addField("Upvote", upvoteList, true)
                 .setFooter("Requested by " + event.getAuthor().getName(),
                         event.getAuthor().getAvatarUrl());
         try {
