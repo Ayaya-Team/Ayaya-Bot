@@ -39,7 +39,8 @@ public class Ayaya {
 
     private static final GatewayIntent[] INTENTS = {
             GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS,
-            GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES
+            GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES,
+            GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_MEMBERS
     };
     private static final String SHUTDOWN_GAME = "Going to bed.";
     private static final int STATUS_AMOUNT = 7;
@@ -157,8 +158,7 @@ public class Ayaya {
         try {
             Collection<GatewayIntent> intents = Arrays.asList(INTENTS);
             ayaya = JDABuilder.create(BotData.getToken(), intents)
-                    .disableCache(CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
-                    .enableCache(CacheFlag.ROLE_TAGS)
+                    .enableCache(CacheFlag.ROLE_TAGS, CacheFlag.ACTIVITY, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
                     .addEventListeners(client, eventWaiter, new EventListener(), new VoiceEventListener(musicHandler))
                     .setAudioSendFactory(new NativeAudioSendFactory())
                     .setChunkingFilter(ChunkingFilter.NONE)

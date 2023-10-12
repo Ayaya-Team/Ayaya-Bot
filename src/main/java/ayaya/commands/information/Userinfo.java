@@ -5,6 +5,7 @@ import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -12,7 +13,9 @@ import net.dv8tion.jda.api.entities.User;
 
 import java.time.OffsetDateTime;
 import java.time.format.TextStyle;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 import static ayaya.core.enums.CommandCategories.INFORMATION;
@@ -103,11 +106,55 @@ public class Userinfo extends Command {
                 + "\n**User ID**: " + user.getId();
         if (!user.getFlags().isEmpty())
             description += "\n**Badges**: " + printBadges(user);
+        String status = member.getOnlineStatus().name();
+        status = status.substring(0, 1) + status.substring(1).toLowerCase().replace('_', ' ');
         OffsetDateTime joinTime = member.getTimeJoined();
         String joinWeekDay = joinTime.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         OffsetDateTime creationTime = user.getTimeCreated();
         String createWeekDay = creationTime.getDayOfWeek()
                 .getDisplayName(TextStyle.FULL, Locale.getDefault());
+        StringBuilder activity = new StringBuilder();
+        List<Activity> activities = member.getActivities();
+        for (Activity a : activities) {
+            switch (a.getType()) {
+                case CUSTOM_STATUS:
+                    activity.append("**Custom Status:** ");
+                    Activity.Emoji emoji = a.getEmoji();
+                    if (emoji != null && !emoji.isEmote())
+                        activity.append(emoji.getAsMention()).append(' ');
+                    activity.append(a.getName());
+                    break;
+                case WATCHING:
+                    activity.append("**Watching:** ");
+                    if (a.isRich())
+                        activity.append(Objects.requireNonNull(a.asRichPresence()).getState());
+                    else
+                        activity.append(a.getName());
+                    break;
+                case LISTENING:
+                    activity.append("**Listening:** ");
+                    if (a.isRich())
+                        activity.append(Objects.requireNonNull(a.asRichPresence()).getDetails())
+                                .append(" by ").append(Objects.requireNonNull(a.asRichPresence()).getState());
+                    else
+                        activity.append(a.getName());
+                    break;
+                case STREAMING:
+                    activity.append("**Streaming: **");
+                    if (a.isRich())
+                        activity.append(Objects.requireNonNull(a.asRichPresence()).getDetails());
+                    else
+                        activity.append(a.getName());
+                    break;
+                case DEFAULT:
+                    activity.append("**Playing: **").append(a.getName());
+                    break;
+                default:
+                    activity.append("**Other: **").append(a.getName());
+            }
+            activity.append('\n');
+
+        }
         String roles;
         StringBuilder roleList = new StringBuilder();
         for (int i = 0; i < member.getRoles().size(); i++) {
@@ -120,8 +167,14 @@ public class Userinfo extends Command {
         EmbedBuilder userinfoEmbed = new EmbedBuilder()
                 .setAuthor(user.getName() + "#" + user.getDiscriminator(), null)
                 .setDescription(description);
-        if (member.getNickname() != null) userinfoEmbed.addField("Nickname", member.getNickname(), false);
-        else userinfoEmbed.addField("Nickname", "None", false);
+        if (member.getNickname() != null) userinfoEmbed.addField("Nickname", member.getNickname(), true);
+        else userinfoEmbed.addField("Nickname", "None", true);
+        userinfoEmbed.addField("Status", status, true);
+        if (activities.isEmpty()) {
+            userinfoEmbed.addField("Activity", "None", false);
+        } else {
+            userinfoEmbed.addField("Activity", activity.toString(), false);
+        }
         userinfoEmbed.addField("Joined on",
                 String.format("%s, %s %s of %02d at %02d:%02d:%02d",
                         joinWeekDay, joinTime.getMonth()
