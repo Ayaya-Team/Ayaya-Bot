@@ -9,11 +9,10 @@ import com.jagrosh.jdautilities.command.Command;
  */
 public enum OwnerCommands {
 
-    ANNOUNCE("announce", new Announce()), BLACKLIST("blacklist", new Blacklist()),
-    BLOCK("block", new Block()), LOAD("load", new Load()),
-    MUSICSWITCH("mswitch", new MusicSwitch()), REFRESH("refresh", new Refresh()),
-    SHUTDOWN("shutdown", new Shutdown()), UNBLOCK("unblock", new Unblock()),
-    UNLOAD("unload", new Unload());
+    BLACKLIST("blacklist", new Blacklist()), BLOCK("block", new Block()),
+    LOAD("load", new Load()), MUSICSWITCH("mswitch", new MusicSwitch()),
+    REFRESH("refresh", new Refresh()), SHUTDOWN("shutdown", new Shutdown()),
+    UNBLOCK("unblock", new Unblock()), UNLOAD("unload", new Unload());
 
     private String name;
     private Command cmd;

@@ -9,8 +9,7 @@ import com.jagrosh.jdautilities.command.Command;
 public enum CommandCategories {
 
     MUSIC("Music"), ACTION("Action"), FUNNY("Funny"), INFORMATION("Information"),
-    UTILITIES("Utilities"), MODERATOR("Moderator"), ADMINISTRATOR("Administrator"),
-    OWNER("Owner");
+    UTILITIES("Utilities"), MODERATOR("Moderator"), OWNER("Owner");
 
     public static final String OWNER_CATEGORY ="Owner";
 
