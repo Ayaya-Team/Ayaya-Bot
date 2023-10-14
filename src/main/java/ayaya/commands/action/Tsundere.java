@@ -25,8 +25,6 @@ public class Tsundere extends GuildDMSCommand {
 
     private static final String NULL = "null";
 
-    private ThreadLocalRandom rng;
-
     public Tsundere() {
 
         this.name = "tsundere";
@@ -36,7 +34,6 @@ public class Tsundere extends GuildDMSCommand {
         this.category = ACTION.asCategory();
         this.isGuildOnly = false;
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS};
-        rng = ThreadLocalRandom.current();
 
     }
 
@@ -175,7 +172,7 @@ public class Tsundere extends GuildDMSCommand {
 
     private synchronized String getRandomGif() {
         int amount = getGifsAmount();
-        int id = rng.nextInt((amount & 0xff))+1;
+        int id = ThreadLocalRandom.current().nextInt((amount & 0xff))+1;
         String url = null;
         SQLController jdbc = new SQLController();
         try

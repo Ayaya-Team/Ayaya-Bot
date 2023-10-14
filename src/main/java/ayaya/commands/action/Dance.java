@@ -27,7 +27,6 @@ public class Dance extends GuildDMSCommand {
     private static final String VIDEO = "https://www.youtube.com/watch?v=oQTo6aSHWz8";
 
     private String description, footer;
-    private ThreadLocalRandom rng;
 
     public Dance() {
 
@@ -96,7 +95,7 @@ public class Dance extends GuildDMSCommand {
     private synchronized String getRandomGif() {
 
         int amount = getGifsAmount();
-        int id = rng.nextInt((amount & 0xff))+1;
+        int id = ThreadLocalRandom.current().nextInt((amount & 0xff))+1;
         String url = NULL;
         SQLController jdbc = new SQLController();
         try
