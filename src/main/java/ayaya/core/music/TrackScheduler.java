@@ -7,7 +7,13 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import net.dv8tion.jda.api.entities.TextChannel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This class is the track scheduler. It contains the queue of tracks,
@@ -326,10 +332,9 @@ public class TrackScheduler extends AudioEventAdapter {
 
         int currentQueueSize = queue.size();
         List<Integer> indexes = new ArrayList<>();
-        Random rng = new Random();
 
         while (indexes.size() < currentQueueSize) {
-            int x = rng.nextInt(currentQueueSize);
+            int x = ThreadLocalRandom.current().nextInt(currentQueueSize);
             if (!indexes.contains(x))
                 indexes.add(x);
         }
