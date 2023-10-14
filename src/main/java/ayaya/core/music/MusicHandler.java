@@ -15,6 +15,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Class of the music system handler.
@@ -29,6 +30,7 @@ public class MusicHandler {
     private final AudioPlayerManager player;
     private final Map<String, GuildMusicManager> musicManagers;
     private final Map<String, String> channelIDs;
+    private final ReentrantLock lock;
 
     public MusicHandler() {
         player = new DefaultAudioPlayerManager();
@@ -36,6 +38,7 @@ public class MusicHandler {
         channelIDs = new ConcurrentHashMap<>();
         AudioSourceManagers.registerRemoteSources(player);
         AudioSourceManagers.registerLocalSource(player);
+        lock = new ReentrantLock();
     }
 
     /**
@@ -56,9 +59,12 @@ public class MusicHandler {
     private GuildMusicManager getGuildMusicManager(Guild guild) {
 
         String guildId = guild.getId();
-        musicManagers.putIfAbsent(guildId, new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(guildId))));
 
+        lock.lock();
+        musicManagers.putIfAbsent(guildId, new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(guildId))));
         GuildMusicManager musicManager = musicManagers.get(guildId);
+        lock.unlock();
+
         guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
 
         return musicManager;
