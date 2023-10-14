@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.Permission;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
 
@@ -47,8 +47,7 @@ public class Ask extends Command {
      */
     private String getRandomAnswer() {
         int amount = getAnswersAmount();
-        Random rng = new Random();
-        int id = rng.nextInt((amount & 0xff)) + 1;
+        int id = ThreadLocalRandom.current().nextInt((amount & 0xff)) + 1;
         String answer = null;
         SQLController jdbc = new SQLController();
         try {

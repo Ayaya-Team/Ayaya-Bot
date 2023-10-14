@@ -4,7 +4,7 @@ import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
 
@@ -43,7 +43,7 @@ public class Choose extends Command {
             return;
         }
         int amount = options.length;
-        Random rng = new Random();
+        ThreadLocalRandom rng = ThreadLocalRandom.current();
         int num = rng.nextInt(amount);
         event.getChannel()
                 .sendMessage("Hmmm... I choose " + options[num].trim() + ".")

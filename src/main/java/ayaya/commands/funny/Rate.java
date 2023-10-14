@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
 
@@ -43,7 +43,7 @@ public class Rate extends Command {
             if (e != null) {
                 event.reply(e.getAnswer());
             } else {
-                Random rng = new Random();
+                ThreadLocalRandom rng = ThreadLocalRandom.current();
                 int rate = rng.nextInt(11);
                 event.reply("Hmmm... I give " + object + " a " + rate + "/10.");
             }

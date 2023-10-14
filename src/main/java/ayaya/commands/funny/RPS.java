@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.Permission;
 
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Class of the rps command.
@@ -74,7 +74,7 @@ public class RPS extends Command {
      * @return number
      */
     private int rng() {
-        Random option = new Random();
+        ThreadLocalRandom option = ThreadLocalRandom.current();
         return option.nextInt(OPTIONS_AMOUNT);
     }
 

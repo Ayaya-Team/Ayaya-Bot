@@ -4,7 +4,7 @@ import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
@@ -42,15 +42,16 @@ public class Flipcoin extends Command {
                 event.reply("You throw a coin up in the air...", m ->
                     m.editMessage(
                             "You throw a coin up in the air...\nAnd you got "
-                                    + flip() + "!").queueAfter(1, TimeUnit.SECONDS));
+                                    + flip(ThreadLocalRandom.current()) + "!").queueAfter(1, TimeUnit.SECONDS));
             } else if (amount > LIMIT) {
                 event.replyError("Sorry but, the maximum limit of coins at once is "+LIMIT+".");
             } else {
                 int heads = 0;
                 int tails = 0;
                 String side;
+                ThreadLocalRandom rng = ThreadLocalRandom.current();
                 for (int i = 0; i < amount; i++) {
-                    side = flip();
+                    side = flip(rng);
                     if (side.equals("Heads")) heads++;
                     else tails++;
                 }
@@ -64,7 +65,7 @@ public class Flipcoin extends Command {
             event.reply("You throw a coin up in the air...", m ->
                 m.editMessage(
                         "You throw a coin up in the air...\nAnd you got "
-                                + flip() + "!").queueAfter(1, TimeUnit.SECONDS));
+                                + flip(ThreadLocalRandom.current()) + "!").queueAfter(1, TimeUnit.SECONDS));
         }
 
     }
@@ -93,10 +94,9 @@ public class Flipcoin extends Command {
      *
      * @return result
      */
-    private String flip() {
+    private String flip(ThreadLocalRandom coin) {
 
         String coin_side = "";
-        Random coin = new Random();
         int final_side = coin.nextInt(2);
         switch (final_side) {
             case 0:

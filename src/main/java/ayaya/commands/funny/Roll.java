@@ -4,7 +4,7 @@ import ayaya.commands.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static ayaya.core.enums.CommandCategories.FUNNY;
@@ -70,7 +70,7 @@ public class Roll extends Command {
                     int finalFaces = faces;
                     event.reply("You rolled the die... :game_die:", m ->
                             m.editMessage("You rolled the die... :game_die:\nAnd you got a " +
-                                roll(finalFaces) + "!").queueAfter(1, TimeUnit.SECONDS));
+                                roll(finalFaces, ThreadLocalRandom.current()) + "!").queueAfter(1, TimeUnit.SECONDS));
                 }
             } else {
                 if (faces < 0)
@@ -87,8 +87,9 @@ public class Roll extends Command {
                     int finalFaces = faces;
                     event.reply("You rolled the dies... :game_die:", m -> {
                         int total = 0;
+                        ThreadLocalRandom rng = ThreadLocalRandom.current();
                         for (int i = 0; i < finalAmount; i++)
-                            total += roll(finalFaces);
+                            total += roll(finalFaces, rng);
                         m.editMessage("You rolled the dies... :game_die:\nAnd you got a total of " +
                                 total + "!").queueAfter(1, TimeUnit.SECONDS);
                     });
@@ -97,7 +98,7 @@ public class Roll extends Command {
         } else {
             event.reply("You rolled the die... :game_die:", m ->
                 m.editMessage("You rolled the die... :game_die:\nAnd you got a " +
-                        roll(6) + "!").queueAfter(1, TimeUnit.SECONDS));
+                        roll(6, ThreadLocalRandom.current()) + "!").queueAfter(1, TimeUnit.SECONDS));
         }
 
     }
@@ -108,8 +109,7 @@ public class Roll extends Command {
      * @param face_amount the amount of faces
      * @return result
      */
-    private int roll(int face_amount) {
-        Random die = new Random();
+    private int roll(int face_amount, ThreadLocalRandom die) {
         return die.nextInt(face_amount) + 1;
     }
 
