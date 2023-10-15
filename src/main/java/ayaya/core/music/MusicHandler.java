@@ -13,9 +13,8 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class of the music system handler.
@@ -28,8 +27,8 @@ public class MusicHandler {
     static final String YOUTUBE_SEARCH = "ytsearch:";
 
     private final AudioPlayerManager player;
-    private final Map<String, GuildMusicManager> musicManagers;
-    private final Map<String, String> channelIDs;
+    private final ConcurrentMap<String, GuildMusicManager> musicManagers;
+    private final ConcurrentMap<String, String> channelIDs;
 
     public MusicHandler() {
         player = new DefaultAudioPlayerManager();
