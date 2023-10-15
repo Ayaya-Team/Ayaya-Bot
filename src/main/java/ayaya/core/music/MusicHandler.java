@@ -13,9 +13,8 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class of the music system handler.
@@ -28,9 +27,8 @@ public class MusicHandler {
     static final String YOUTUBE_SEARCH = "ytsearch:";
 
     private final AudioPlayerManager player;
-    private final Map<String, GuildMusicManager> musicManagers;
-    private final Map<String, String> channelIDs;
-    private final ReentrantLock lock;
+    private final ConcurrentMap<String, GuildMusicManager> musicManagers;
+    private final ConcurrentMap<String, String> channelIDs;
 
     public MusicHandler() {
         player = new DefaultAudioPlayerManager();
@@ -38,7 +36,6 @@ public class MusicHandler {
         channelIDs = new ConcurrentHashMap<>();
         AudioSourceManagers.registerRemoteSources(player);
         AudioSourceManagers.registerLocalSource(player);
-        lock = new ReentrantLock();
     }
 
     /**
@@ -59,11 +56,7 @@ public class MusicHandler {
     private GuildMusicManager getGuildMusicManager(Guild guild) {
 
         String guildId = guild.getId();
-
-        lock.lock();
-        musicManagers.putIfAbsent(guildId, new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(guildId))));
-        GuildMusicManager musicManager = musicManagers.get(guildId);
-        lock.unlock();
+        GuildMusicManager musicManager = musicManagers.computeIfAbsent(guildId, id -> new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(id))));
 
         guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
 
