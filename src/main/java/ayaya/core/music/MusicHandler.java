@@ -30,7 +30,6 @@ public class MusicHandler {
     private final AudioPlayerManager player;
     private final Map<String, GuildMusicManager> musicManagers;
     private final Map<String, String> channelIDs;
-    private final ReentrantLock lock;
 
     public MusicHandler() {
         player = new DefaultAudioPlayerManager();
@@ -38,7 +37,6 @@ public class MusicHandler {
         channelIDs = new ConcurrentHashMap<>();
         AudioSourceManagers.registerRemoteSources(player);
         AudioSourceManagers.registerLocalSource(player);
-        lock = new ReentrantLock();
     }
 
     /**
@@ -59,11 +57,7 @@ public class MusicHandler {
     private GuildMusicManager getGuildMusicManager(Guild guild) {
 
         String guildId = guild.getId();
-
-        lock.lock();
-        musicManagers.putIfAbsent(guildId, new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(guildId))));
-        GuildMusicManager musicManager = musicManagers.get(guildId);
-        lock.unlock();
+        GuildMusicManager musicManager = musicManagers.computeIfAbsent(guildId, id -> new GuildMusicManager(player, guild.getTextChannelById(channelIDs.get(id))));
 
         guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
 
