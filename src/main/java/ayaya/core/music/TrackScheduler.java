@@ -4,15 +4,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-
 import net.dv8tion.jda.api.entities.TextChannel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -333,8 +327,9 @@ public class TrackScheduler extends AudioEventAdapter {
         int currentQueueSize = queue.size();
         List<Integer> indexes = new ArrayList<>();
 
+        final ThreadLocalRandom random = ThreadLocalRandom.current();
         while (indexes.size() < currentQueueSize) {
-            int x = ThreadLocalRandom.current().nextInt(currentQueueSize);
+            int x = random.nextInt(currentQueueSize);
             if (!indexes.contains(x))
                 indexes.add(x);
         }

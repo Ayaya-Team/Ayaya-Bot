@@ -42,16 +42,15 @@ public class Flipcoin extends Command {
                 event.reply("You throw a coin up in the air...", m ->
                     m.editMessage(
                             "You throw a coin up in the air...\nAnd you got "
-                                    + flip(ThreadLocalRandom.current()) + "!").queueAfter(1, TimeUnit.SECONDS));
+                                    + flip() + "!").queueAfter(1, TimeUnit.SECONDS));
             } else if (amount > LIMIT) {
                 event.replyError("Sorry but, the maximum limit of coins at once is "+LIMIT+".");
             } else {
                 int heads = 0;
                 int tails = 0;
                 String side;
-                ThreadLocalRandom rng = ThreadLocalRandom.current();
                 for (int i = 0; i < amount; i++) {
-                    side = flip(rng);
+                    side = flip();
                     if (side.equals("Heads")) heads++;
                     else tails++;
                 }
@@ -65,7 +64,7 @@ public class Flipcoin extends Command {
             event.reply("You throw a coin up in the air...", m ->
                 m.editMessage(
                         "You throw a coin up in the air...\nAnd you got "
-                                + flip(ThreadLocalRandom.current()) + "!").queueAfter(1, TimeUnit.SECONDS));
+                                + flip() + "!").queueAfter(1, TimeUnit.SECONDS));
         }
 
     }
@@ -94,19 +93,12 @@ public class Flipcoin extends Command {
      *
      * @return result
      */
-    private String flip(ThreadLocalRandom coin) {
-
-        String coin_side = "";
-        int final_side = coin.nextInt(2);
-        switch (final_side) {
-            case 0:
-                coin_side = "Heads";
-                break;
-            case 1:
-                coin_side = "Tails";
+    private String flip() {
+        if (ThreadLocalRandom.current().nextBoolean()) {
+            return "Heads";
+        } else {
+            return "Tails";
         }
-        return coin_side;
-
     }
 
 }
