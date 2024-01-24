@@ -21,11 +21,11 @@ repositories {
 dependencies {
     implementation 'net.dv8tion:JDA:4.4.1_353'
     implementation 'pw.chew:jda-chewtils:1.24.1'
-    implementation 'com.github.walkyst:lavaplayer-fork:1.4.0'
-    implementation 'com.sedmelluq:jda-nas:1.1.0'
-    implementation 'org.slf4j:slf4j-simple:2.0.3'
-    implementation 'org.json:json:20220924'
-    implementation 'org.postgresql:postgresql:42.5.0'
+    implementation 'dev.arbjerg:lavaplayer:2.1.0'
+    implementation 'com.github.sedmelluq.jda-nas:jda-nas:c5c43d26cb'
+    implementation 'org.slf4j:slf4j-simple:2.0.11'
+    implementation 'org.json:json:20231013'
+    implementation 'org.postgresql:postgresql:42.7.1'
 }
 
 compileJava.options.encoding = 'UTF-8'
