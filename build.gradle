@@ -22,7 +22,20 @@ dependencies {
     implementation 'net.dv8tion:JDA:4.4.1_353'
     implementation 'pw.chew:jda-chewtils:1.24.1'
     implementation 'dev.arbjerg:lavaplayer:2.1.0'
-    implementation 'com.github.sedmelluq.jda-nas:jda-nas:c5c43d26cb'
+
+    implementation ("com.sedmelluq:jda-nas:1.1.0") {
+        exclude module: "udp-queue"
+    }
+    implementation("club.minnced:udpqueue-native-linux-x86-64:0.2.7") //Linux X86 64bit glibc
+    //implementation("club.minnced:udpqueue-native-linux-x86:0.2.7") //Linux X86 32bit glibc
+    //implementation("club.minnced:udpqueue-native-linux-aarch64:0.2.7") //Linux ARM 64bit glibc
+    //implementation("club.minnced:udpqueue-native-linux-arm:0.2.7") //Linux ARM 32bit glibc
+    //implementation("club.minnced:udpqueue-native-linux-musl-x86-64:0.2.7") //Linux X86 64bit musl
+    //implementation("club.minnced:udpqueue-native-linux-musl-aarch64:0.2.7") //Linux ARM 64bit musl
+    implementation("club.minnced:udpqueue-native-win-x86-64:0.2.7") //Windows X86 64bit
+    //implementation("club.minnced:udpqueue-native-win-x86:0.2.7") //Windows X86 32bit
+    //implementation("club.minnced:udpqueue-native-darwin:0.2.7") //MacOS X86
+
     implementation 'org.slf4j:slf4j-simple:2.0.11'
     implementation 'org.json:json:20231013'
     implementation 'org.postgresql:postgresql:42.7.1'
@@ -32,8 +45,8 @@ compileJava.options.encoding = 'UTF-8'
 
 shadowJar{
     mainClassName = 'ayaya.core.Ayaya'
-    archiveBaseName.set('Ayaya')
-    archiveClassifier.set('')
-    archiveVersion.set('')
+    archiveBaseName = 'Ayaya'
+    archiveClassifier = ''
+    archiveVersion = ''
     applicationName = "Ayaya"
 }
