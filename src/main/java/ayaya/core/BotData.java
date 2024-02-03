@@ -45,7 +45,6 @@ public class BotData {
         JSONObject json = new JSONObject(stringBuilder.toString().trim());
         JSONObject settings = json.getJSONObject("settings");
         JSONArray ownersArray = json.getJSONArray("owners");
-        JSONObject invites = json.getJSONObject("invites");
         JSONArray statusQuotesArray = json.getJSONArray("status-quotes");
         JSONArray pingQuotesArray = json.getJSONArray("ping-quotes");
 
