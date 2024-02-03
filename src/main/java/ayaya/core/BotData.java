@@ -80,13 +80,6 @@ public class BotData {
 
     public static void refreshDBData() throws SQLException {
 
-        if (dbPassword.isEmpty()) {
-            Console console = System.console();
-            if (console != null) {
-                dbPassword = new String(console.readPassword());
-            }
-        }
-
         dbLock.lock();
         Connection connection = DriverManager.getConnection(dbConnection, dbUser, dbPassword);
         PreparedStatement preparedStatement =
