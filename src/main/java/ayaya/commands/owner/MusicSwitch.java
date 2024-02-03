@@ -6,7 +6,6 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
-//import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.util.List;
 
@@ -48,18 +47,7 @@ public class MusicSwitch extends ayaya.commands.Command {
         } else {
             String option = args[0];
             ListCategory listCategory;
-            //String categoryName;
             if (option.equals(ON) && !isOn) {
-                /*MusicHandler musicHandler = new MusicHandler();
-                for (MusicCommands command : MusicCommands.values()) {
-                    command.getCommandAsMusicCommand().setMusicHandler(musicHandler);
-                    event.getClient().addCommand(command.getCommand());
-                    if (command.getCommand().getCategory() != null) {
-                        categoryName = command.getCommand().getCategory().getName();
-                        listCategory = CommandCategories.getListCategory(categoryName);
-                        if (listCategory != null) listCategory.add(command.getName());
-                    }
-                }*/
                 for (Command command: commands) {
                     if (command.getCategory().equals(CommandCategories.MUSIC.asCategory())) {
                         ((ayaya.commands.Command) command).enable();
@@ -69,18 +57,9 @@ public class MusicSwitch extends ayaya.commands.Command {
                 }
                 event.reactSuccess();
             } else if (option.equals(OFF) && isOn) {
-                //AudioManager audioManager;
                 for (Guild guild : event.getJDA().getGuilds()) {
                     disconnectVoice(guild);
                 }
-                /*for (MusicCommands command : MusicCommands.values()) {
-                    event.getClient().removeCommand(command.getCommand().getName());
-                    if (command.getCommand().getCategory() != null) {
-                        categoryName = command.getCommand().getCategory().getName();
-                        listCategory = CommandCategories.getListCategory(categoryName);
-                        if (listCategory != null) listCategory.remove(command.getName());
-                    }
-                }*/
                 for (Command command: commands) {
                     if (command.getCategory().equals(CommandCategories.MUSIC.asCategory())) {
                         ((ayaya.commands.Command) command).disable();

@@ -2,6 +2,7 @@ package ayaya.commands.funny;
 
 import ayaya.commands.Command;
 import ayaya.core.BotData;
+import ayaya.core.Emotes;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
@@ -33,7 +34,7 @@ public class Ask extends Command {
     protected void executeInstructions(CommandEvent event) {
 
         if (event.getArgs().trim().isEmpty())
-            event.reply("<:AyaWhat:362990028915474432> Did you want to ask me something?");
+            event.reply(Emotes.CONFUSED_EMOTE + " Did you want to ask me something?");
         else {
             event.reply(getRandomAnswer());
         }

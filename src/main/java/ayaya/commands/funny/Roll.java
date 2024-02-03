@@ -1,6 +1,8 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
+
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
@@ -54,14 +56,14 @@ public class Roll extends Command {
             if (amount < 0)
                 event.replyError("The amount of an object in real life is a positive number, not a negative one, baka.");
             else if (amount == 0)
-                event.reply("Huh? Are you trying to roll an air die? <:AyaWhat:362990028915474432>");
+                event.reply("Huh? Are you trying to roll an air die? " + Emotes.CONFUSED_EMOTE);
             else if (amount > LIMIT)
                 event.replyError("S-Sorry but, the maximum limit of dies at once is " + LIMIT + ".");
             else if (amount == 1) {
                 if (faces < 0)
                     event.replyError("Any die in real life has a positive amount of faces, baka.");
                 else if (faces == 0) {
-                    event.reply("How can you even make a die with 0 faces? <:AyaWhat:362990028915474432>");
+                    event.reply("How can you even make a die with 0 faces? " + Emotes.CONFUSED_EMOTE);
                 } else if (faces < 4) {
                     event.replyError("There aren't any dies with less than 4 faces.");
                 } else if (faces > 20) {
@@ -76,7 +78,7 @@ public class Roll extends Command {
                 if (faces < 0)
                     event.replyError("Any die in real life has a positive amount of faces, baka.");
                 else if (faces == 0) {
-                    event.reply("How can you even make a die with 0 faces? <:AyaWhat:362990028915474432>");
+                    event.reply("How can you even make a die with 0 faces? " + Emotes.CONFUSED_EMOTE);
                 } else if (faces < 4) {
                     event.replyError("There aren't any dies with less than 4 faces.");
                 } else if (faces > 20) {

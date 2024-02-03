@@ -1,6 +1,8 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
+
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
@@ -37,7 +39,7 @@ public class Flipcoin extends Command {
             int amount = getAmount(args);
             if (amount < 0)
                 event.replyError("That's not a valid positive amount of coins.");
-            else if (amount == 0) event.reply("Throwing an air coin? <:AyaWhat:362990028915474432>");
+            else if (amount == 0) event.reply("Throwing an air coin? " + Emotes.CONFUSED_EMOTE);
             else if (amount == 1) {
                 event.reply("You throw a coin up in the air...", m ->
                     m.editMessage(

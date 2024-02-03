@@ -1,6 +1,7 @@
 package ayaya.commands.moderator;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.PermissionNames;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -171,7 +172,7 @@ public class Channel extends Command {
         }
 
         if (channel.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't provide any name for the new channel.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't provide any name for the new channel.");
             return;
         }
         if (channel.length() > NAME_LENGTH) {
@@ -354,7 +355,7 @@ public class Channel extends Command {
         }
 
         if (name.isBlank()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't provide the name of the channel to edit.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't provide the name of the channel to edit.");
             return;
         }
         if (newName.isBlank() && topic.isBlank() && nsfw.isBlank()

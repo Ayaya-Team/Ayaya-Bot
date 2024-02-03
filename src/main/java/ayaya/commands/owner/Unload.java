@@ -1,6 +1,7 @@
 package ayaya.commands.owner;
 
 import ayaya.commands.ListCategory;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -29,7 +30,7 @@ public class Unload extends ayaya.commands.Command {
         String[] args = event.getArgs().split(" ");
         if (event.getArgs().isEmpty()) {
             if (event.getChannelType() != ChannelType.TEXT || event.getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_WRITE))
-                event.reply("<:AyaWhat:362990028915474432> You didn't specify any command for me to unload.");
+                event.reply(Emotes.CONFUSED_EMOTE + " You didn't specify any command for me to unload.");
             return;
         }
         String commandName = args[0].toLowerCase();

@@ -1,6 +1,7 @@
 package ayaya.commands.moderator;
 
 import ayaya.commands.ModCommand;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.utils.ModActionData;
 import ayaya.core.utils.ParallelThreadHandler;
@@ -133,7 +134,7 @@ public class Unmute extends ModCommand {
             cmdData.put(event, data);
             threadHandler.submittedAllThreads();
         } else {
-            event.reply("<:AyaWhat:362990028915474432> Who do you want me to mute? You didn't tell me yet.");
+            event.reply(Emotes.CONFUSED_EMOTE + " Who do you want me to mute? You didn't tell me yet.");
         }
     }
 
@@ -223,7 +224,7 @@ public class Unmute extends ModCommand {
                             " due to an error in the Discord API.");
                 break;
             case 1:
-                answer = "<:KawaiiThumbup:361601400079253515> 1 member was unmuted." +
+                answer = Emotes.OK_EMOTE + " 1 member was unmuted." +
                         " When you want to unmute them, use the unmute command.";
                 if (data.getLeftGuild())
                     event.replyWarning("One or more users left the guild while I was unmuting them.");
@@ -239,7 +240,7 @@ public class Unmute extends ModCommand {
                 event.reply(answer);
                 break;
             default:
-                answer = "<:KawaiiThumbup:361601400079253515> "
+                answer = Emotes.OK_EMOTE + " "
                         + data.getSuccesses() + " members were unmuted. " +
                         "When you want to unmute them, use the unmute command.";
                 if (data.getLeftGuild())

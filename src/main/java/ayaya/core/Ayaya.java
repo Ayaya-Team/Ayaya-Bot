@@ -87,7 +87,7 @@ public class Ayaya {
                 .setAlternativePrefix(String.format("<@%s> ", BotData.getId()))
                 .setHelpConsumer(null)
                 .setHelpWord(null)
-                .setEmojis("<:KawaiiThumbup:361601400079253515>", ":warning:", ":x:")
+                .setEmojis(Emotes.OK_EMOTE, Emotes.WARNING_EMOTE, Emotes.ERROR_EMOTE)
                 .setListener(new CommandListener())
                 .useHelpBuilder(false);
 

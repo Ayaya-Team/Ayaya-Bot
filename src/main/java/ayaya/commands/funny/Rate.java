@@ -1,6 +1,7 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
 import ayaya.core.enums.RateSpecialCases;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
@@ -32,7 +33,7 @@ public class Rate extends Command {
         String object = event.getArgs();
         List<User> mentioned = event.getMessage().getMentionedUsers();
         if (object.isEmpty()) {
-            event.reply("What do you want me to rate? You didn't tell me! <:AyaWhat:362990028915474432>");
+            event.reply("What do you want me to rate? You didn't tell me! " + Emotes.CONFUSED_EMOTE);
             return;
         }
         if (!mentioned.isEmpty() && mentioned.get(0) == event.getSelfUser())

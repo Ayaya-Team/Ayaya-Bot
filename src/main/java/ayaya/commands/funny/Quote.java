@@ -1,6 +1,7 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -44,7 +45,7 @@ public class Quote extends Command {
         String message = event.getArgs();
 
         if (message.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You did not specify any arguments for this command." +
+            event.reply(Emotes.CONFUSED_EMOTE + " You did not specify any arguments for this command." +
                     " Remember to check `" + event.getClient().getPrefix() + "help quote` in case you need more" +
                     " help with this command.");
             return;

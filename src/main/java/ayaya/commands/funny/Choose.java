@@ -1,6 +1,8 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
+
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 
@@ -30,7 +32,7 @@ public class Choose extends Command {
 
         String message = event.getArgs();
         if (message.isEmpty()) {
-            event.reply("You didn't tell me any options to choose. <:AyaWhat:362990028915474432>");
+            event.reply("You didn't tell me any options to choose. " + Emotes.CONFUSED_EMOTE);
             return;
         }
         String[] options;
@@ -39,7 +41,7 @@ public class Choose extends Command {
         else
             options = message.split(" +?");
         if (options.length < 2) {
-            event.reply("You want me to be able to choose when there's only one option? <:AyaWhat:362990028915474432>");
+            event.reply("You want me to be able to choose when there's only one option? " + Emotes.CONFUSED_EMOTE);
             return;
         }
         int amount = options.length;

@@ -1,6 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.core.BotData;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -20,7 +21,7 @@ public class Help extends ayaya.commands.Command {
 
         this.name = "help";
         this.help = "Whenever you need I will give you the list of commands." +
-                " If you also need I will show the help for a specific comnmand! <:AyaSmile:331115374739324930>";
+                " If you also need I will show the help for a specific comnmand! " + Emotes.SMILE_EMOTE;
         this.arguments = "{prefix}help <command>\n\nTo just get the help list run: {prefix}help";
         this.category = CommandCategories.INFORMATION.asCategory();
         this.botPerms = new Permission[]{Permission.MESSAGE_EMBED_LINKS, Permission.MESSAGE_WRITE};

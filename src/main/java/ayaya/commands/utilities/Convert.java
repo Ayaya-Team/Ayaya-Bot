@@ -2,6 +2,7 @@ package ayaya.commands.utilities;
 
 import ayaya.commands.Command;
 import ayaya.core.BotData;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -111,7 +112,7 @@ public class Convert extends Command {
             try {
                 amount = Double.parseDouble(args[2]);
             } catch (NumberFormatException e) {
-                return ":x: The amount introduced for the conversion isn't a valid number.";
+                return Emotes.ERROR_EMOTE + " The amount introduced for the conversion isn't a valid number.";
             }
             result = amount * getConvertRating(unit1, unit2);
             result = Math.round(result*1000.0)/1000.0;

@@ -1,6 +1,7 @@
 package ayaya.commands.moderator;
 
 import ayaya.commands.ModCommand;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.utils.ModActionData;
 import ayaya.core.utils.ParallelThreadHandler;
@@ -96,7 +97,7 @@ public class Ban extends ModCommand {
             cmdData.put(event, data);
             threadHandler.submittedAllThreads();
         } else {
-            event.reply("<:AyaWhat:362990028915474432> Who do you want me to ban? You didn't tell me yet.");
+            event.reply(Emotes.CONFUSED_EMOTE + " Who do you want me to ban? You didn't tell me yet.");
         }
 
     }
@@ -208,7 +209,7 @@ public class Ban extends ModCommand {
                             " due to an error in the Discord API.");
                 break;
             case 1:
-                answer = "<:KawaiiThumbup:361601400079253515> 1 member was banned." +
+                answer = Emotes.OK_EMOTE + " 1 member was banned." +
                         " Now you don't have to worry about that person anymore.";
                 if (data.getLeftGuild())
                     event.replyWarning("One or more users left the guild while I was banning them.");
@@ -222,7 +223,7 @@ public class Ban extends ModCommand {
                 event.reply(answer);
                 break;
             default:
-                answer = "<:KawaiiThumbup:361601400079253515> "
+                answer = Emotes.OK_EMOTE + " "
                         + data.getSuccesses() + " members were banned. Now you don't have to worry about them anymore.";
                 if (data.getLeftGuild())
                     event.replyWarning("One or more users left the guild while I was banning them.");

@@ -1,6 +1,7 @@
 package ayaya.commands.information;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
 import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -26,20 +27,6 @@ import static ayaya.core.enums.CommandCategories.INFORMATION;
 public class Userinfo extends Command {
 
     private static final int FIELD_LIMIT = 1024;
-
-    private static final String STAFF = "<:staff_badge:770616558769930251>";
-    private static final String PARTNER = "<:partner_badge:770616558690369547>";
-    private static final String BUG_HUNTER_LEVEL_1 = "<:bug_hunter_badge:770616558942552080>";
-    private static final String BUG_HUNTER_LEVEL_2 = "<:golden_bug_hunter_badge:770661542756483134>";
-    private static final String EARLY_SUPPORTER = "<:early_supporter_badge:770616558644232203>";
-    private static final String HYPESQUAD = "<:hypesquad_badge:770653617127948300>";
-
-    private static final String HYPESQUAD_BRAVERY = "<:hs_bravery_badge:770616559017132062>";
-    private static final String HYPESQUAD_BRILLIANCE = "<:hs_brilliance_badge:770616559059599370>";
-    private static final String HYPESQUAD_BALANCE = "<:hs_balance_badge:770616559034957834>";
-
-    private static final String VERIFIED_BOT_DEVELOPER =
-            "<:verified_bot_developer_badge:770616558941896724>";
 
     public Userinfo() {
 
@@ -212,34 +199,34 @@ public class Userinfo extends Command {
         for (User.UserFlag flag : user.getFlags()) {
             switch (flag) {
                 case STAFF:
-                    s.append(STAFF);
+                    s.append(Emotes.STAFF_EMOTE);
                     break;
                 case PARTNER:
-                    s.append(PARTNER);
+                    s.append(Emotes.PARTNER_EMOTE);
                     break;
                 case BUG_HUNTER_LEVEL_1:
-                    s.append(BUG_HUNTER_LEVEL_1);
+                    s.append(Emotes.BUG_HUNTER_EMOTE);
                     break;
                 case BUG_HUNTER_LEVEL_2:
-                    s.append(BUG_HUNTER_LEVEL_2);
+                    s.append(Emotes.GOLDEN_BUG_HUNTER_EMOTE);
                     break;
                 case EARLY_SUPPORTER:
-                    s.append(EARLY_SUPPORTER);
+                    s.append(Emotes.EARLY_SUPPORTER_EMOTE);
                     break;
                 case HYPESQUAD:
-                    s.append(HYPESQUAD);
+                    s.append(Emotes.HYPESQUAD_EMOTE);
                     break;
                 case HYPESQUAD_BRAVERY:
-                    s.append(HYPESQUAD_BRAVERY);
+                    s.append(Emotes.HYPESQUAD_BRAVERY_EMOTE);
                     break;
                 case HYPESQUAD_BRILLIANCE:
-                    s.append(HYPESQUAD_BRILLIANCE);
+                    s.append(Emotes.HYPESQUAD_BRILLIANCE_EMOTE);
                     break;
                 case HYPESQUAD_BALANCE:
-                    s.append(HYPESQUAD_BALANCE);
+                    s.append(Emotes.HYPESQUAD_BALANCE_EMOTE);
                     break;
                 case VERIFIED_DEVELOPER:
-                    s.append(VERIFIED_BOT_DEVELOPER);
+                    s.append(Emotes.EARLY_VERIFIED_BOT_DEVELOPER_EMOTE);
                     break;
                 default:
             }

@@ -2,6 +2,7 @@ package ayaya.commands.funny;
 
 import ayaya.commands.Command;
 import ayaya.core.BotData;
+import ayaya.core.Emotes;
 import ayaya.core.utils.SQLController;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -16,8 +17,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class RPS extends Command {
 
-    private static final String WIN = "I win! <:AyaStar:331115397501943808>";
-    private static final String LOSE = "You win. Congrats! <:AyaSmile:331115374739324930>";
+    private static final String WIN = "I win! " + Emotes.SMILE_EMOTE;
+    private static final String LOSE = "You win. Congrats! " + Emotes.SLIGHT_SMILE_EMOTE;
     private static final String TIE = "Well, I guess it's a tie.";
     private static final String[] OPTIONS = {"rock", "paper", "scissors"};
     private static final int OPTIONS_AMOUNT = 3;

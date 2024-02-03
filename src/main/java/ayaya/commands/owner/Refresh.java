@@ -54,8 +54,6 @@ public class Refresh extends Command {
                     else
                         event.reactWarning();
                     break;
-                default:
-                    // ignore
             }
         }
 

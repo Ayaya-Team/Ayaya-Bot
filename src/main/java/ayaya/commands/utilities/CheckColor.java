@@ -1,6 +1,7 @@
 package ayaya.commands.utilities;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.exceptions.http.HttpNullResponseException;
 import ayaya.core.exceptions.http.HttpResponseFailedException;
@@ -42,7 +43,7 @@ public class CheckColor extends Command {
     protected void executeInstructions(CommandEvent event) {
         String args = event.getArgs().toLowerCase();
         if (args.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You did not specify a color code type neither a color code.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You did not specify a color code type neither a color code.");
             return;
         }
         String codeType;
@@ -50,7 +51,7 @@ public class CheckColor extends Command {
         if (matcher.find()) codeType = matcher.group().trim();
         else {
             event.reply(
-                    "<:AyaWhat:362990028915474432> You either did not specify a color code or a color code type."
+                    Emotes.CONFUSED_EMOTE + " You either did not specify a color code or a color code type."
             );
             return;
         }

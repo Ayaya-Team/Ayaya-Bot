@@ -1,5 +1,6 @@
 package ayaya.commands.music;
 
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.utils.Utils;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -61,7 +62,7 @@ public class NP extends MusicCommand {
             long current = track.getPosition() / 1000;
             if (trackName == null)
                 trackName = "Undefined";
-            String bar = Utils.printEnhancedBar(current, time, BAR_LENGTH);
+            String bar = Emotes.BETTER_PROGRESS_BAR ? Utils.printEnhancedBar(current, time, BAR_LENGTH) : Utils.printBar(current, time, BAR_LENGTH);
             if (musicHandler.getCurrentMusic(guild) == null || musicHandler.queueIsPaused(guild))
                 message = String.format(
                         "Current track to play is `%s`\n\n%s\n**⏸︎ %02d:%02d / %02d:%02d**",

@@ -1,6 +1,7 @@
 package ayaya.commands.moderator;
 
 import ayaya.commands.ModCommand;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.utils.ParallelThreadHandler;
 import ayaya.core.utils.PruneActionData;
@@ -30,7 +31,7 @@ public class Prune extends ModCommand {
     public Prune() {
 
         this.name = "prune";
-        this.help = "Is the channel too messy? I can clean it for you! <:AyaSmile:331115374739324930>";
+        this.help = "Is the channel too messy? I can clean it for you! " + Emotes.SLIGHT_SMILE_EMOTE;
         this.arguments = "{prefix}prune <amount of messages>\n\n" +
                 "To get the complete help list of this command, run it without any arguments.";
         this.aliases = new String[]{"purge"};
@@ -184,7 +185,7 @@ public class Prune extends ModCommand {
                 int finalAmountDeleted = amountDeleted;
                 if (finalAmountDeleted == 1)
                     messages.get(0).delete().queue(
-                            v -> event.reply("<:KawaiiThumbup:361601400079253515> "
+                            v -> event.reply(Emotes.OK_EMOTE + " "
                                             + "1 message pruned with success.",
                                     msg -> {
                                         try {
@@ -198,7 +199,7 @@ public class Prune extends ModCommand {
                     );
                 else
                     channel.deleteMessages(messages).queue(
-                            v -> event.reply("<:KawaiiThumbup:361601400079253515> "
+                            v -> event.reply(Emotes.OK_EMOTE + " "
                                             + finalAmountDeleted + " messages pruned with success.",
                                     msg -> {
                                         try {

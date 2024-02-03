@@ -2,6 +2,9 @@ package ayaya.core.utils;
 
 import java.util.Map;
 
+import ayaya.core.BotData;
+import ayaya.core.Emotes;
+
 import static java.util.Map.entry;
 
 /**
@@ -174,10 +177,10 @@ public class Utils {
         StringBuilder bar = new StringBuilder();
         long fullChars = Math.round(current / max * length);
         for (long i = 1; i <= length; i++) {
-            if (i == fullChars || (i == 1 && fullChars == 0)) bar.append("🔵");
-            else if (i == 1) bar.append("<:start_seek_bar:958141018585301062>");
-            else if (i == length) bar.append("<:end_seek_bar:958141242905092196>");
-            else bar.append("<:section_seek_bar:958141162877759489>");
+            if (i == fullChars || (i == 1 && fullChars == 0)) bar.append(Emotes.CURSOR_EMOTE);
+            else if (i == 1) bar.append(Emotes.START_BAR_EMOTE);
+            else if (i == length) bar.append(Emotes.END_BAR_EMOTE);
+            else bar.append(Emotes.SECTION_BAR_EMOTE);
         }
         return bar.toString();
     }

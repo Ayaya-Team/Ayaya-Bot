@@ -1,6 +1,7 @@
 package ayaya.commands.funny;
 
 import ayaya.core.BotData;
+import ayaya.core.Emotes;
 import ayaya.core.utils.SQLController;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -22,7 +23,7 @@ public class Kawaii extends ayaya.commands.Command {
     public Kawaii() {
 
         this.name = "kawaii";
-        this.help = "Gets you a random kawaii gif. <:AyaSmile:331115374739324930>";
+        this.help = "Gets you a random kawaii gif. " + Emotes.SLIGHT_SMILE_EMOTE;
         this.arguments = "{prefix}kawaii";
         this.aliases = new String[]{"cute"};
         this.category = FUNNY.asCategory();
@@ -35,7 +36,7 @@ public class Kawaii extends ayaya.commands.Command {
     protected void executeInstructions(CommandEvent event) {
 
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setDescription("So kawaii. <:AyaSmile:331115374739324930>");
+        embed.setDescription("So kawaii. " + Emotes.SLIGHT_SMILE_EMOTE);
         try {
             embed.setColor(event.getGuild().getSelfMember().getColor());
         } catch (IllegalStateException | NullPointerException e) {

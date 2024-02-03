@@ -56,22 +56,9 @@ public class Move extends MusicCommand {
                 channel = channels.get(0);
             }
 
-            //int queueSize = musicHandler.getMusicAmount(guild);
             if (musicHandler.move(guild, voiceChannel, channel)) {
-                /*List<Member> members = voiceChannel.getMembers();
-                if (members.size() > 0
-                        && event.getSelfMember().hasPermission(voiceChannel, Permission.VOICE_MOVE_OTHERS)
-                        && event.getSelfMember().hasPermission(channel, Permission.VOICE_MOVE_OTHERS)) {
-                    for (Member member: voiceChannel.getMembers())
-                        guild.moveVoiceMember(member, channel);
-                    event.replySuccess("I moved to the channel `" + channel.getName() + "`.");
-                }
-                else*/
                     event.replySuccess("I moved to the channel `" + channel.getName() + "`. Get over here to keep listening to the music!");
             }
-            /*else if (musicHandler.getMusicAmount(guild) != queueSize)
-                event.replyError("I could not connect to the voice channel `" + channel.getName()
-                        + "` and could not connect back to the previous channel. The queue was emptied.");*/
             else
                 event.reply("I could not connect to the voice channel `" + channel.getName() + "`.");
         } else {

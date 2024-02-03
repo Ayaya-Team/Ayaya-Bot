@@ -1,6 +1,7 @@
 package ayaya.commands.moderator;
 
 import ayaya.commands.ModCommand;
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import ayaya.core.enums.PermissionNames;
 import ayaya.core.utils.ParallelThreadHandler;
@@ -148,7 +149,7 @@ public class Role extends ModCommand {
         }
 
         if (name.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't provide any name for the new role.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't provide any name for the new role.");
             return;
         }
         if (name.length() > NAME_LENGTH) {
@@ -284,7 +285,7 @@ public class Role extends ModCommand {
         }
 
         if (name.isBlank()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't provide the name of the role to edit.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't provide the name of the role to edit.");
             return;
         }
         if (newName.isBlank() && colorCode.isBlank() && hoisted.isBlank() && mentionable.isBlank()
@@ -411,12 +412,12 @@ public class Role extends ModCommand {
         }
 
         if (users.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't provide any users." +
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't provide any users." +
                     " How can I know who I should add or remove roles from?");
             return;
         }
         if (toAdd.isEmpty() && toRemove.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't specify any roles to add or remove.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't specify any roles to add or remove.");
             return;
         }
 

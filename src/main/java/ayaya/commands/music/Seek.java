@@ -1,5 +1,6 @@
 package ayaya.commands.music;
 
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
@@ -40,7 +41,7 @@ public class Seek extends MusicCommand {
                 }
                 if (message.isEmpty()) {
                     event.reply(
-                            "<:AyaWhat:362990028915474432> You didn't tell me how many seconds I should skip or rewind." +
+                            Emotes.CONFUSED_EMOTE + " You didn't tell me how many seconds I should skip or rewind." +
                                     " Remember to put a negative value in case you want to rewind."
                     );
                     return;

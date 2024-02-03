@@ -1,5 +1,6 @@
 package ayaya.commands.music;
 
+import ayaya.core.Emotes;
 import ayaya.core.enums.CommandCategories;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -28,7 +29,7 @@ public class Dequeue extends MusicCommand {
     protected void executeMusicCommand(CommandEvent event, VoiceChannel voiceChannel) {
 
         if (event.getArgs().isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> You didn't tell me which track to dequeue. Remember that "
+            event.reply(Emotes.CONFUSED_EMOTE + " You didn't tell me which track to dequeue. Remember that "
                     + event.getClient().getPrefix() + "dequeue 0 will do the same as skipping the song.");
             return;
         }

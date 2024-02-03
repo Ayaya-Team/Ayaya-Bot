@@ -1,6 +1,8 @@
 package ayaya.commands.action;
 
 import ayaya.commands.GuildDMSCommand;
+import ayaya.core.Emotes;
+
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.entities.Message;
 
@@ -28,23 +30,23 @@ public class Cookie extends GuildDMSCommand {
         Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
         Matcher idFinder;
         if (!mentionFinder.find()) {
-            event.reply("<:AyaWhat:362990028915474432> You did not mention the person to give the cookie to.");
+            event.reply(Emotes.CONFUSED_EMOTE + " You did not mention the person to give the cookie to.");
             return;
         }
         idFinder = ANY_ID.matcher(mentionFinder.group());
         idFinder.find();
         event.getGuild().retrieveMemberById(idFinder.group(), true).queue(member -> {
             if (member == null)
-                event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server.");
+                event.reply(Emotes.CONFUSED_EMOTE + " I couldn't find anyone with that mention in this server.");
             else if (member == event.getMember()) {
                 event.reply("Come on, don't save all the cookies for yourself, don't be greedy!");
             } else if (member == event.getSelfMember()) {
-                event.reply("Oh, a :cookie: for me! Arigatou. <:AyaSmile:331115374739324930>");
+                event.reply("Oh, a :cookie: for me! Arigatou. " + Emotes.SLIGHT_SMILE_EMOTE);
             } else {
                 event.reply("**" + member.getEffectiveName() + "**, you got a :cookie: from **"
                         + event.getAuthor().getName() + "**!");
             }
-        }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention in this server."));
+        }, t -> event.reply(Emotes.CONFUSED_EMOTE + " I couldn't find anyone with that mention in this server."));
 
     }
 
@@ -54,23 +56,23 @@ public class Cookie extends GuildDMSCommand {
         Matcher mentionFinder = Message.MentionType.USER.getPattern().matcher(event.getArgs());
         Matcher idFinder;
         if (!mentionFinder.find()) {
-            event.reply("<:AngryAya:331115100771450880> Mention the person you want to give a cookie to, you baka!");
+            event.reply("Please mention the person you want to give a cookie to.");
             return;
         }
         idFinder = ANY_ID.matcher(mentionFinder.group());
         idFinder.find();
         event.getJDA().retrieveUserById(idFinder.group(), true).queue(user -> {
             if (user == null)
-                event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here.");
+                event.reply(Emotes.CONFUSED_EMOTE + " I couldn't find anyone with that mention here.");
             else if (user == event.getAuthor()) {
                 event.reply("Come on, don't save all the cookies for yourself, don't be greedy!");
             } else if (user == event.getSelfUser()) {
-                event.reply("Oh, a :cookie: for me! Arigatou. <:AyaSmile:331115374739324930>");
+                event.reply("Oh, a :cookie: for me! Arigatou. " + Emotes.SLIGHT_SMILE_EMOTE);
             } else {
                 event.reply("**" + user.getName() + "**, you got a :cookie: from **"
                         + event.getAuthor().getName() + "**!");
             }
-        }, t -> event.reply("<:AyaWhat:362990028915474432> I couldn't find anyone with that mention here."));
+        }, t -> event.reply(Emotes.CONFUSED_EMOTE + " I couldn't find anyone with that mention here."));
 
     }
 

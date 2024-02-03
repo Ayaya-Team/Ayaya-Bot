@@ -1,6 +1,8 @@
 package ayaya.commands.funny;
 
 import ayaya.commands.Command;
+import ayaya.core.Emotes;
+
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
@@ -49,7 +51,7 @@ public class Say extends Command {
 
         String message = event.getArgs();
         if (message.isEmpty()) {
-            event.reply("<:AyaWhat:362990028915474432> What do you want me to say? I can't guess it!");
+            event.reply(Emotes.CONFUSED_EMOTE + " What do you want me to say? I can't guess it!");
             return;
         }
 
