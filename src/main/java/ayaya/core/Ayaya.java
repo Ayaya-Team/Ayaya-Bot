@@ -208,7 +208,7 @@ public class Ayaya {
 
             String quote = BotData.getStatusQuotes().get(status);
 
-            ayaya.getPresence().setActivity(Activity.playing(BotData.getPrefix() + " help | " + quote));
+            ayaya.getPresence().setActivity(Activity.playing(BotData.getPrefix() + "help | " + quote));
             try {
                 TimeUnit.SECONDS.sleep(60);
             } catch (InterruptedException e) {
